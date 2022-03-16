@@ -4310,3 +4310,7 @@ significantly different?
 
 * [2022-3-16 Wed] - new repo for in vivo 
 ** o2 sources, o2 consumed, no glia factor sims 
+*** back to playing around with what is necessary o2 supply and glial current to maintain reasonable firing rates 
+and not develop SD
+** back to probelm with stampede2
+*** job running, but sim creates output folder but otherwise doesn't write to disk (no output files or std output (% done))
