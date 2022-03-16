@@ -14,7 +14,7 @@ cfg.hParams['celsius'] = 37.0
 cfg.dt = 0.1 #0.025              # Internal integration timestep to use
 cfg.verbose = False            # Show detailed messages 
 cfg.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
-cfg.filename = 'o2source_network_noelk_nogliafactor_perfused/'   # Set file output name
+cfg.filename = 'Data/o2source_network_noelk_nogliafactor_perfused/'   # Set file output name
 cfg.Kceil = 15.0
 
  # Network dimensions
