@@ -370,7 +370,7 @@ if cfg.O2consume:
 
 if cfg.O2source:
     rates['o2_source'] = {'species' : o2ecs, 'regions' : ['ecs_o2'],
-        'rate' : 'epsilon_o2 * 10 * (o2_bath - %s)' % o2ecs}
+        'rate' : 'epsilon_o2 * 100 * (o2_bath - %s)' % o2ecs}
 
 netParams.rxdParams['rates'] = rates
 
