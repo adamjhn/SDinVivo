@@ -43,7 +43,7 @@ cfg.N_L5_E  = int(cfg.L5density  * (cfg.sizeX * (1/3) * cfg.sizeY * cfg.sizeZ * 
 cfg.N_L5_I  = int(cfg.L5density  * (cfg.sizeX * (1/3) * cfg.sizeY * cfg.sizeZ * 1e-9) * cfg.L5_iprop) 
 
 # slice conditions 
-cfg.ox = 'prefused' #'perfused'
+cfg.ox = 'perfused' #'perfused'
 if cfg.ox == 'perfused':
     cfg.o2_bath = 0.1
     cfg.alpha_ecs = 0.2 
