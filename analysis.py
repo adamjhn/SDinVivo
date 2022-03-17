@@ -259,7 +259,7 @@ def traceExamples(datadir, figname, iss=[0, 7, 15], recNum=None, justV=False):
         for i in iss:
             l = r'%s $\mu$m' % str(np.round((data['pos'][i][0] ** 2 + data['pos'][i][1] ** 2 + data['pos'][i][2] ** 2)**(0.5),1))
             plt.plot(np.divide(data['t'],1000), data['v'][i], label=l)
-        leg = axs[0][0].legend(title='Radial Position', fontsize=11, bbox_to_anchor=(-0.275, 1.05))
+        leg = plt.legend(title='Radial Position', fontsize=11, bbox_to_anchor=(-0.275, 1.05))
         plt.setp(leg.get_title(), fontsize=15)
         plt.ylabel('Membrane Potential (mV)', fontsize=16)
         plt.xlabel('Time (s)', fontsize=16)
