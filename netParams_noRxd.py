@@ -22,16 +22,16 @@ netParams.probLengthConst = 150.0  # length constant for conn probability (um)
 secs = {} # sections dict
 secs['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
 secs['soma']['geom'] = {'diam': 15, 'L': 14, 'Ra': 120.0, 'pt3d' : []}                               # soma geometry
-secs['soma']['geom']['pt3d'].append(0,0,0,15)
-secs['soma']['geom']['pt3d'].append(0,0,14,15)
+secs['soma']['geom']['pt3d'].append((0,0,0,15))
+secs['soma']['geom']['pt3d'].append((0,0,14,15))
 secs['soma']['mechs']['hh'] = {'gnabar': 0.13, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
 netParams.cellParams['E'] = {'secs': secs}                                              # add dict to list of cell params
 
 secs = {} # sections dict
 secs['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
 secs['soma']['geom'] = {'diam': 10.0, 'L': 9.0, 'Ra': 110.0, 'pt3d' : []}                               # soma geometry
-secs['soma']['geom']['pt3d'].append(0,0,0,10.0)
-secs['soma']['geom']['pt3d'].append(0,0,9.0,10.0)                            # soma geometry
+secs['soma']['geom']['pt3d'].append((0,0,0,10.0))
+secs['soma']['geom']['pt3d'].append((0,0,9.0,10.0))                            # soma geometry
 secs['soma']['mechs']['hh'] = {'gnabar': 0.11, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
 netParams.cellParams['I'] = {'secs': secs}                                              # add dict to list of cell params
 
