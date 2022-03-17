@@ -100,5 +100,6 @@ if pcid == 0:
     plt.close()
     rasterPlot(cfg.filename, figname=cfg.filename+'raster.png')
     plt.close()
-    pc.barrier()
-    h.quit()
+    
+pc.barrier()
+h.quit()
