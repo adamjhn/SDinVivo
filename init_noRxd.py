@@ -77,7 +77,7 @@ def run(tstop):
         pc.psolve(pc.t(0)+h.dt)  # run the simulation for 1 time step
     if pcid == 0:
         progress_bar(tstop)
-        fout.close()
+        # fout.close()
         with open(os.path.join(cfg.filename,"recs.pkl"),'wb') as fout:
             pickle.dump(recs,fout)
         print("\nSimulation complete. Plotting membrane potentials")
