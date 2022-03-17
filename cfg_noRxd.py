@@ -98,9 +98,9 @@ cfg.nRec = 240
 
 # cfg.anacfg.sizeYsis['plotTraces']={'include': random.sample(range(cfg.Ncell),100), 'saveFig' : True}
 import random
-cfg.anacfg.sizeYsis['plotTraces']={'include': random.sample(range(cfg.Ncell),20), 'saveFig' : True, 'showFig' : False}
-cfg.anacfg.sizeYsis['plotRaster'] = {'orderBy': 'y', 'orderInverse': True, 'saveFig': True, 'figSize': (9,3), 'showFig' : False}      # Plot a raster
-cfg.anacfg.sizeYsis['plot2Dnet'] = {'saveFig': True, 'showFig' : False}   
+cfg.analysis['plotTraces']={'include': random.sample(range(cfg.Ncell),20), 'saveFig' : True, 'showFig' : False}
+cfg.analysis['plotRaster'] = {'orderBy': 'y', 'orderInverse': True, 'saveFig': True, 'figSize': (9,3), 'showFig' : False}      # Plot a raster
+cfg.analysis['plot2Dnet'] = {'saveFig': True, 'showFig' : False}   
 #cfg.anacfg.sizeYsis['plotLFP'] = {'includeAxon': False, 'figSize': (6,10), 'NFFT': 256, 'noverlap': 48, 'nperseg': 64, 'saveFig': True} 
 # cfg.anacfg.sizeYsis['plotRxDConcentration'] = {'speciesLabel': 'k', 'regionLabel': 'ecs', 'showFig' : False}
  
