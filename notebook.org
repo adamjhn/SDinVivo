@@ -4317,6 +4317,7 @@ and not develop SD
 
 * [2022-3-17 Thu] 
 ** TODO - put together non-rxd version of netpyne cortical sim 
+*** work in progress, added to repo 
 ** DONE - email mark and rena about ideal brainstem model 
 ** TODO - look at microns mouse data 
 ** TODO - look at connectivity from human ctx data 

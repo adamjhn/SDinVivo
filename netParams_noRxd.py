@@ -19,24 +19,20 @@ netParams.probLengthConst = 150.0  # length constant for conn probability (um)
 
 #------------------------------------------------------------------------------
 ## Cell types
-
-e_charge =  1.60217662e-19
-scale = 1e-14/e_charge
-
 secs = {} # sections dict
 secs['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
-secs['soma']['geom'] = {'diam': 15, 'L': 15, 'Ra': 120.0, 'pt3d' : []}                               # soma geometry
-secs['soma']['geom']['pt3d'].append((0,0,0,15.0))
-secs['soma']['geom']['pt3d'].append((0,0,15.0,15.0))
-secs['soma']['mechs']['hh'] = {'gnabar':(30/1000) * scale, 'gkbar':(25/1000) * scale, 'gl':(0.0247/1000) * scale, 'el': -70}  # soma hh mechanism
+secs['soma']['geom'] = {'diam': 15, 'L': 14, 'Ra': 120.0, 'pt3d' : []}                               # soma geometry
+secs['soma']['geom']['pt3d'].append((0,0,0,15))
+secs['soma']['geom']['pt3d'].append((0,0,15,15))
+secs['soma']['mechs']['hh'] = {'gnabar': 0.13, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
 netParams.cellParams['E'] = {'secs': secs}                                              # add dict to list of cell params
 
 secs = {} # sections dict
 secs['soma'] = {'geom': {}, 'mechs': {}}                                                # soma params dict
-secs['soma']['geom'] = {'diam': 15.0, 'L': 5.0, 'Ra': 110.0, 'pt3d' : []}                               # soma geometry
+secs['soma']['geom'] = {'diam': 15.0, 'L': 15.0, 'Ra': 110.0, 'pt3d' : []}                               # soma geometry
 secs['soma']['geom']['pt3d'].append((0,0,0,15.0))
 secs['soma']['geom']['pt3d'].append((0,0,15.0,15.0))                            # soma geometry
-secs['soma']['mechs']['hh'] = {'gnabar':(30/1000) * scale, 'gkbar':(25/1000) * scale, 'gl':(0.0247/1000) * scale, 'el': -70}  # soma hh mechanism
+secs['soma']['mechs']['hh'] = {'gnabar': 0.11, 'gkbar': 0.036, 'gl': 0.003, 'el': -70}  # soma hh mechanism
 netParams.cellParams['I'] = {'secs': secs}                                              # add dict to list of cell params
 
 ## Population parameters
@@ -56,7 +52,7 @@ netParams.synMechParams['inh'] = {'mod': 'Exp2Syn', 'tau1': 0.6, 'tau2': 8.5, 'e
 
 ## Stimulation parameters
 netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 20, 'noise': 0.3}
-netParams.stimTargetParams['bkg->all'] = {'source': 'bkg', 'conds': {'cellType': ['E','I']}, 'weight': 0.01, 'delay': 'max(1, normal(5,2))', 'synMech': 'exc'}
+netParams.stimTargetParams['bkg->all'] = {'source': 'bkg', 'conds': {'cellType': ['E','I']}, 'weight': 0.1, 'delay': 'max(1, normal(5,2))', 'synMech': 'exc'}
 
 # netParams.stimSourceParams['Ebkg'] = {'type': 'NetStim', 'rate': 50, 'noise': 0.3}
 # netParams.stimTargetParams['bkg->E'] = {'source': 'Ebkg', 'conds': {'cellType': ['E']}, 'weight': 0.5, 'delay': 'max(1, normal(5,2))', 'synMech': 'exc'}
