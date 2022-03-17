@@ -96,7 +96,7 @@ run(cfg.duration)
 
 if pcid == 0:
     from analysis import *
-    traceExamples(cfg.filename, cfg.filename + 'traces.png', iss=[0,4,8])
+    traceExamples(cfg.filename, cfg.filename + 'traces.png', iss=[0,4,8], justV=True)
     plt.close()
     rasterPlot(cfg.filename, figname=cfg.filename+'raster.png')
     plt.close()
