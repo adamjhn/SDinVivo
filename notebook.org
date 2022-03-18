@@ -4319,6 +4319,46 @@ and not develop SD
 ** TODO - put together non-rxd version of netpyne cortical sim 
 *** work in progress, added to repo 
 ** DONE - email mark and rena about ideal brainstem model 
-** TODO - look at microns mouse data 
+** DONE - look at microns mouse data
+*** set up caveclient, but when running *client.materialize.get_tables()* get:
+Traceback (most recent call last):
+  File "/home/craig/SDinSlice/sdenv/lib/python3.8/site-packages/requests/adapters.py", line 440, in send
+    resp = conn.urlopen(
+  File "/home/craig/SDinSlice/sdenv/lib/python3.8/site-packages/urllib3/connectionpool.py", line 876, in urlopen
+    return self.urlopen(
+  File "/home/craig/SDinSlice/sdenv/lib/python3.8/site-packages/urllib3/connectionpool.py", line 876, in urlopen
+    return self.urlopen(
+  File "/home/craig/SDinSlice/sdenv/lib/python3.8/site-packages/urllib3/connectionpool.py", line 876, in urlopen
+    return self.urlopen(
+  File "/home/craig/SDinSlice/sdenv/lib/python3.8/site-packages/urllib3/connectionpool.py", line 866, in urlopen
+    retries = retries.increment(method, url, response=response, _pool=self)
+  File "/home/craig/SDinSlice/sdenv/lib/python3.8/site-packages/urllib3/util/retry.py", line 592, in increment
+    raise MaxRetryError(_pool, url, error or ResponseError(cause))
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='minnie.microns-daf.com', port=443): Max retries exceeded with url: /materialize/api/v2/datastack/minnie65_public_v117/versions (Caused by ResponseError('too many 503 error responses'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "/home/craig/SDinSlice/sdenv/lib/python3.8/site-packages/caveclient-4.11.0-py3.8.egg/caveclient/frameworkclient.py", line 339, in materialize
+  File "/home/craig/SDinSlice/sdenv/lib/python3.8/site-packages/caveclient-4.11.0-py3.8.egg/caveclient/materializationengine.py", line 143, in MaterializationClient
+  File "/home/craig/SDinSlice/sdenv/lib/python3.8/site-packages/caveclient-4.11.0-py3.8.egg/caveclient/materializationengine.py", line 190, in __init__
+  File "/home/craig/SDinSlice/sdenv/lib/python3.8/site-packages/caveclient-4.11.0-py3.8.egg/caveclient/materializationengine.py", line 226, in most_recent_version
+  File "/home/craig/SDinSlice/sdenv/lib/python3.8/site-packages/caveclient-4.11.0-py3.8.egg/caveclient/materializationengine.py", line 240, in get_versions
+  File "/home/craig/SDinSlice/sdenv/lib/python3.8/site-packages/requests/sessions.py", line 542, in get
+    return self.request('GET', url, **kwargs)
+  File "/home/craig/SDinSlice/sdenv/lib/python3.8/site-packages/requests/sessions.py", line 529, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/home/craig/SDinSlice/sdenv/lib/python3.8/site-packages/requests/sessions.py", line 645, in send
+    r = adapter.send(request, **kwargs)
+  File "/home/craig/SDinSlice/sdenv/lib/python3.8/site-packages/requests/adapters.py", line 510, in send
+    raise RetryError(e, request=request)
+requests.exceptions.RetryError: HTTPSConnectionPool(host='minnie.microns-daf.com', port=443): Max retries exceeded with url: /materialize/api/v2/datastack/minnie65_public_v117/versions (Caused by ResponseError('too many 503 error responses'))
+*** I can access the example mesh from 
+'graphene://https://minnie.microns-daf.com/segmentation/table/minnie65_public_v117' 
+but  not with cv = cloudvolume.CloudVolume("precomputed://s3://bossdb-open-data/microns/minnie/minnie65-flat-seg/", use_https=True) 
+or cv = cloudvolume.CloudVolume("precomputed://gs://iarpa_microns_phase3/minnie65/seg", use_https=True). 
+not sure if all the relevant data's in the first one or not
+*** no radius for mesh.  mesh->skeleton->swc? or mesh->swc? or .asc?
 ** TODO - look at connectivity from human ctx data 
 ** TODO - figure out issues with stampede2 
