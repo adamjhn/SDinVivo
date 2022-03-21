@@ -4315,7 +4315,7 @@ and not develop SD
 ** back to probelm with stampede2
 *** job running, but sim creates output folder but otherwise doesn't write to disk (no output files or std output (% done))
 
-* [2022-3-17 Thu] 
+* [2022-3-17 Thu] - todos 
 ** TODO - put together non-rxd version of netpyne cortical sim 
 *** work in progress, added to repo 
 ** DONE - email mark and rena about ideal brainstem model 
@@ -4362,3 +4362,13 @@ not sure if all the relevant data's in the first one or not
 *** no radius for mesh.  mesh->skeleton->swc? or mesh->swc? or .asc?
 ** TODO - look at connectivity from human ctx data 
 ** TODO - figure out issues with stampede2 
+
+* [2022-3-21 Mon] 
+** meeting w/ forrest
+*** [[https://github.com/AllenInstitute/pcg_skel][Save time by generating robust neuronal skeletons directly from a ChunkedGraph dynamic segmentations!]]  
+*** [[https://github.com/sdorkenw/MeshParty][A package to work with meshes, designed around use cases for analyzing neuronal morphology]]
+*** [[https://meshparty.readthedocs.io/en/latest/guide/skeletons.html][mesh party for skeletons]] 
+*** shapediameter function to estimate diameter of mesh at every point
+** rxd version of a non-rxd model
+*** right now having trouble getting matching dynamics, probably should be more systematic 
+*** might want to use simpler model than currently using 
