@@ -19,12 +19,19 @@ netParams.probLengthConst = 150.0  # length constant for conn probability (um)
 
 #------------------------------------------------------------------------------
 ## Population parameters
-netParams.popParams['E2'] = {'cellType': 'E', 'numCells': cfg.N_L23_E, 'yRange': [2 * cfg.somaR, cfg.sizeY / 3], 'cellModel' : 'E2model'}
-netParams.popParams['I2'] = {'cellType': 'I', 'numCells': cfg.N_L23_I, 'yRange': [2 * cfg.somaR, cfg.sizeY / 3], 'cellModel' : 'I2model'}
-netParams.popParams['E4'] = {'cellType': 'E', 'numCells': cfg.N_L4_E, 'yRange': [cfg.sizeY / 3, cfg.sizeY * (2/3)], 'cellModel' : 'E4model'}
-netParams.popParams['I4'] = {'cellType': 'I', 'numCells': cfg.N_L4_I, 'yRange': [cfg.sizeY / 3, cfg.sizeY * (2/3)], 'cellModel' : 'I4model'}
-netParams.popParams['E5'] = {'cellType': 'E', 'numCells': cfg.N_L5_E, 'yRange': [cfg.sizeY * (2/3), cfg.sizeY - 2*cfg.somaR], 'cellModel' : 'E5model'}
-netParams.popParams['I5'] = {'cellType': 'I', 'numCells': cfg.N_L5_I, 'yRange': [cfg.sizeY * (2/3), cfg.sizeY - 2*cfg.somaR], 'cellModel' : 'I5model'}
+# netParams.popParams['E2'] = {'cellType': 'E', 'numCells': cfg.N_L23_E, 'yRange': [2 * cfg.somaR, cfg.sizeY / 3], 'cellModel' : 'E2model'}
+# netParams.popParams['I2'] = {'cellType': 'I', 'numCells': cfg.N_L23_I, 'yRange': [2 * cfg.somaR, cfg.sizeY / 3], 'cellModel' : 'I2model'}
+# netParams.popParams['E4'] = {'cellType': 'E', 'numCells': cfg.N_L4_E, 'yRange': [cfg.sizeY / 3, cfg.sizeY * (2/3)], 'cellModel' : 'E4model'}
+# netParams.popParams['I4'] = {'cellType': 'I', 'numCells': cfg.N_L4_I, 'yRange': [cfg.sizeY / 3, cfg.sizeY * (2/3)], 'cellModel' : 'I4model'}
+# netParams.popParams['E5'] = {'cellType': 'E', 'numCells': cfg.N_L5_E, 'yRange': [cfg.sizeY * (2/3), cfg.sizeY - 2*cfg.somaR], 'cellModel' : 'E5model'}
+# netParams.popParams['I5'] = {'cellType': 'I', 'numCells': cfg.N_L5_I, 'yRange': [cfg.sizeY * (2/3), cfg.sizeY - 2*cfg.somaR], 'cellModel' : 'I5model'}
+
+netParams.popParams['E2'] = {'cellType': 'E', 'numCells': 100, 'yRange': [100,300], 'cellModel' : 'E2model'}
+netParams.popParams['I2'] = {'cellType': 'I', 'numCells': 100, 'yRange': [100,300], 'cellModel' : 'I2model'}
+netParams.popParams['E4'] = {'cellType': 'E', 'numCells': 100, 'yRange': [300,600], 'cellModel' : 'E4model'}
+netParams.popParams['I4'] = {'cellType': 'I', 'numCells': 100, 'yRange': [300,600], 'cellModel' : 'I4model'}
+netParams.popParams['E5'] = {'cellType': 'E', 'numCells': 100, 'yRange': [600,900], 'cellModel' : 'E5model'}
+netParams.popParams['I5'] = {'cellType': 'I', 'numCells': 100, 'yRange': [600,900], 'cellModel' : 'I5model'}
 
 #------------------------------------------------------------------------------
 ## Cell property rules
@@ -54,28 +61,50 @@ netParams.cellParams['I5rule'] = I5Rule
 netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.8, 'tau2': 5.3, 'e': 0}  # NMDA synaptic mechanism
 netParams.synMechParams['inh'] = {'mod': 'Exp2Syn', 'tau1': 0.6, 'tau2': 8.5, 'e': -75}  # GABA synaptic mechanism
 
-## Stimulation parameters
-netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 20, 'noise': 0.3}
-netParams.stimTargetParams['bkg->all'] = {'source': 'bkg', 'conds': {'cellType': ['E','I']}, 'weight': 0.01, 'delay': 'max(1, normal(5,2))', 'synMech': 'exc'}
+# Stimulation parameters
+netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 1, 'noise': 0.3, 'number' : 1}
+netParams.stimTargetParams['bkg->all'] = {'source': 'bkg', 'conds': {'cellType': ['E','I']}, 'weight': 0.01, 'delay': 'max(1, normal(5,2))', 'synMech': 'exc', 'probability' : 0.01}
 
-# netParams.stimSourceParams['Ebkg'] = {'type': 'NetStim', 'rate': 50, 'noise': 0.3}
-# netParams.stimTargetParams['bkg->E'] = {'source': 'Ebkg', 'conds': {'cellType': ['E']}, 'weight': 0.5, 'delay': 'max(1, normal(5,2))', 'synMech': 'exc'}
+# ## Synaptic mechanism parameters
+# netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.8, 'tau2': 5.3, 'e': 0}  # NMDA synaptic mechanism
+# netParams.synMechParams['inh'] = {'mod': 'Exp2Syn', 'tau1': 0.6, 'tau2': 8.5, 'e': -75}  # GABA synaptic mechanism
+
+# ## Stimulation parameters
+# netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 20, 'noise': 0.3}
+# netParams.stimTargetParams['bkg->all'] = {'source': 'bkg', 'conds': {'cellType': ['E','I']}, 'weight': 0.01, 'delay': 'max(1, normal(5,2))', 'synMech': 'exc'}
+
+netParams.stimSourceParams['Ebkg'] = {'type': 'NetStim', 'rate': 4, 'noise': 0.3}
+netParams.stimTargetParams['bkg->E'] = {'source': 'Ebkg', 'conds': {'cellType': ['E']}, 'weight': 0.5, 'delay': 'max(1, normal(5,2))', 'synMech': 'exc'}
 ### weights -> 0.05 
 
 ## Connection parameters
+# netParams.connParams['E->all'] = {
+#     'preConds': {'cellType': 'E'}, 'postConds': {'cellType' : ['E']},  #  E -> all (100-1000 um)
+#     'probability': 0.1 ,                  # probability of connection
+#     'weight': '0.005',         # synaptic weight - original 0.005*post_ynorm
+#     'delay': 'defaultDelay+dist_3D/propVelocity',      # transmission delay (ms)
+#     'synMech': 'exc'}                     # synaptic mechanism
+
+# netParams.connParams['I->E'] = {
+#     'preConds': {'cellType': 'I'}, 'postConds': {'cellType': 'E'},   #  I -> E
+#     'probability': '0.4*exp(-dist_3D/probLengthConst)',              # probability of connection
+#     'weight': 0.001,                                                 # synaptic weight
+#     'delay': 'defaultDelay+dist_3D/propVelocity',                    # transmission delay (ms)
+#     'synMech': 'inh'}                                                # synaptic mechanism
+## Cell connectivity rules
 netParams.connParams['E->all'] = {
-    'preConds': {'cellType': 'E'}, 'postConds': {'cellType' : ['E']},  #  E -> all (100-1000 um)
+    'preConds': {'cellType': 'E'}, 'postConds': {'y': [100,1000]},  #  E -> all (100-1000 um)
     'probability': 0.1 ,                  # probability of connection
-    'weight': '0.005',         # synaptic weight - original 0.005*post_ynorm
-    'delay': 'defaultDelay+dist_3D/propVelocity',      # transmission delay (ms)
+    'weight': '0.005*post_ynorm',         # synaptic weight
+    'delay': 'dist_3D/propVelocity',      # transmission delay (ms)
     'synMech': 'exc'}                     # synaptic mechanism
 
 netParams.connParams['I->E'] = {
-    'preConds': {'cellType': 'I'}, 'postConds': {'cellType': 'E'},   #  I -> E
-    'probability': '0.4*exp(-dist_3D/probLengthConst)',              # probability of connection
-    'weight': 0.001,                                                 # synaptic weight
-    'delay': 'defaultDelay+dist_3D/propVelocity',                    # transmission delay (ms)
-    'synMech': 'inh'}                                                # synaptic mechanism
+    'preConds': {'cellType': 'I'}, 'postConds': {'pop': ['E2','E4','E5']},       #  I -> E
+    'probability': '0.4*exp(-dist_3D/probLengthConst)',   # probability of connection
+    'weight': 0.001,                                      # synaptic weight
+    'delay': 'dist_3D/propVelocity',                      # transmission delay (ms)
+    'synMech': 'inh'}                                     # synaptic mechanism
 
 #------------------------------------------------------------------------------
 ## RxD params
@@ -369,8 +398,10 @@ if cfg.O2consume:
         'rate' : '-(%s)' % (gliapump)}
 
 if cfg.O2source:
+    # rates['o2_source'] = {'species' : o2ecs, 'regions' : ['ecs_o2'],
+    #     'rate' : 'epsilon_o2 * 100 * (o2_bath - %s)' % o2ecs}
     rates['o2_source'] = {'species' : o2ecs, 'regions' : ['ecs_o2'],
-        'rate' : 'epsilon_o2 * 100 * (o2_bath - %s)' % o2ecs}
+        'rate' : 'epsilon_o2 * (o2_bath - %s)' % o2ecs}
 
 netParams.rxdParams['rates'] = rates
 

@@ -8,20 +8,20 @@ import numpy as np
 
 # Run parameters
 cfg = specs.SimConfig()       # object of class cfg to store simulation configuration
-cfg.duration = 2e3        # Duration of the simulation, in ms
+cfg.duration = 1e3        # Duration of the simulation, in ms
 cfg.hParams['v_init'] = -70.0   # set v_init to -65 mV
 cfg.hParams['celsius'] = 37.0
 cfg.dt = 0.1 #0.025              # Internal integration timestep to use
 cfg.verbose = False            # Show detailed messages 
 cfg.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
-cfg.filename = 'Data/o2source100x_network_noelk_1kxglia_perfused/'   # Set file output name
+cfg.filename = 'Data/tut5_rxd_noO2source_1stim_1percentprob_noVolFracCorrect/'   # Set file output name
 cfg.Kceil = 15.0
 
  # Network dimensions
-cfg.sizeX = 250.0 #250.0 #1000
-cfg.sizeY = 900.0 #250.0 #1000
-cfg.sizeZ = 250.0 #200.0
-cfg.density = 90000.0
+cfg.sizeX = 100.0 #250.0 #1000
+cfg.sizeY = 1000.0 #250.0 #1000
+cfg.sizeZ = 100.0 #200.0
+cfg.density = False #90000.0
 cfg.Vtissue = cfg.sizeX * cfg.sizeY * cfg.sizeZ
 
 ## densities and E/I proporions based loosely on M1 paper 
@@ -58,8 +58,8 @@ elif cfg.ox == 'hypoxic':
     cfg.tort_ecs = 1.8
 
 cfg.O2consume = True
-cfg.O2source = True
-cfg.gliaFactor = 1000.0 #1500.0
+cfg.O2source = False
+cfg.gliaFactor = 1 #1000.0 #1500.0
 # cfg.prep = 'invitro' #'invivo'
 
 # neuron params 
@@ -83,7 +83,7 @@ cfg.cyt_fraction = cfg.rs**3 / cfg.somaR**3
 cfg.k0 = 3.5
 cfg.r0 = 100.0
 
-cfg.nRec = 240
+cfg.nRec = 20 #240
 
 # Recording/plotting parameters
 # cfg.recordCells = [('E', [0,50,100,150,200,250,300,350,400,450])]

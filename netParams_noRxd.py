@@ -36,13 +36,18 @@ secs['soma']['mechs']['hh'] = {'gnabar': 0.12, 'gkbar': 0.036, 'gl': 0.0003, 'el
 netParams.cellParams['I'] = {'secs': secs}                                              # add dict to list of cell params
 
 ## Population parameters
-netParams.popParams['E2'] = {'cellType': 'E', 'numCells': cfg.N_L23_E, 'yRange': [2 * cfg.somaR, cfg.sizeY / 3]}
-netParams.popParams['I2'] = {'cellType': 'I', 'numCells': cfg.N_L23_I, 'yRange': [2 * cfg.somaR, cfg.sizeY / 3]}
-netParams.popParams['E4'] = {'cellType': 'E', 'numCells': cfg.N_L4_E, 'yRange': [cfg.sizeY / 3, cfg.sizeY * (2/3)]}
-netParams.popParams['I4'] = {'cellType': 'I', 'numCells': cfg.N_L4_I, 'yRange': [cfg.sizeY / 3, cfg.sizeY * (2/3)]}
-netParams.popParams['E5'] = {'cellType': 'E', 'numCells': cfg.N_L5_E, 'yRange': [cfg.sizeY * (2/3), cfg.sizeY - 2*cfg.somaR]}
-netParams.popParams['I5'] = {'cellType': 'I', 'numCells': cfg.N_L5_I, 'yRange': [cfg.sizeY * (2/3), cfg.sizeY - 2*cfg.somaR]}
-
+# netParams.popParams['E2'] = {'cellType': 'E', 'numCells': cfg.N_L23_E, 'yRange': [2 * cfg.somaR, cfg.sizeY / 3]}
+# netParams.popParams['I2'] = {'cellType': 'I', 'numCells': cfg.N_L23_I, 'yRange': [2 * cfg.somaR, cfg.sizeY / 3]}
+# netParams.popParams['E4'] = {'cellType': 'E', 'numCells': cfg.N_L4_E, 'yRange': [cfg.sizeY / 3, cfg.sizeY * (2/3)]}
+# netParams.popParams['I4'] = {'cellType': 'I', 'numCells': cfg.N_L4_I, 'yRange': [cfg.sizeY / 3, cfg.sizeY * (2/3)]}
+# netParams.popParams['E5'] = {'cellType': 'E', 'numCells': cfg.N_L5_E, 'yRange': [cfg.sizeY * (2/3), cfg.sizeY - 2*cfg.somaR]}
+# netParams.popParams['I5'] = {'cellType': 'I', 'numCells': cfg.N_L5_I, 'yRange': [cfg.sizeY * (2/3), cfg.sizeY - 2*cfg.somaR]}
+netParams.popParams['E2'] = {'cellType': 'E', 'numCells': 50, 'yRange': [100,300]}
+netParams.popParams['I2'] = {'cellType': 'I', 'numCells': 50, 'yRange': [100,300]}
+netParams.popParams['E4'] = {'cellType': 'E', 'numCells': 50, 'yRange': [300,600]}
+netParams.popParams['I4'] = {'cellType': 'I', 'numCells': 50, 'yRange': [300,600]}
+netParams.popParams['E5'] = {'cellType': 'E', 'numCells': 50, 'ynormRange': [0.6,1.0]}
+netParams.popParams['I5'] = {'cellType': 'I', 'numCells': 50, 'ynormRange': [0.6,1.0]}
 #------------------------------------------------------------------------------
 ## Connectivity rules
 

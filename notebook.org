@@ -4363,7 +4363,7 @@ not sure if all the relevant data's in the first one or not
 ** TODO - look at connectivity from human ctx data 
 ** TODO - figure out issues with stampede2 
 
-* [2022-3-21 Mon] 
+* [2022-3-21 Mon] - meeting and rxd version of netpyne model
 ** meeting w/ forrest
 *** [[https://github.com/AllenInstitute/pcg_skel][Save time by generating robust neuronal skeletons directly from a ChunkedGraph dynamic segmentations!]]  
 *** [[https://github.com/sdorkenw/MeshParty][A package to work with meshes, designed around use cases for analyzing neuronal morphology]]
@@ -4372,3 +4372,99 @@ not sure if all the relevant data's in the first one or not
 ** rxd version of a non-rxd model
 *** right now having trouble getting matching dynamics, probably should be more systematic 
 *** might want to use simpler model than currently using 
+*** trying default hh parameters, since perviously not spiking
+*** 1 stim in 10% of cells activates most (if not all) of network, but at least no sd in 
+
+* [2022-3-22 Tue] - meshes and skeletons
+** pcg_skel 
+*** installation error: numpy 1.22.1 is installed but numpy<1.22,>=1.18 is required by {'numba'}
+**** maybe should create separate python env 
+*** operates on chunked graph, so don't think necessary for mesh->skeleton 
+** meshparty 
+*** can download example cell id, need to know how to get other cell ids  
+*** skeletonize fails because pyembree not installed
+**** can't get conda installation working 
+***** [[https://github.com/scopatz/pyembree/issues/23][conda installation issue]]
+mikedh commented on Jun 22, 2020
+For whatever it's worth we install pyembree/embree 2.17.7 on the trimesh docker images (vanilla Python + Debian buster) using this bash script:
+wget https://github.com/mikedh/trimesh/blob/master/docker/builds/embree.bash
+sudo bash embree.bash
+***** bash file seemed to work but got following when running *meshparty.skeletonize.skeletonize_mesh*
+WARNING:root:calculating rays without pyembree, conda install pyembree for large speedup
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "/home/craig/SDinSlice/sdenv/lib/python3.8/site-packages/meshparty/skeletonize.py", line 221, in skeletonize_mesh
+    rs = ray_trace_distance(orig_skel_index[vert_filter], mesh)
+  File "/home/craig/SDinSlice/sdenv/lib/python3.8/site-packages/meshparty/ray_tracing.py", line 42, in ray_trace_distance
+    ray_inter = ray_pyembree.RayMeshIntersector(mesh)
+  File "/home/craig/SDinSlice/sdenv/lib/python3.8/site-packages/trimesh/exceptions.py", line 28, in __getattribute__
+    raise super(ExceptionModule, self).__getattribute__('exc')
+  File "/home/craig/SDinSlice/sdenv/lib/python3.8/site-packages/trimesh/ray/__init__.py", line 5, in <module>
+    from . import ray_pyembree
+  File "/home/craig/SDinSlice/sdenv/lib/python3.8/site-packages/trimesh/ray/ray_pyembree.py", line 10, in <module>
+    from pyembree import rtcore_scene
+ImportError: libembree.so.2: cannot open shared object file: No such file or directory
+**** [[https://github.com/embree/embree][embree ray tracing software]]
+
+* [2022-8-23 Tue] - returning to SD work 
+** questions for lab meeting
+*** how much do we want to take from EM data?
+**** cell types, positions, blood vessels
+*** generic connectivity, point(ish) neurons 
+
+* [2022-8-24 Wed] - returning to em datasets
+** trying to download mesh of blood vessels from microns 
+
+* [2022-8-25 Thu] - analyzing bloodvessel mesh 
+** Downloading mesh
+*** to install pyembree on neurosim, needed to use python=3.8.10
+*** process killed trying to dowload on pt and ru 
+
+* [2022-11-23 Wed] - getting back into it 
+** robert's students are looking at capillary density and connectivity 
+** want to look at how much o2 needed to maintain homeostasis 
+*** perfused_nok0
+**** fairly sable, but o2 does drop in center to 0.05 
+*** o2everywhere_nok0 
+**** similar, o2 drops, but not as much 
+*** o2everywhere_4hzbkgStim 
+**** SD starts 1-2s in, didn't run long enough to spread 
+*** o2everywhereNoVolScale_4hzbkgStim
+**** negligible difference to previous sim 
+*** o2everywhereNoVolScale_4hzbkgStim
+**** SD starts ~2s, spreads through tissue 
+
+* [2022-12-8 Thu] - more on homeostasis 
+** more sims 
+*** constantO2at23mmHg_staggered4hzBkgTo5pops
+**** looks pretty stable for vmembs, but does have [K+] > 15 mM 
+**** can't get raster, not surte why
+***** error:
+>>> rasterPlot('constantO2at23mmHg_staggered4hzBkgTo5pops', figname='constantO2at23mmHg_staggered4hzBkgTo5pops/raster.png')
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "/home/craig/SDinVivo/uniformDensity/analysis.py", line 41, in rasterPlot
+    c = cols[np.argwhere(pops==raster[key]['pop'])[0][0]]
+IndexError: index 0 is out of bounds for axis 0 with size 0
+***** has to do with pops, currently hard coded, need to fix 
+
+* [2022-12-9 Fri] - sims and raster 
+** fixed raster plot, now includes data from "recs" and mem_files 
+** sims 
+*** constantO2at23mmHg_staggered4hzBkgTo5pops_5s 
+**** SD around 2s
+
+* [2022-12-13 Tue] - run something w/ connectivity 
+** potjans & diesman
+
+* [2022-12-15 Thu] - potjans & diesman
+** netpyne potjans & diesman model - https://github.com/suny-downstate-medical-center/PDCM_NetPyNE.git 
+*** cortical microcircuit model 
+*** trying to run on neurosim 
+**** plenty of issues running on neurosim, ran but crashed my machine 
+**** probably unrelated, git only cloning empty repos
+
+
+
+* TODOS
+** DONE: fix raster plot 

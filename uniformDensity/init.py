@@ -7,7 +7,7 @@ import sys
 import pickle
 from neuron import h 
 import random 
-from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt 
 
 # Instantiate network 
 sim.initialize(netParams, cfg)  # create network object and set cfg and net params
@@ -163,18 +163,12 @@ run(cfg.duration)
 
 ## basic plotting
 if pcid == 0:
-    from analysis import *
-    # traceExamples(cfg.filename, cfg.filename + 'traces.png', iss=[0,1,2])
-    traceExamples(cfg.filename, cfg.filename + 'traces.png', iss=None)
+    from analysis import traceExamples, compareKwaves, rasterPlot
+    traceExamples(cfg.filename, cfg.filename + 'traces.png', iss=[0,4,8,12,13])
     plt.close()
-    compareKwaves([cfg.filename], [cfg.ox], cfg.ox, colors=['r'], figname=cfg.filename+'kwave.png')
+    compareKwaves([cfg.filename], [cfg.ox], 'Condition', colors=['r'], figname=cfg.filename+'kwave.png')
     plt.close()
-    vmins = [3.5, 100.0, 30.0, 0.0]
-    vmaxes = [40.0, 130.0, 140.0, cfg.o2_bath]
-    allSpeciesMov(cfg.filename, cfg.filename+'speciesFigs/', vmins, vmaxes, cfg.filename + 'all_species.mp4', condition=cfg.ox, dur=cfg.duration/1000)
-    plt.close()
-    rasterPlot(cfg.filename, figname=cfg.filename+'raster.png')
-    plt.close()
+    rasterPlot(cfg.filename, center=[cfg.sizeX/2, -cfg.sizeY/2, cfg.sizeZ], figname=cfg.filename+'raster.png')
 
 pc.barrier()
 h.quit()
