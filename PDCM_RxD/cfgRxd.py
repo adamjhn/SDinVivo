@@ -18,7 +18,7 @@ cfg.filename = 'PD_rxd_conversion_w05_v0/'   # Set file output name
 cfg.printPopAvgRates = True
 cfg.printRunTime = 1
 cfg.Kceil = 15.0
-cfg.nRec = 12
+cfg.nRec = 40
 cfg.recordCellsSpikes = ['L2e', 'L2i', 'L4e', 'L4i', 'L5e', 'L5i','L6e', 'L6i'] # record only spikes of cells (not ext stims)
 
  # Network dimensions
