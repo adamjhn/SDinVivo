@@ -12,37 +12,37 @@ import math
 
 # Reescaling function (move to separate module?)
 def Reescale(ScaleFactor, C, N_Full, w_p, f_ext, tau_syn, Inp, InpDC):
-	if ScaleFactor<1.0: 
+    if ScaleFactor<1.0: 
 
-		# This is a good approximation of the F_out param for the Balanced option "True".
-		# Note for the Balanced=False option, it should be possible to calculate a better approximation.
-		F_out=np.array([0.860, 2.600, 4.306, 5.396, 8.142, 8.188, 0.941, 7.3]) 
-		
-		Ncon=np.vstack(np.column_stack(0 for i in range(0,8)) for i in range(0,8))
-		for r in range(0,8): 
-			for c in range(0,8): 
-				Ncon[r][c]=(np.log(1.-C[r][c])/np.log(1. -1./(N_Full[r]*N_Full[c])) ) /N_Full[r]
+        # This is a good approximation of the F_out param for the Balanced option "True".
+        # Note for the Balanced=False option, it should be possible to calculate a better approximation.
+        F_out=np.array([0.860, 2.600, 4.306, 5.396, 8.142, 8.188, 0.941, 7.3]) 
+        
+        Ncon=np.vstack(np.column_stack(0 for i in range(0,8)) for i in range(0,8))
+        for r in range(0,8): 
+            for c in range(0,8): 
+                Ncon[r][c]=(np.log(1.-C[r][c])/np.log(1. -1./(N_Full[r]*N_Full[c])) ) /N_Full[r]
 
-		w=w_p*np.column_stack(np.vstack( [1.0, -4.0] for i in range(0,8)) for i in range(0,4))
-		w[0][2]=2.0*w[0][2]
+        w=w_p*np.column_stack(np.vstack( [1.0, -4.0] for i in range(0,8)) for i in range(0,4))
+        w[0][2]=2.0*w[0][2]
 
-		x1_all = w * Ncon * F_out
-		x1_sum = np.sum(x1_all, axis=1)
-		x1_ext = w_p * Inp * f_ext
-		I_ext=np.column_stack(0 for i in range(0,8))
-		I_ext = 0.001 * tau_syn * (
-		        (1. - np.sqrt(ScaleFactor)) * x1_sum + 
-		        (1. - np.sqrt(ScaleFactor)) * x1_ext)
-				        
-		InpDC=np.sqrt(ScaleFactor)*InpDC*w_p*f_ext*tau_syn*0.001 #pA
-		w_p=w_p/np.sqrt(ScaleFactor) #pA
-		InpDC=InpDC+I_ext
-		N_=[int(ScaleFactor*N) for N in N_Full]
-	else:
-		InpDC=InpDC*w_p*f_ext*tau_syn*0.001
-		N_=N_Full	
-	
-	return InpDC, N_, w_p
+        x1_all = w * Ncon * F_out
+        x1_sum = np.sum(x1_all, axis=1)
+        x1_ext = w_p * Inp * f_ext
+        I_ext=np.column_stack(0 for i in range(0,8))
+        I_ext = 0.001 * tau_syn * (
+                (1. - np.sqrt(ScaleFactor)) * x1_sum + 
+                (1. - np.sqrt(ScaleFactor)) * x1_ext)
+                        
+        InpDC=np.sqrt(ScaleFactor)*InpDC*w_p*f_ext*tau_syn*0.001 #pA
+        w_p=w_p/np.sqrt(ScaleFactor) #pA
+        InpDC=InpDC+I_ext
+        N_=[int(ScaleFactor*N) for N in N_Full]
+    else:
+        InpDC=InpDC*w_p*f_ext*tau_syn*0.001
+        N_=N_Full	
+    
+    return InpDC, N_, w_p
 
 ###########################################################
 #  Network Constants
@@ -90,21 +90,21 @@ N_Full=np.array([20683, 5834, 21915, 5479, 4850, 1065, 14395, 2948, 902])
 # Number of Input per Layer
 Inp=np.array([1600, 1500, 2100, 1900, 2000, 1900, 2900, 2100])
 if cfg.Balanced == False:
-	InpUnb=np.array([2000, 1850, 2000, 1850, 2000, 1850, 2000, 1850])
+    InpUnb=np.array([2000, 1850, 2000, 1850, 2000, 1850, 2000, 1850])
 
 ###########################################################
 # Reescaling calculation
 ###########################################################
 if cfg.DC == True:
-	InpDC=Inp
-	if cfg.Balanced== False:
-		InpDC=InpUnb
+    InpDC=Inp
+    if cfg.Balanced== False:
+        InpDC=InpUnb
 else: 
-	InpDC=np.zeros(8)
-	InpPoiss=Inp*cfg.ScaleFactor
-	if cfg.Balanced== False:
-		InpPoiss=InpUnb*cfg.ScaleFactor
-	
+    InpDC=np.zeros(8)
+    InpPoiss=Inp*cfg.ScaleFactor
+    if cfg.Balanced== False:
+        InpPoiss=InpUnb*cfg.ScaleFactor
+    
 InpDC, N_, w_p = Reescale(cfg.ScaleFactor, C, N_Full, w_p, f_ext, tau_syn, Inp, InpDC)
 
 ############################################################
@@ -128,7 +128,7 @@ popDepths = [[0.08, 0.27], [0.08, 0.27], [0.27, 0.58], [0.27, 0.58], [0.58, 0.73
 #------------------------------------------------------------------------------
 # create populations
 for i in range(0,8):
-	netParams.popParams[L[i]] = {'cellType': str(L[i]), 'numCells': int(N_[i]), 'cellModel': L[i][-1], 'ynormRange': popDepths[i] }
+    netParams.popParams[L[i]] = {'cellType': str(L[i]), 'numCells': int(N_[i]), 'cellModel': L[i][-1], 'ynormRange': popDepths[i] }
 
 # To atualization of Point Neurons
 netParams.popParams['bkg_IF'] = {'numCells': 1, 'cellModel': 'NetStim','rate': 40000,  'start':0.0, 'noise': 0.0, 'delay':0}
@@ -136,81 +136,90 @@ netParams.popParams['bkg_IF'] = {'numCells': 1, 'cellModel': 'NetStim','rate': 4
 # cell property rules
 cellRule = netParams.importCellParams(label='cellRule', fileName='Neuron.py', 
                 conds={'cellType' : L, 'cellModel' : ['e', 'i']}, cellName='ENeuron')
-netParams.cellParams['cellRule'] = cellRule     
+netParams.cellParams['cellRule'] = cellRule    
+
+netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0}  # AMPA synaptic mechanism
+netParams.synMechParams['inh'] = {'mod':'Exp2Syn', 'tau1': 0.07, 'tau2': 18.2, 'e': -80} # GABAA
 
 if cfg.DC == False: # External Input as Poisson
-	for r in range(0,8):
-		netParams.popParams['poiss'+str(L[r])] = {
-						'numCells': N_[r], 
-						'cellModel': 'NetStim',
-						'rate': InpPoiss[r]*f_ext,   
-						'start': 0.0, 
-						'noise': 1.0, 
-						'delay': 0}
-		
-		auxConn=np.array([range(0,N_[r],1),range(0,N_[r],1)])
-		netParams.connParams['poiss->'+str(L[r])] = {
-			'preConds': {'pop': 'poiss'+str(L[r])},  
-			'postConds': {'pop': L[r]},
-			'connList': auxConn.T,   
-			'weight': 'max(0, weightMin+normal(0,dweight*weightMin))',  
-			'delay': 0.5} # 1 delay
+    for r in range(0,8):
+        netParams.popParams['poiss'+str(L[r])] = {
+                        'numCells': N_[r], 
+                        'cellModel': 'NetStim',
+                        'rate': InpPoiss[r]*f_ext,   
+                        'start': 0.0, 
+                        'noise': 1.0, 
+                        'delay': 0}
+        
+        auxConn=np.array([range(0,N_[r],1),range(0,N_[r],1)])
+        netParams.connParams['poiss->'+str(L[r])] = {
+            'preConds': {'pop': 'poiss'+str(L[r])},  
+            'postConds': {'pop': L[r]},
+            'connList': auxConn.T,   
+            'weight': 'max(0, weightMin+normal(0,dweight*weightMin))',  
+            'delay': 0.5,
+            'synMech' : 'exc'} # 1 delay
 
 # Thalamus Input: increased of 15Hz that lasts 10 ms
 # 0.15 fires in 10 ms each 902 cells -> number of spikes = T*f*N_ = 0.15*902 -> 1 spike each N_*0.15
 if cfg.TH == True:
-	fth=15 #Hz
-	Tth=10 #ms
-	InTH=[0, 0, 93, 84, 0, 0, 47, 34]
-	for r in [2,3,6,7]:
-		nTH=int(np.sqrt(cfg.ScaleFactor)*InTH[r]*fth*Tth/1000)
-		netParams.popParams['bkg_TH'+str(L[r])] = {'numCells': N_[r], 'cellModel': 'NetStim','rate': 2*(1000*nTH)/Tth ,  'start': 200.0, 'noise': 1.0, 'number': nTH, 'delay':0}
-		auxConn=np.array([range(0,N_[r],1),range(0,N_[r],1)])
-		netParams.connParams['bkg_TH->'+str(L[r])] = {
-			'preConds': {'pop': 'bkg_TH'+str(L[r])},  
-			'postConds': {'pop': L[r]},
-			'connList': auxConn.T,   
-			'weight':'max(0, weightMin +normal(0,dweight*weightMin))',  
-			'delay': 0.5} # 1 delay
+    fth=15 #Hz
+    Tth=10 #ms
+    InTH=[0, 0, 93, 84, 0, 0, 47, 34]
+    for r in [2,3,6,7]:
+        nTH=int(np.sqrt(cfg.ScaleFactor)*InTH[r]*fth*Tth/1000)
+        netParams.popParams['bkg_TH'+str(L[r])] = {'numCells': N_[r], 'cellModel': 'NetStim','rate': 2*(1000*nTH)/Tth ,  'start': 200.0, 'noise': 1.0, 'number': nTH, 'delay':0}
+        auxConn=np.array([range(0,N_[r],1),range(0,N_[r],1)])
+        netParams.connParams['bkg_TH->'+str(L[r])] = {
+            'preConds': {'pop': 'bkg_TH'+str(L[r])},  
+            'postConds': {'pop': L[r]},
+            'connList': auxConn.T,   
+            'weight':'max(0, weightMin +normal(0,dweight*weightMin))',  
+            'delay': 0.5,
+            'synMech' : 'exc'} # 1 delay
 
 ############################################################
 # Connectivity parameters
 ############################################################
 
 for r in range(0,8):
-	for c in range(0,8):
-		if (c % 2) == 0:
-			if c == 2 and r == 0:
-				netParams.connParams[str(L[c])+'->'+str(L[r])] = { 
-        			'preConds': {'pop': L[c]},                         # conditions of presyn cells
-        			'postConds': {'pop': L[r]},                        # conditions of postsyn cells
-					'divergence': cfg.ScaleFactor*(np.log(1.-C[r][c])/np.log(1. -1./(N_Full[r]*N_Full[c])) ) /N_Full[c],
-        			'weight':'2*max(0, weightMin +normal(0,dweight*weightMin))', # synaptic weight
-        			'delay':'max(0.1, delayMin_e +normal(0,ddelay*delayMin_e))',  # transmission delay (ms)
-        			}
-			else:
-				netParams.connParams[str(L[c])+'->'+str(L[r])] = { 
-        			'preConds': {'pop': L[c]},                         # conditions of presyn cells
-        			'postConds': {'pop': L[r]},                        # conditions of postsyn cells
-        			'divergence': cfg.ScaleFactor*(np.log(1.-C[r][c])/np.log(1. -1./(N_Full[r]*N_Full[c])) ) /N_Full[c],
-        			'weight':'max(0, weightMin +normal(0,dweight*weightMin))', # synaptic weight
-        			'delay':'max(0.1, delayMin_e +normal(0,ddelay*delayMin_e))',  # transmission delay (ms)
-        			}                                                # synaptic mechanism
-		else:
-			netParams.connParams[str(L[c])+'->'+str(L[r])] = { 
-        		'preConds': {'pop': L[c]},                         # conditions of presyn cells
-        		'postConds': {'pop': L[r]},                        # conditions of postsyn cells
-        		'divergence': cfg.ScaleFactor*(np.log(1.-C[r][c])/np.log(1. -1./(N_Full[r]*N_Full[c])) ) /N_Full[c],
-        		'weight':'-4*max(0, weightMin +normal(0,dweight*weightMin))', # synaptic weight
-        		'delay':'max(0.1, delayMin_i +normal(0,ddelay*delayMin_i))',  # transmission delay (ms)
-        		}                                                  # synaptic mechanism
+    for c in range(0,8):
+        if L[c][-1] == 'e':
+            syn = 'exc'
+        else:
+            syn = 'inh'
+        if (c % 2) == 0:
+            if c == 2 and r == 0:
+                netParams.connParams[str(L[c])+'->'+str(L[r])] = { 
+                    'preConds': {'pop': L[c]},                         # conditions of presyn cells
+                    'postConds': {'pop': L[r]},                        # conditions of postsyn cells
+                    'divergence': cfg.ScaleFactor*(np.log(1.-C[r][c])/np.log(1. -1./(N_Full[r]*N_Full[c])) ) /N_Full[c],
+                    'weight':'2*max(0, weightMin +normal(0,dweight*weightMin))', # synaptic weight
+                    'delay':'max(0.1, delayMin_e +normal(0,ddelay*delayMin_e))',  # transmission delay (ms)
+                    'synMech' : syn}
+            else:
+                netParams.connParams[str(L[c])+'->'+str(L[r])] = { 
+                    'preConds': {'pop': L[c]},                         # conditions of presyn cells
+                    'postConds': {'pop': L[r]},                        # conditions of postsyn cells
+                    'divergence': cfg.ScaleFactor*(np.log(1.-C[r][c])/np.log(1. -1./(N_Full[r]*N_Full[c])) ) /N_Full[c],
+                    'weight':'max(0, weightMin +normal(0,dweight*weightMin))', # synaptic weight
+                    'delay':'max(0.1, delayMin_e +normal(0,ddelay*delayMin_e))',  # transmission delay (ms)
+                    'synMech' : syn}                                                # synaptic mechanism
+        else:
+            netParams.connParams[str(L[c])+'->'+str(L[r])] = { 
+                'preConds': {'pop': L[c]},                         # conditions of presyn cells
+                'postConds': {'pop': L[r]},                        # conditions of postsyn cells
+                'divergence': cfg.ScaleFactor*(np.log(1.-C[r][c])/np.log(1. -1./(N_Full[r]*N_Full[c])) ) /N_Full[c],
+                'weight':'-4*max(0, weightMin +normal(0,dweight*weightMin))', # synaptic weight
+                'delay':'max(0.1, delayMin_i +normal(0,ddelay*delayMin_i))',  # transmission delay (ms)
+                'synMech' : syn}                                                  # synaptic mechanism
         
-netParams.connParams['S2->M'] = {
-	'preConds': {'pop': 'bkg_IF'}, 
-	'postConds': {'cellModel': 'IntFire_PD'},
-	'probability': 1, 
-	'weight': 0,	
-	'delay': 0.5} 
+# netParams.connParams['S2->M'] = {
+# 	'preConds': {'pop': 'bkg_IF'}, 
+# 	'postConds': {'cellModel': 'IntFire_PD'},
+# 	'probability': 1, 
+# 	'weight': 0,	
+# 	'delay': 0.5} 
 
 ############################################################
 # RxD params
