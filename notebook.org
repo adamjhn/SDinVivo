@@ -4472,7 +4472,9 @@ IndexError: index 0 is out of bounds for axis 0 with size 0
 *** works for default rescaling factor, need to fix if want to use 
 different sized networks 
 ** runs without TC or backgroun stim populations 
-*** need to exclude those from rxd 
+*** need to exclude those from rxd
+** no indication of stim when add in bkg stim
+
 
 
 
