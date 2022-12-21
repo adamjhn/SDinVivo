@@ -134,7 +134,7 @@ for i in range(0,8):
         'zRange' : [0.0, cfg.sizeZ]}
 
 # To atualization of Point Neurons
-# netParams.popParams['bkg_IF'] = {'numCells': 1, 'cellModel': 'NetStim','rate': 40000,  'start':0.0, 'noise': 0.0, 'delay':0}
+netParams.popParams['bkg_IF'] = {'numCells': 1, 'cellModel': 'NetStim','rate': 40000,  'start':0.0, 'noise': 0.0, 'delay':0}
 
 # cell property rules
 cellRule = netParams.importCellParams(label='cellRule', fileName='Neuron.py', 
@@ -144,42 +144,42 @@ netParams.cellParams['cellRule'] = cellRule
 netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0}  # AMPA synaptic mechanism
 netParams.synMechParams['inh'] = {'mod':'Exp2Syn', 'tau1': 0.07, 'tau2': 18.2, 'e': -80} # GABAA
 
-# if cfg.DC == False: # External Input as Poisson
-#     for r in range(0,8):
-#         netParams.popParams['poiss'+str(L[r])] = {
-#                         'numCells': N_[r], 
-#                         'cellModel': 'NetStim',
-#                         'rate': InpPoiss[r]*f_ext,   
-#                         'start': 0.0, 
-#                         'noise': 1.0, 
-#                         'delay': 0}
+if cfg.DC == False: # External Input as Poisson
+    for r in range(0,8):
+        netParams.popParams['poiss'+str(L[r])] = {
+                        'numCells': N_[r], 
+                        'cellModel': 'NetStim',
+                        'rate': InpPoiss[r]*f_ext,   
+                        'start': 0.0, 
+                        'noise': 1.0, 
+                        'delay': 0}
         
-#         auxConn=np.array([range(0,N_[r],1),range(0,N_[r],1)])
-#         netParams.connParams['poiss->'+str(L[r])] = {
-#             'preConds': {'pop': 'poiss'+str(L[r])},  
-#             'postConds': {'pop': L[r]},
-#             'connList': auxConn.T,   
-#             'weight': 'max(0, weightMin+normal(0,dweight*weightMin))',  
-#             'delay': 0.5,
-#             'synMech' : 'exc'} # 1 delay
+        auxConn=np.array([range(0,N_[r],1),range(0,N_[r],1)])
+        netParams.connParams['poiss->'+str(L[r])] = {
+            'preConds': {'pop': 'poiss'+str(L[r])},  
+            'postConds': {'pop': L[r]},
+            'connList': auxConn.T,   
+            'weight': 'max(0, weightMin+normal(0,dweight*weightMin))',  
+            'delay': 0.5,
+            'synMech' : 'exc'} # 1 delay
 
-# # Thalamus Input: increased of 15Hz that lasts 10 ms
-# # 0.15 fires in 10 ms each 902 cells -> number of spikes = T*f*N_ = 0.15*902 -> 1 spike each N_*0.15
-# if cfg.TH == True:
-#     fth=15 #Hz
-#     Tth=10 #ms
-#     InTH=[0, 0, 93, 84, 0, 0, 47, 34]
-#     for r in [2,3,6,7]:
-#         nTH=int(np.sqrt(cfg.ScaleFactor)*InTH[r]*fth*Tth/1000)
-#         netParams.popParams['bkg_TH'+str(L[r])] = {'numCells': N_[r], 'cellModel': 'NetStim','rate': 2*(1000*nTH)/Tth ,  'start': 200.0, 'noise': 1.0, 'number': nTH, 'delay':0}
-#         auxConn=np.array([range(0,N_[r],1),range(0,N_[r],1)])
-#         netParams.connParams['bkg_TH->'+str(L[r])] = {
-#             'preConds': {'pop': 'bkg_TH'+str(L[r])},  
-#             'postConds': {'pop': L[r]},
-#             'connList': auxConn.T,   
-#             'weight':'max(0, weightMin +normal(0,dweight*weightMin))',  
-#             'delay': 0.5,
-#             'synMech' : 'exc'} # 1 delay
+# Thalamus Input: increased of 15Hz that lasts 10 ms
+# 0.15 fires in 10 ms each 902 cells -> number of spikes = T*f*N_ = 0.15*902 -> 1 spike each N_*0.15
+if cfg.TH == True:
+    fth=15 #Hz
+    Tth=10 #ms
+    InTH=[0, 0, 93, 84, 0, 0, 47, 34]
+    for r in [2,3,6,7]:
+        nTH=int(np.sqrt(cfg.ScaleFactor)*InTH[r]*fth*Tth/1000)
+        netParams.popParams['bkg_TH'+str(L[r])] = {'numCells': N_[r], 'cellModel': 'NetStim','rate': 2*(1000*nTH)/Tth ,  'start': 200.0, 'noise': 1.0, 'number': nTH, 'delay':0}
+        auxConn=np.array([range(0,N_[r],1),range(0,N_[r],1)])
+        netParams.connParams['bkg_TH->'+str(L[r])] = {
+            'preConds': {'pop': 'bkg_TH'+str(L[r])},  
+            'postConds': {'pop': L[r]},
+            'connList': auxConn.T,   
+            'weight':'max(0, weightMin +normal(0,dweight*weightMin))',  
+            'delay': 0.5,
+            'synMech' : 'exc'} # 1 delay
 
 ############################################################
 # Connectivity parameters
@@ -314,11 +314,17 @@ regions['ecs_o2'] = {'extracellular' : True, 'xlo' : x[0],
                                             'volume_fraction' : 1.0,
                                             'tortuosity' : 1.0}
                                           
-regions['cyt'] = {'cells': 'all', 'secs': 'all', 'nrn_region': 'i', 
+#xregions['cyt'] = {'cells': 'all', 'secs': 'all', 'nrn_region': 'i', 
+#                 'geometry': {'class': 'FractionalVolume', 
+#                 'args': {'volume_fraction': cfg.cyt_fraction, 'surface_fraction': 1}}}
+
+#xregions['mem'] = {'cells' : 'all', 'secs' : 'all', 'nrn_region' : None, 'geometry' : 'membrane'}
+
+regions['cyt'] = {'cells': L, 'secs': 'all', 'nrn_region': 'i', 
                 'geometry': {'class': 'FractionalVolume', 
                 'args': {'volume_fraction': cfg.cyt_fraction, 'surface_fraction': 1}}}
 
-regions['mem'] = {'cells' : 'all', 'secs' : 'all', 'nrn_region' : None, 'geometry' : 'membrane'}
+regions['mem'] = {'cells' : L, 'secs' : 'all', 'nrn_region' : None, 'geometry' : 'membrane'}
 
 netParams.rxdParams['regions'] = regions
 
