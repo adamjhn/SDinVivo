@@ -4469,7 +4469,11 @@ IndexError: index 0 is out of bounds for axis 0 with size 0
 *** error w/ raster plot 
 ** need to scale spatial dimensions along with network size 
 *** to keep y constant, x and z need to be 241.45
+*** works for default rescaling factor, need to fix if want to use 
+different sized networks 
+
 
 
 * TODOS
+** TODO: rescalability of rxd version of PD model 
 ** DONE: fix uniformdensity raster plot 
