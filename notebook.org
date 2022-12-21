@@ -4464,7 +4464,12 @@ IndexError: index 0 is out of bounds for axis 0 with size 0
 **** plenty of issues running on neurosim, ran but crashed my machine 
 **** probably unrelated, git only cloning empty repos
 
+* [2022-12-21 Wed] - converting potjans & diesman to rxd 
+** running original PD model 
+*** error w/ raster plot 
+** need to scale spatial dimensions along with network size 
+*** to keep y constant, x and z need to be 241.45
 
 
 * TODOS
-** DONE: fix raster plot 
+** DONE: fix uniformdensity raster plot 
