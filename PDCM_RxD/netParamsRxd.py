@@ -141,8 +141,8 @@ cellRule = netParams.importCellParams(label='cellRule', fileName='Neuron.py',
                 conds={'cellType' : L, 'cellModel' : ['e', 'i']}, cellName='ENeuron')
 netParams.cellParams['cellRule'] = cellRule    
 
-# netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0}  # AMPA synaptic mechanism
-netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.8, 'tau2': 5.3, 'e': 0}  # AMPA synaptic mechanism
+netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0}  # AMPA synaptic mechanism
+# netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.8, 'tau2': 5.3, 'e': 0}  # NMDA synaptic mechanism
 netParams.synMechParams['inh'] = {'mod':'Exp2Syn', 'tau1': 0.07, 'tau2': 18.2, 'e': -80} # GABAA
 
 # added bkg inputs 
