@@ -147,7 +147,8 @@ netParams.synMechParams['inh'] = {'mod':'Exp2Syn', 'tau1': 0.07, 'tau2': 18.2, '
 
 # added bkg inputs 
 netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 4, 'noise': 0.3, 'start' : 200}
-netParams.stimTargetParams['bkg->L4'] = {'source': 'bkg', 'conds': {'pop': ['L4e', 'L4i']}, 'weight': 0.5, 'delay': 1, 'synMech': 'exc'}
+netParams.stimTargetParams['bkg->L4e'] = {'source': 'bkg', 'conds': {'pop': ['L4e'], 'cellList' : [i for i in range(100)]}, 'weight': 0.1, 'delay': 1, 'synMech': 'exc'}
+netParams.stimTargetParams['bkg->L4i'] = {'source': 'bkg', 'conds': {'pop': ['L4i'], 'cellList' : [i for i in range(2069,2119)]}, 'weight': 0.1, 'delay': 1, 'synMech': 'exc'}
 
 # if cfg.DC == False: # External Input as Poisson
 #     for r in range(0,8):
@@ -197,37 +198,37 @@ if cfg.TH == True:
 # Connectivity parameters
 ############################################################
 
-for r in range(0,8):
-    for c in range(0,8):
-        if L[c][-1] == 'e':
-            syn = 'exc'
-        else:
-            syn = 'inh'
-        if (c % 2) == 0:
-            if c == 2 and r == 0:
-                netParams.connParams[str(L[c])+'->'+str(L[r])] = { 
-                    'preConds': {'pop': L[c]},                         # conditions of presyn cells
-                    'postConds': {'pop': L[r]},                        # conditions of postsyn cells
-                    'divergence': cfg.ScaleFactor*(np.log(1.-C[r][c])/np.log(1. -1./(N_Full[r]*N_Full[c])) ) /N_Full[c],
-                    'weight':'2*max(0, weightMin +normal(0,dweight*weightMin))', # synaptic weight
-                    'delay':'max(0.1, delayMin_e +normal(0,ddelay*delayMin_e))',  # transmission delay (ms)
-                    'synMech' : syn}
-            else:
-                netParams.connParams[str(L[c])+'->'+str(L[r])] = { 
-                    'preConds': {'pop': L[c]},                         # conditions of presyn cells
-                    'postConds': {'pop': L[r]},                        # conditions of postsyn cells
-                    'divergence': cfg.ScaleFactor*(np.log(1.-C[r][c])/np.log(1. -1./(N_Full[r]*N_Full[c])) ) /N_Full[c],
-                    'weight':'max(0, weightMin +normal(0,dweight*weightMin))', # synaptic weight
-                    'delay':'max(0.1, delayMin_e +normal(0,ddelay*delayMin_e))',  # transmission delay (ms)
-                    'synMech' : syn}                                                # synaptic mechanism
-        else:
-            netParams.connParams[str(L[c])+'->'+str(L[r])] = { 
-                'preConds': {'pop': L[c]},                         # conditions of presyn cells
-                'postConds': {'pop': L[r]},                        # conditions of postsyn cells
-                'divergence': cfg.ScaleFactor*(np.log(1.-C[r][c])/np.log(1. -1./(N_Full[r]*N_Full[c])) ) /N_Full[c],
-                'weight':'-4*max(0, weightMin +normal(0,dweight*weightMin))', # synaptic weight
-                'delay':'max(0.1, delayMin_i +normal(0,ddelay*delayMin_i))',  # transmission delay (ms)
-                'synMech' : syn}                                                  # synaptic mechanism
+# for r in range(0,8):
+#     for c in range(0,8):
+#         if L[c][-1] == 'e':
+#             syn = 'exc'
+#         else:
+#             syn = 'inh'
+#         if (c % 2) == 0:
+#             if c == 2 and r == 0:
+#                 netParams.connParams[str(L[c])+'->'+str(L[r])] = { 
+#                     'preConds': {'pop': L[c]},                         # conditions of presyn cells
+#                     'postConds': {'pop': L[r]},                        # conditions of postsyn cells
+#                     'divergence': cfg.ScaleFactor*(np.log(1.-C[r][c])/np.log(1. -1./(N_Full[r]*N_Full[c])) ) /N_Full[c],
+#                     'weight':'2*max(0, weightMin +normal(0,dweight*weightMin))', # synaptic weight
+#                     'delay':'max(0.1, delayMin_e +normal(0,ddelay*delayMin_e))',  # transmission delay (ms)
+#                     'synMech' : syn}
+#             else:
+#                 netParams.connParams[str(L[c])+'->'+str(L[r])] = { 
+#                     'preConds': {'pop': L[c]},                         # conditions of presyn cells
+#                     'postConds': {'pop': L[r]},                        # conditions of postsyn cells
+#                     'divergence': cfg.ScaleFactor*(np.log(1.-C[r][c])/np.log(1. -1./(N_Full[r]*N_Full[c])) ) /N_Full[c],
+#                     'weight':'max(0, weightMin +normal(0,dweight*weightMin))', # synaptic weight
+#                     'delay':'max(0.1, delayMin_e +normal(0,ddelay*delayMin_e))',  # transmission delay (ms)
+#                     'synMech' : syn}                                                # synaptic mechanism
+#         else:
+#             netParams.connParams[str(L[c])+'->'+str(L[r])] = { 
+#                 'preConds': {'pop': L[c]},                         # conditions of presyn cells
+#                 'postConds': {'pop': L[r]},                        # conditions of postsyn cells
+#                 'divergence': cfg.ScaleFactor*(np.log(1.-C[r][c])/np.log(1. -1./(N_Full[r]*N_Full[c])) ) /N_Full[c],
+#                 'weight':'-4*max(0, weightMin +normal(0,dweight*weightMin))', # synaptic weight
+#                 'delay':'max(0.1, delayMin_i +normal(0,ddelay*delayMin_i))',  # transmission delay (ms)
+#                 'synMech' : syn}                                                  # synaptic mechanism
         
 # netParams.connParams['S2->M'] = {
 # 	'preConds': {'pop': 'bkg_IF'}, 
