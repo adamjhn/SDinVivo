@@ -144,14 +144,14 @@ netParams.cellParams['cellRule'] = cellRule
 netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0}  # AMPA synaptic mechanism
 # netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.8, 'tau2': 5.3, 'e': 0}  # NMDA synaptic mechanism
 # netParams.synMechParams['inh'] = {'mod':'Exp2Syn', 'tau1': 0.07, 'tau2': 18.2, 'e': -80} # GABAA
-netParams.synMechParams['inh'] = {'mod':'Exp2Syn', 'tau1': 0.07, 'tau2': 5.3, 'e': -80} # GABAA
+netParams.synMechParams['inh'] = {'mod':'Exp2Syn', 'tau1': 0.07, 'tau2': 18.2, 'e': -80} # GABAA
 
 # added bkg inputs 
-netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 5, 'noise': 0.3, 'start' : 100}
-# netParams.stimTargetParams['bkg->L4e'] = {'source': 'bkg', 'conds': {'pop': ['L4e'], 'cellList' : [i for i in range(100)]}, 'weight': 0.05, 'delay': 1, 'synMech': 'exc'}
-# netParams.stimTargetParams['bkg->L4i'] = {'source': 'bkg', 'conds': {'pop': ['L4i'], 'cellList' : [i for i in range(50)]}, 'weight': 0.05, 'delay': 1, 'synMech': 'exc'}
-netParams.stimTargetParams['bkg->L4e'] = {'source': 'bkg', 'conds': {'pop': ['L4e']}, 'weight': 0.007, 'delay': 1, 'synMech': 'exc'}
-netParams.stimTargetParams['bkg->L4i'] = {'source': 'bkg', 'conds': {'pop': ['L4i']}, 'weight': 0.007, 'delay': 1, 'synMech': 'exc'}
+# netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 5, 'noise': 0.3, 'start' : 100}
+# # netParams.stimTargetParams['bkg->L4e'] = {'source': 'bkg', 'conds': {'pop': ['L4e'], 'cellList' : [i for i in range(100)]}, 'weight': 0.05, 'delay': 1, 'synMech': 'exc'}
+# # netParams.stimTargetParams['bkg->L4i'] = {'source': 'bkg', 'conds': {'pop': ['L4i'], 'cellList' : [i for i in range(50)]}, 'weight': 0.05, 'delay': 1, 'synMech': 'exc'}
+# netParams.stimTargetParams['bkg->L4e'] = {'source': 'bkg', 'conds': {'pop': ['L4e']}, 'weight': 0.007, 'delay': 1, 'synMech': 'exc'}
+# netParams.stimTargetParams['bkg->L4i'] = {'source': 'bkg', 'conds': {'pop': ['L4i']}, 'weight': 0.007, 'delay': 1, 'synMech': 'exc'}
 
 # if cfg.DC == False: # External Input as Poisson
 #     for r in range(0,8):
