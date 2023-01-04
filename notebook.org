@@ -4474,9 +4474,10 @@ different sized networks
 ** runs without TC or backgroun stim populations 
 *** need to exclude those from rxd
 ** no indication of stim when add in bkg stim
+*** first wasn't connected up, but even after fixing that, nothing 
 
-
-
+* [2023-1-4 Wed] - get cells spiking in PD w/ RxD 
+** trying to remove all nonctx cells, add bkg stims 
 
 * TODOS
 ** TODO: rescalability of rxd version of PD model 
