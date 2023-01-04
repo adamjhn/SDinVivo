@@ -147,7 +147,7 @@ netParams.synMechParams['inh'] = {'mod':'Exp2Syn', 'tau1': 0.07, 'tau2': 18.2, '
 
 # added bkg inputs 
 netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 4, 'noise': 0.3, 'start' : 200}
-netParams.stimTargetParams['bkg->all'] = {'source': 'bkg', 'conds': {'pop': L}, 'weight': 0.5, 'delay': 1, 'synMech': 'exc'}
+netParams.stimTargetParams['bkg->L4'] = {'source': 'bkg', 'conds': {'pop': ['L4e', 'L4i']}, 'weight': 0.5, 'delay': 1, 'synMech': 'exc'}
 
 # if cfg.DC == False: # External Input as Poisson
 #     for r in range(0,8):

@@ -4478,6 +4478,8 @@ different sized networks
 
 * [2023-1-4 Wed] - get cells spiking in PD w/ RxD 
 ** trying to remove all nonctx cells, add bkg stims 
+*** stimulating all cells w/ bkg results in integration error 
+
 
 * TODOS
 ** TODO: rescalability of rxd version of PD model 
