@@ -147,11 +147,11 @@ netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, '
 netParams.synMechParams['inh'] = {'mod':'Exp2Syn', 'tau1': 0.07, 'tau2': 18.2, 'e': -80} # GABAA
 
 # added bkg inputs 
-# netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 5, 'noise': 0.3, 'start' : 100}
-# # netParams.stimTargetParams['bkg->L4e'] = {'source': 'bkg', 'conds': {'pop': ['L4e'], 'cellList' : [i for i in range(100)]}, 'weight': 0.05, 'delay': 1, 'synMech': 'exc'}
-# # netParams.stimTargetParams['bkg->L4i'] = {'source': 'bkg', 'conds': {'pop': ['L4i'], 'cellList' : [i for i in range(50)]}, 'weight': 0.05, 'delay': 1, 'synMech': 'exc'}
-# netParams.stimTargetParams['bkg->L4e'] = {'source': 'bkg', 'conds': {'pop': ['L4e']}, 'weight': 0.007, 'delay': 1, 'synMech': 'exc'}
-# netParams.stimTargetParams['bkg->L4i'] = {'source': 'bkg', 'conds': {'pop': ['L4i']}, 'weight': 0.007, 'delay': 1, 'synMech': 'exc'}
+netParams.stimSourceParams['bkg'] = {'type': 'NetStim', 'rate': 5, 'noise': 0.3, 'start' : 100}
+# netParams.stimTargetParams['bkg->L4e'] = {'source': 'bkg', 'conds': {'pop': ['L4e'], 'cellList' : [i for i in range(100)]}, 'weight': 0.05, 'delay': 1, 'synMech': 'exc'}
+# netParams.stimTargetParams['bkg->L4i'] = {'source': 'bkg', 'conds': {'pop': ['L4i'], 'cellList' : [i for i in range(50)]}, 'weight': 0.05, 'delay': 1, 'synMech': 'exc'}
+netParams.stimTargetParams['bkg->L4e'] = {'source': 'bkg', 'conds': {'pop': ['L4e']}, 'weight': 0.007, 'delay': 1, 'synMech': 'exc'}
+netParams.stimTargetParams['bkg->L4i'] = {'source': 'bkg', 'conds': {'pop': ['L4i']}, 'weight': 0.007, 'delay': 1, 'synMech': 'exc'}
 
 # if cfg.DC == False: # External Input as Poisson
 #     for r in range(0,8):
@@ -209,27 +209,48 @@ for r in range(0,8):
             syn = 'inh'
         if (c % 2) == 0:
             if c == 2 and r == 0:
+                # netParams.connParams[str(L[c])+'->'+str(L[r])] = { 
+                #     'preConds': {'pop': L[c]},                         # conditions of presyn cells
+                #     'postConds': {'pop': L[r]},                        # conditions of postsyn cells
+                #     'divergence': cfg.ScaleFactor*(np.log(1.-C[r][c])/np.log(1. -1./(N_Full[r]*N_Full[c])) ) /N_Full[c],
+                #     'weight':'2*max(0, weightMin +normal(0,dweight*weightMin))', # synaptic weight
+                #     'delay':'max(0.1, delayMin_e +normal(0,ddelay*delayMin_e))',  # transmission delay (ms)
+                #     'synMech' : syn}
                 netParams.connParams[str(L[c])+'->'+str(L[r])] = { 
                     'preConds': {'pop': L[c]},                         # conditions of presyn cells
                     'postConds': {'pop': L[r]},                        # conditions of postsyn cells
                     'divergence': cfg.ScaleFactor*(np.log(1.-C[r][c])/np.log(1. -1./(N_Full[r]*N_Full[c])) ) /N_Full[c],
-                    'weight':'2*max(0, weightMin +normal(0,dweight*weightMin))', # synaptic weight
+                    'weight':'max(0, normal(0,0.005)', # synaptic weight
                     'delay':'max(0.1, delayMin_e +normal(0,ddelay*delayMin_e))',  # transmission delay (ms)
                     'synMech' : syn}
             else:
+                # netParams.connParams[str(L[c])+'->'+str(L[r])] = { 
+                #     'preConds': {'pop': L[c]},                         # conditions of presyn cells
+                #     'postConds': {'pop': L[r]},                        # conditions of postsyn cells
+                #     'divergence': cfg.ScaleFactor*(np.log(1.-C[r][c])/np.log(1. -1./(N_Full[r]*N_Full[c])) ) /N_Full[c],
+                #     'weight':'max(0, weightMin +normal(0,dweight*weightMin))', # synaptic weight
+                #     'delay':'max(0.1, delayMin_e +normal(0,ddelay*delayMin_e))',  # transmission delay (ms)
+                #     'synMech' : syn}                                                # synaptic mechanism
                 netParams.connParams[str(L[c])+'->'+str(L[r])] = { 
                     'preConds': {'pop': L[c]},                         # conditions of presyn cells
                     'postConds': {'pop': L[r]},                        # conditions of postsyn cells
                     'divergence': cfg.ScaleFactor*(np.log(1.-C[r][c])/np.log(1. -1./(N_Full[r]*N_Full[c])) ) /N_Full[c],
-                    'weight':'max(0, weightMin +normal(0,dweight*weightMin))', # synaptic weight
+                    'weight':'max(0, 0.005)', # synaptic weight
                     'delay':'max(0.1, delayMin_e +normal(0,ddelay*delayMin_e))',  # transmission delay (ms)
                     'synMech' : syn}                                                # synaptic mechanism
         else:
+            # netParams.connParams[str(L[c])+'->'+str(L[r])] = { 
+            #     'preConds': {'pop': L[c]},                         # conditions of presyn cells
+            #     'postConds': {'pop': L[r]},                        # conditions of postsyn cells
+            #     'divergence': cfg.ScaleFactor*(np.log(1.-C[r][c])/np.log(1. -1./(N_Full[r]*N_Full[c])) ) /N_Full[c],
+            #     'weight':'-4*max(0, weightMin +normal(0,dweight*weightMin))', # synaptic weight
+            #     'delay':'max(0.1, delayMin_i +normal(0,ddelay*delayMin_i))',  # transmission delay (ms)
+            #     'synMech' : syn}                                                  # synaptic mechanism
             netParams.connParams[str(L[c])+'->'+str(L[r])] = { 
                 'preConds': {'pop': L[c]},                         # conditions of presyn cells
                 'postConds': {'pop': L[r]},                        # conditions of postsyn cells
                 'divergence': cfg.ScaleFactor*(np.log(1.-C[r][c])/np.log(1. -1./(N_Full[r]*N_Full[c])) ) /N_Full[c],
-                'weight':'-4*max(0, weightMin +normal(0,dweight*weightMin))', # synaptic weight
+                'weight':'-1*max(0, 0.005)', # synaptic weight
                 'delay':'max(0.1, delayMin_i +normal(0,ddelay*delayMin_i))',  # transmission delay (ms)
                 'synMech' : syn}                                                  # synaptic mechanism
         
