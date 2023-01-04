@@ -4480,7 +4480,8 @@ different sized networks
 ** trying to remove all nonctx cells, add bkg stims 
 *** stimulating all cells w/ bkg results in integration error 
 *** same for just stimulating L4
-*** get spikes w/ ampa synapses w=0.007 
+*** get spikes w/ ampa synapses w=0.007
+**** connected back up, back to integration errors, massive inhibitory psps
 
 * TODOS
 ** TODO: rescalability of rxd version of PD model 
