@@ -4483,6 +4483,11 @@ different sized networks
 *** get spikes w/ ampa synapses w=0.007
 **** connected back up, back to integration errors, massive inhibitory psps
 *** reduced connectivity weights to 0.005. still get integration errors, but way more reasonable before that
+
+* [2023-1-5 Thu] - no integration errors 
+** just inputs to L4, connection weights all 0.001, runs for 500 ms without error or SD 
+
+
 * TODOS
 ** TODO: rescalability of rxd version of PD model 
 ** DONE: fix uniformdensity raster plot 
