@@ -209,50 +209,50 @@ for r in range(0,8):
             syn = 'inh'
         if (c % 2) == 0:
             if c == 2 and r == 0:
-                # netParams.connParams[str(L[c])+'->'+str(L[r])] = { 
-                #     'preConds': {'pop': L[c]},                         # conditions of presyn cells
-                #     'postConds': {'pop': L[r]},                        # conditions of postsyn cells
-                #     'divergence': cfg.ScaleFactor*(np.log(1.-C[r][c])/np.log(1. -1./(N_Full[r]*N_Full[c])) ) /N_Full[c],
-                #     'weight':'2*max(0, weightMin +normal(0,dweight*weightMin))', # synaptic weight
-                #     'delay':'max(0.1, delayMin_e +normal(0,ddelay*delayMin_e))',  # transmission delay (ms)
-                #     'synMech' : syn}
                 netParams.connParams[str(L[c])+'->'+str(L[r])] = { 
                     'preConds': {'pop': L[c]},                         # conditions of presyn cells
                     'postConds': {'pop': L[r]},                        # conditions of postsyn cells
                     'divergence': cfg.ScaleFactor*(np.log(1.-C[r][c])/np.log(1. -1./(N_Full[r]*N_Full[c])) ) /N_Full[c],
-                    'weight':0.001, # synaptic weight
+                    'weight':'2e-6*max(0, weightMin +normal(0,dweight*weightMin))', # synaptic weight
                     'delay':'max(0.1, delayMin_e +normal(0,ddelay*delayMin_e))',  # transmission delay (ms)
                     'synMech' : syn}
-            else:
                 # netParams.connParams[str(L[c])+'->'+str(L[r])] = { 
                 #     'preConds': {'pop': L[c]},                         # conditions of presyn cells
                 #     'postConds': {'pop': L[r]},                        # conditions of postsyn cells
                 #     'divergence': cfg.ScaleFactor*(np.log(1.-C[r][c])/np.log(1. -1./(N_Full[r]*N_Full[c])) ) /N_Full[c],
-                #     'weight':'max(0, weightMin +normal(0,dweight*weightMin))', # synaptic weight
+                #     'weight':0.001, # synaptic weight
                 #     'delay':'max(0.1, delayMin_e +normal(0,ddelay*delayMin_e))',  # transmission delay (ms)
-                #     'synMech' : syn}                                                # synaptic mechanism
+                #     'synMech' : syn}
+            else:
                 netParams.connParams[str(L[c])+'->'+str(L[r])] = { 
                     'preConds': {'pop': L[c]},                         # conditions of presyn cells
                     'postConds': {'pop': L[r]},                        # conditions of postsyn cells
                     'divergence': cfg.ScaleFactor*(np.log(1.-C[r][c])/np.log(1. -1./(N_Full[r]*N_Full[c])) ) /N_Full[c],
-                    'weight': 0.001, # synaptic weight
+                    'weight':'1e-6*max(0, weightMin +normal(0,dweight*weightMin))', # synaptic weight
                     'delay':'max(0.1, delayMin_e +normal(0,ddelay*delayMin_e))',  # transmission delay (ms)
                     'synMech' : syn}                                                # synaptic mechanism
+                # netParams.connParams[str(L[c])+'->'+str(L[r])] = { 
+                #     'preConds': {'pop': L[c]},                         # conditions of presyn cells
+                #     'postConds': {'pop': L[r]},                        # conditions of postsyn cells
+                #     'divergence': cfg.ScaleFactor*(np.log(1.-C[r][c])/np.log(1. -1./(N_Full[r]*N_Full[c])) ) /N_Full[c],
+                #     'weight': 0.001, # synaptic weight
+                #     'delay':'max(0.1, delayMin_e +normal(0,ddelay*delayMin_e))',  # transmission delay (ms)
+                #     'synMech' : syn}                                                # synaptic mechanism
         else:
-            # netParams.connParams[str(L[c])+'->'+str(L[r])] = { 
-            #     'preConds': {'pop': L[c]},                         # conditions of presyn cells
-            #     'postConds': {'pop': L[r]},                        # conditions of postsyn cells
-            #     'divergence': cfg.ScaleFactor*(np.log(1.-C[r][c])/np.log(1. -1./(N_Full[r]*N_Full[c])) ) /N_Full[c],
-            #     'weight':'-4*max(0, weightMin +normal(0,dweight*weightMin))', # synaptic weight
-            #     'delay':'max(0.1, delayMin_i +normal(0,ddelay*delayMin_i))',  # transmission delay (ms)
-            #     'synMech' : syn}                                                  # synaptic mechanism
             netParams.connParams[str(L[c])+'->'+str(L[r])] = { 
                 'preConds': {'pop': L[c]},                         # conditions of presyn cells
                 'postConds': {'pop': L[r]},                        # conditions of postsyn cells
                 'divergence': cfg.ScaleFactor*(np.log(1.-C[r][c])/np.log(1. -1./(N_Full[r]*N_Full[c])) ) /N_Full[c],
-                'weight':-0.001, # synaptic weight
+                'weight':'-4e-6*max(0, weightMin +normal(0,dweight*weightMin))', # synaptic weight
                 'delay':'max(0.1, delayMin_i +normal(0,ddelay*delayMin_i))',  # transmission delay (ms)
                 'synMech' : syn}                                                  # synaptic mechanism
+            # netParams.connParams[str(L[c])+'->'+str(L[r])] = { 
+            #     'preConds': {'pop': L[c]},                         # conditions of presyn cells
+            #     'postConds': {'pop': L[r]},                        # conditions of postsyn cells
+            #     'divergence': cfg.ScaleFactor*(np.log(1.-C[r][c])/np.log(1. -1./(N_Full[r]*N_Full[c])) ) /N_Full[c],
+            #     'weight':-0.001, # synaptic weight
+            #     'delay':'max(0.1, delayMin_i +normal(0,ddelay*delayMin_i))',  # transmission delay (ms)
+            #     'synMech' : syn}                                                  # synaptic mechanism
         
 # netParams.connParams['S2->M'] = {
 # 	'preConds': {'pop': 'bkg_IF'}, 
@@ -571,3 +571,4 @@ netParams.rxdParams['rates'] = rates
 # v0.0 - combination of netParams from ../uniformdensity and netpyne PD thalamocortical model 
 # v0.1 - got rid of all non cortical cells, background stim 
 # v0.2 - adding connections back in 
+# v0.3 - scaled original connections by 1e-6

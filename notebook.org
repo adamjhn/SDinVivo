@@ -4486,6 +4486,21 @@ different sized networks
 
 * [2023-1-5 Thu] - no integration errors 
 ** just inputs to L4, connection weights all 0.001, runs for 500 ms without error or SD 
+*** SD starts within 1 second 
+** in publication / biophysical branch used biophys models rather than point cells 
+*** description from paper 
+1. Replaced LIFs in all populations with a 6-compartment (soma, 2 apical dendrites, basal dendrite and
+axon) pyramidal neuron model with 9 conductance-based ionic channels (passive, Na+, 3
+K+, 3 Ca2+, HCN) from Dura-Bernal et al. (2018). Neuron model parameters were imported
+from an existing JSON file. The required NMODL files were added to the repository and
+compiled. 2. Set temperature to 34°C, the temperature required for the cell model above
+to respond physiologically. 3. Added exponential (Exp2Syn) synapse models with with
+rise time constant, decay time and reversal potential (Erev) of 0.8 ms, 5.3 ms and 0 mV
+for excitatory synapses; and 0.6 ms, 8.5 ms and -75 mV for inhibitory synapses. These
+synapses were included in the connectivity rules. Weights were now all made positive, since
+inhibition was now mediated by a negative Erev. 4. Scaled all connection weights by 1e-6,
+given that weights here represent changes in conductance in NEURON μS units.
+*** 1 problem is includes Ca2+, doesn't have Na/K pumps and coexchangers 
 
 
 * TODOS
