@@ -4501,6 +4501,7 @@ synapses were included in the connectivity rules. Weights were now all made posi
 inhibition was now mediated by a negative Erev. 4. Scaled all connection weights by 1e-6,
 given that weights here represent changes in conductance in NEURON μS units.
 *** 1 problem is includes Ca2+, doesn't have Na/K pumps and coexchangers 
+*** trying scaling by 1e-6: back to integration errors
 
 
 * TODOS
