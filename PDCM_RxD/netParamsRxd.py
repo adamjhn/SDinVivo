@@ -84,8 +84,8 @@ C=np.array([[0.1009, 0.1689, 0.0437, 0.0818, 0.0323, 0.,     0.0076, 0.],
          [0.0364, 0.001,  0.0034, 0.0005, 0.0277, 0.008,  0.0658, 0.1443]])	
          
 #Population size N
-L=['L2e', 'L2i', 'L4e', 'L4i', 'L5e', 'L5i', 'L6e', 'L6i']
-N_Full=np.array([20683, 5834, 21915, 5479, 4850, 1065, 14395, 2948, 902])
+L = ['L2e', 'L2i', 'L4e', 'L4i', 'L5e', 'L5i', 'L6e', 'L6i']
+N_Full = np.array([20683, 5834, 21915, 5479, 4850, 1065, 14395, 2948, 902])
 
 # Number of Input per Layer
 Inp=np.array([1600, 1500, 2100, 1900, 2000, 1900, 2900, 2100])
@@ -128,7 +128,7 @@ popDepths = [[0.08, 0.27], [0.08, 0.27], [0.27, 0.58], [0.27, 0.58], [0.58, 0.73
 #------------------------------------------------------------------------------
 # create populations
 for i in range(0,8):
-    netParams.popParams[L[i]] = {'cellType': str(L[i]), 'numCells': int(N_[i]), 'cellModel': L[i][-1], 
+    netParams.popParams[L[i]] = {'cellType': str(L[i]), 'numCells': int(N_[i]), 'cellModel': L[i], 
         'xRange': [0.0, cfg.sizeX],
         'yRange' : [2 * cfg.somaR + popDepths[i][0] * cfg.sizeY, cfg.sizeY * popDepths[i][1] - 2 * cfg.somaR],
         'zRange' : [0.0, cfg.sizeZ]}
@@ -138,7 +138,7 @@ for i in range(0,8):
 
 # cell property rules
 cellRule = netParams.importCellParams(label='cellRule', fileName='Neuron.py', 
-                conds={'cellType' : L, 'cellModel' : ['e', 'i']}, cellName='ENeuron')
+                conds={'cellType' : L, 'cellModel' : L}, cellName=L)
 netParams.cellParams['cellRule'] = cellRule    
 
 netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0}  # AMPA synaptic mechanism

@@ -32,7 +32,6 @@ def rasterPlot(datadir, center = [125, -450, 125], uniform=True, figname='raster
                     raster[r] = {'t': [data[3][ind] for ind in pks],
                         'pop' : pop}
                 else:
-                    D
                     raster[pos[1]] = {'t': [data[3][ind] for ind in pks],
                         'pop' : pop}
     if includerecs:
@@ -57,11 +56,11 @@ def rasterPlot(datadir, center = [125, -450, 125], uniform=True, figname='raster
                 else:
                     print("Invalid oderBy. Using y")
                     raster[pos[1]] = {'t' : [data['t'][ind] for ind in pks], 'pop' : pop}
-    # pops = np.array(['E2', 'I2', 'E4', 'I4', 'E5', 'I5'])
+    pops = np.array(['L2e', 'L2i', 'L4e', 'L4i', 'L5e', 'L5i', 'L6e', 'L6i'])
     # cols = ['blue', 'red', 'yellow', 'purple', 'green', 'black']
     for key in raster.keys():
-        # c = cols[np.argwhere(pops==raster[key]['pop'])[0][0]]
-        c = 'black'
+        c = cols[np.argwhere(pops==raster[key]['pop'])[0][0]]
+        # c = 'black'
         plt.plot(np.divide(raster[key]['t'],1000), [key for i in range(len(raster[key]['t']))], '.', color=c)
     plt.savefig(figname)
 
@@ -276,3 +275,7 @@ def traceExamples(datadir, figname, iss=[0, 7, 15], recNum=None):
     fig.text(0.55, 0.01, 'Time (s)', fontsize=16)
     plt.tight_layout()
     plt.savefig(figname)
+
+if __name__ == '__main__':
+    from cfgRxd import cfg 
+    rasterPlot('Data/scaledConn1e-7_bkg2allL4_2s/', center=[cfg.sizeX/2, -cfg.sizeY/2, cfg.sizeZ], figname='Data/scaledConn1e-7_bkg2allL4_2s/raster.png')

@@ -1,13 +1,10 @@
 from neuron import h
 from cfgRxd import cfg 
 import numpy as np 
-
-class ENeuron:
-    """ A neuron with soma and dendrite with; fast and persistent sodium
-    currents, potassium currents, passive leak and potassium leak and an
-    accumulation mechanism. """
+['L2e', 'L2i', 'L4e', 'L4i', 'L5e', 'L5i', 'L6e', 'L6i']
+class L2e:
     def __init__(self):
-        self.soma = h.Section(name='Esoma', cell=self)
+        self.soma = h.Section(name='L2e', cell=self)
         # add 3D points to locate the neuron in the ECS  
         self.soma.pt3dadd(0.0, 0.0, 0.0, 2.0 * cfg.somaR)
         self.soma.pt3dadd(0.0, 2.0 * cfg.somaR, 0.0, 2.0 * cfg.somaR)
@@ -16,12 +13,9 @@ class ENeuron:
             self.soma(0.5).pas.e = cfg.epas
             self.soma(0.5).pas.g = cfg.gpas
 
-class E2Neuron:
-    """ A neuron with soma and dendrite with; fast and persistent sodium
-    currents, potassium currents, passive leak and potassium leak and an
-    accumulation mechanism. """
+class L2i:
     def __init__(self):
-        self.soma = h.Section(name='E2soma', cell=self)
+        self.soma = h.Section(name='L2i', cell=self)
         # add 3D points to locate the neuron in the ECS  
         self.soma.pt3dadd(0.0, 0.0, 0.0, 2.0 * cfg.somaR)
         self.soma.pt3dadd(0.0, 2.0 * cfg.somaR, 0.0, 2.0 * cfg.somaR)
@@ -30,12 +24,9 @@ class E2Neuron:
             self.soma(0.5).pas.e = cfg.epas
             self.soma(0.5).pas.g = cfg.gpas
 
-class I2Neuron:
-    """ A neuron with soma and dendrite with; fast and persistent sodium
-    currents, potassium currents, passive leak and potassium leak and an
-    accumulation mechanism. """
+class L4e:
     def __init__(self):
-        self.soma = h.Section(name='I2soma', cell=self)
+        self.soma = h.Section(name='L4e', cell=self)
         # add 3D points to locate the neuron in the ECS  
         self.soma.pt3dadd(0.0, 0.0, 0.0, 2.0 * cfg.somaR)
         self.soma.pt3dadd(0.0, 2.0 * cfg.somaR, 0.0, 2.0 * cfg.somaR)
@@ -44,12 +35,9 @@ class I2Neuron:
             self.soma(0.5).pas.e = cfg.epas
             self.soma(0.5).pas.g = cfg.gpas
 
-class E4Neuron:
-    """ A neuron with soma and dendrite with; fast and persistent sodium
-    currents, potassium currents, passive leak and potassium leak and an
-    accumulation mechanism. """
+class L4i:
     def __init__(self):
-        self.soma = h.Section(name='E4soma', cell=self)
+        self.soma = h.Section(name='L4i', cell=self)
         # add 3D points to locate the neuron in the ECS  
         self.soma.pt3dadd(0.0, 0.0, 0.0, 2.0 * cfg.somaR)
         self.soma.pt3dadd(0.0, 2.0 * cfg.somaR, 0.0, 2.0 * cfg.somaR)
@@ -58,12 +46,9 @@ class E4Neuron:
             self.soma(0.5).pas.e = cfg.epas
             self.soma(0.5).pas.g = cfg.gpas
 
-class I4Neuron:
-    """ A neuron with soma and dendrite with; fast and persistent sodium
-    currents, potassium currents, passive leak and potassium leak and an
-    accumulation mechanism. """
+class L5e:
     def __init__(self):
-        self.soma = h.Section(name='I4soma', cell=self)
+        self.soma = h.Section(name='L5e', cell=self)
         # add 3D points to locate the neuron in the ECS  
         self.soma.pt3dadd(0.0, 0.0, 0.0, 2.0 * cfg.somaR)
         self.soma.pt3dadd(0.0, 2.0 * cfg.somaR, 0.0, 2.0 * cfg.somaR)
@@ -72,12 +57,9 @@ class I4Neuron:
             self.soma(0.5).pas.e = cfg.epas
             self.soma(0.5).pas.g = cfg.gpas
 
-class E5Neuron:
-    """ A neuron with soma and dendrite with; fast and persistent sodium
-    currents, potassium currents, passive leak and potassium leak and an
-    accumulation mechanism. """
+class L5i:
     def __init__(self):
-        self.soma = h.Section(name='E5soma', cell=self)
+        self.soma = h.Section(name='L5i', cell=self)
         # add 3D points to locate the neuron in the ECS  
         self.soma.pt3dadd(0.0, 0.0, 0.0, 2.0 * cfg.somaR)
         self.soma.pt3dadd(0.0, 2.0 * cfg.somaR, 0.0, 2.0 * cfg.somaR)
@@ -86,12 +68,10 @@ class E5Neuron:
             self.soma(0.5).pas.e = cfg.epas
             self.soma(0.5).pas.g = cfg.gpas
 
-class I5Neuron:
-    """ A neuron with soma and dendrite with; fast and persistent sodium
-    currents, potassium currents, passive leak and potassium leak and an
-    accumulation mechanism. """
+
+class L6e:
     def __init__(self):
-        self.soma = h.Section(name='I5soma', cell=self)
+        self.soma = h.Section(name='L6e', cell=self)
         # add 3D points to locate the neuron in the ECS  
         self.soma.pt3dadd(0.0, 0.0, 0.0, 2.0 * cfg.somaR)
         self.soma.pt3dadd(0.0, 2.0 * cfg.somaR, 0.0, 2.0 * cfg.somaR)
@@ -100,4 +80,14 @@ class I5Neuron:
             self.soma(0.5).pas.e = cfg.epas
             self.soma(0.5).pas.g = cfg.gpas
 
+class L6i:
+    def __init__(self):
+        self.soma = h.Section(name='L6i', cell=self)
+        # add 3D points to locate the neuron in the ECS  
+        self.soma.pt3dadd(0.0, 0.0, 0.0, 2.0 * cfg.somaR)
+        self.soma.pt3dadd(0.0, 2.0 * cfg.somaR, 0.0, 2.0 * cfg.somaR)
+        if cfg.epas:
+            self.soma.insert('pas')
+            self.soma(0.5).pas.e = cfg.epas
+            self.soma(0.5).pas.g = cfg.gpas
 # v0.00 - classes for each cell type in network

@@ -4505,8 +4505,12 @@ given that weights here represent changes in conductance in NEURON μS units.
 
 * [2023-1-6 Fri] - connection weights 
 ** scaling by 1e-7 doesn't result in SD, need to check if different from unconnected 
+*** there is a difference in spiking activity 
 
 
 * TODOS
 ** TODO: rescalability of rxd version of PD model 
 ** DONE: fix uniformdensity raster plot 
+** TODO: find proper weight scaling 
+** TODO: colored cell types for raster plot 
+** TODO: get poisson inputs working  
