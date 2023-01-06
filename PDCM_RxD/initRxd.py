@@ -8,20 +8,20 @@ import pickle
 from neuron import h 
 import random 
 from matplotlib import pyplot as plt 
-import argparse
+# import argparse
 
-parser = argparse.ArgumentParser(description = '''Run RxD version of PD cortical model''')
-parser.add_argument('--poissonFactor', nargs='?', type=str, default=None)
-parser.add_argument('--connFactor', nargs='?', type=str, default=None)
-parser.add_argument('--filename', nargs='?', type=str, default=None)
-args = parser.parse_args()
+# parser = argparse.ArgumentParser(description = '''Run RxD version of PD cortical model''')
+# parser.add_argument('--poissonFactor', nargs='?', type=str, default=None)
+# parser.add_argument('--connFactor', nargs='?', type=str, default=None)
+# parser.add_argument('--filename', nargs='?', type=str, default=None)
+# args = parser.parse_args()
 
-if args.poissonFactor:
-    cfg.poissonFactor = args.poissonFactor
-if args.connFactor:
-    cfg.poissonFactor = args.connFactor
-if args.filename:
-    cfg.filename = args.filename
+# if args.poissonFactor:
+#     cfg.poissonFactor = args.poissonFactor
+# if args.connFactor:
+#     cfg.poissonFactor = args.connFactor
+# if args.filename:
+#     cfg.filename = args.filename
 
 # Instantiate network 
 sim.initialize(netParams, cfg)  # create network object and set cfg and net params
