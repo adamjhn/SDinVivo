@@ -4503,6 +4503,9 @@ given that weights here represent changes in conductance in NEURON μS units.
 *** 1 problem is includes Ca2+, doesn't have Na/K pumps and coexchangers 
 *** trying scaling by 1e-6: back to integration errors
 
+* [2023-1-6 Fri] - connection weights 
+** scaling by 1e-7 doesn't result in SD, need to check if different from unconnected 
+
 
 * TODOS
 ** TODO: rescalability of rxd version of PD model 
