@@ -278,4 +278,4 @@ def traceExamples(datadir, figname, iss=[0, 7, 15], recNum=None):
 
 if __name__ == '__main__':
     from cfgRxd import cfg 
-    rasterPlot('Data/scaledConn1e-7_bkg2allL4_2s/', center=[cfg.sizeX/2, -cfg.sizeY/2, cfg.sizeZ], figname='Data/scaledConn1e-7_bkg2allL4_2s/raster.png')
+    rasterPlot('Data/test_templates/', center=[cfg.sizeX/2, -cfg.sizeY/2, cfg.sizeZ], figname='Data/test_templates/raster.png')
