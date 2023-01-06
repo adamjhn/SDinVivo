@@ -4507,6 +4507,7 @@ given that weights here represent changes in conductance in NEURON μS units.
 ** scaling by 1e-7 doesn't result in SD, need to check if different from unconnected 
 *** there is a difference in spiking activity 
 ** poisson inputs scaled by 1e-7, no spiking, but runs ok 
+*** went down to 1e-6, but looks like turn into SD 
 
 
 * TODOS

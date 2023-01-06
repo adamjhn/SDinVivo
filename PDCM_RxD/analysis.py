@@ -58,10 +58,16 @@ def rasterPlot(datadir, center = [125, -450, 125], uniform=True, figname='raster
                     raster[pos[1]] = {'t' : [data['t'][ind] for ind in pks], 'pop' : pop}
     pops = np.array(['L2e', 'L2i', 'L4e', 'L4i', 'L5e', 'L5i', 'L6e', 'L6i'])
     cols = ['blue', 'red', 'yellow', 'purple', 'green', 'black', 'gray', 'orange']
+    popCount = [0 for i in range(len(pops))]
     for key in raster.keys():
-        c = cols[np.argwhere(pops==raster[key]['pop'])[0][0]]
-        # c = 'black'
-        plt.plot(np.divide(raster[key]['t'],1000), [key for i in range(len(raster[key]['t']))], '.', color=c)
+        popind = np.argwhere(pops==raster[key]['pop'])[0][0]
+        popCount[popind] = popCount[popind] + 1
+        c = cols[popind]
+        if popCount[popind] == 1:
+            plt.plot(np.divide(raster[key]['t'],1000), [key for i in range(len(raster[key]['t']))], '.', color=c, label=raster[key]['pop'])
+        else:
+            plt.plot(np.divide(raster[key]['t'],1000), [key for i in range(len(raster[key]['t']))], '.', color=c)
+    plt.legend()
     plt.savefig(figname)
 
 def allSpeciesMov(datadir, outpath, vmins, vmaxes, figname, condition='Perfused', dur=10, extent=None, includeSpks=False):
