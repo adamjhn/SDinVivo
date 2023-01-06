@@ -137,9 +137,10 @@ for i in range(0,8):
 # netParams.popParams['bkg_IF'] = {'numCells': 1, 'cellModel': 'NetStim','rate': 40000,  'start':0.0, 'noise': 0.0, 'delay':0}
 
 # cell property rules
-cellRule = netParams.importCellParams(label='cellRule', fileName='Neuron.py', 
-                conds={'cellType' : L, 'cellModel' : L}, cellName=L)
-netParams.cellParams['cellRule'] = cellRule    
+for pop in L:
+    cellRule = netParams.importCellParams(label='cellRule', fileName='Neuron.py', 
+                    conds={'cellType' : pop, 'cellModel' : pop}, cellName=pop)
+    netParams.cellParams[pop+'Rule'] = cellRule    
 
 netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.05, 'tau2': 5.3, 'e': 0}  # AMPA synaptic mechanism
 # netParams.synMechParams['exc'] = {'mod': 'Exp2Syn', 'tau1': 0.8, 'tau2': 5.3, 'e': 0}  # NMDA synaptic mechanism
