@@ -57,7 +57,7 @@ def rasterPlot(datadir, center = [125, -450, 125], uniform=True, figname='raster
                     print("Invalid oderBy. Using y")
                     raster[pos[1]] = {'t' : [data['t'][ind] for ind in pks], 'pop' : pop}
     pops = np.array(['L2e', 'L2i', 'L4e', 'L4i', 'L5e', 'L5i', 'L6e', 'L6i'])
-    # cols = ['blue', 'red', 'yellow', 'purple', 'green', 'black']
+    cols = ['blue', 'red', 'yellow', 'purple', 'green', 'black', 'gray', 'orange']
     for key in raster.keys():
         c = cols[np.argwhere(pops==raster[key]['pop'])[0][0]]
         # c = 'black'
