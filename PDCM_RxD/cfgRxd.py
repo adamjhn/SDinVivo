@@ -8,13 +8,13 @@ import numpy as np
 
 # Run parameters
 cfg = specs.SimConfig()       # object of class cfg to store simulation configuration
-cfg.duration = 2e3        # Duration of the simulation, in ms
+cfg.duration = 1e3        # Duration of the simulation, in ms
 cfg.hParams['v_init'] = -70.0   # set v_init to -65 mV
 cfg.hParams['celsius'] = 37.0
 cfg.dt = 0.025 #0.025              # Internal integration timestep to use
 cfg.verbose = False            # Show detailed messages 
 cfg.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
-cfg.filename = 'Data/conn1e-7_poisson7e-7_2ms/'   # Set file output name
+cfg.filename = 'Data/conn1e-7_poisson7e-7_5xNaK_1s/'   # Set file output name
 cfg.printPopAvgRates = True
 cfg.printRunTime = 1
 cfg.Kceil = 15.0
@@ -27,6 +27,10 @@ cfg.sizeY = 1470.0 #250.0 #1000
 cfg.sizeZ = 242.0 #200.0
 cfg.density = 90000.0
 cfg.Vtissue = cfg.sizeX * cfg.sizeY * cfg.sizeZ
+
+# scaling factors 
+cfg.poissonFactor = '7e-7'
+cfg.connFactor = '1e-7'
 
 # slice conditions 
 cfg.ox = 'perfused'

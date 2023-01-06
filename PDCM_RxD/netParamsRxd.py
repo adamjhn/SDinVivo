@@ -169,7 +169,7 @@ if cfg.DC == False: # External Input as Poisson
             'preConds': {'pop': 'poiss'+str(L[r])},  
             'postConds': {'pop': L[r]},
             'connList': auxConn.T,   
-            'weight': '7e-7*max(0, weightMin+normal(0,dweight*weightMin))',  
+            'weight': cfg.poissonFactor + '*max(0, weightMin+normal(0,dweight*weightMin))',  
             'delay': 0.5,
             'synMech' : 'exc'} # 1 delay
         # netParams.connParams['poiss->'+str(L[r])] = {
@@ -201,7 +201,7 @@ if cfg.TH == True:
             'preConds': {'pop': 'bkg_TH'+str(L[r])},  
             'postConds': {'pop': L[r]},
             'connList': auxConn.T,   
-            'weight':'1e-7 * max(0, weightMin +normal(0,dweight*weightMin))',  
+            'weight': cfg.connFactor + ' * max(0, weightMin +normal(0,dweight*weightMin))',  
             'delay': 0.5,
             'synMech' : 'exc'} # 1 delay
 
@@ -221,7 +221,7 @@ for r in range(0,8):
                     'preConds': {'pop': L[c]},                         # conditions of presyn cells
                     'postConds': {'pop': L[r]},                        # conditions of postsyn cells
                     'divergence': cfg.ScaleFactor*(np.log(1.-C[r][c])/np.log(1. -1./(N_Full[r]*N_Full[c])) ) /N_Full[c],
-                    'weight':'2e-7*max(0, weightMin +normal(0,dweight*weightMin))', # synaptic weight
+                    'weight':cfg.connFactor + '*2*max(0, weightMin +normal(0,dweight*weightMin))', # synaptic weight
                     'delay':'max(0.1, delayMin_e +normal(0,ddelay*delayMin_e))',  # transmission delay (ms)
                     'synMech' : syn}
                 # netParams.connParams[str(L[c])+'->'+str(L[r])] = { 
@@ -236,7 +236,7 @@ for r in range(0,8):
                     'preConds': {'pop': L[c]},                         # conditions of presyn cells
                     'postConds': {'pop': L[r]},                        # conditions of postsyn cells
                     'divergence': cfg.ScaleFactor*(np.log(1.-C[r][c])/np.log(1. -1./(N_Full[r]*N_Full[c])) ) /N_Full[c],
-                    'weight':'1e-7*max(0, weightMin +normal(0,dweight*weightMin))', # synaptic weight
+                    'weight':cfg.connFactor + '*max(0, weightMin +normal(0,dweight*weightMin))', # synaptic weight
                     'delay':'max(0.1, delayMin_e +normal(0,ddelay*delayMin_e))',  # transmission delay (ms)
                     'synMech' : syn}                                                # synaptic mechanism
                 # netParams.connParams[str(L[c])+'->'+str(L[r])] = { 
@@ -251,7 +251,7 @@ for r in range(0,8):
                 'preConds': {'pop': L[c]},                         # conditions of presyn cells
                 'postConds': {'pop': L[r]},                        # conditions of postsyn cells
                 'divergence': cfg.ScaleFactor*(np.log(1.-C[r][c])/np.log(1. -1./(N_Full[r]*N_Full[c])) ) /N_Full[c],
-                'weight':'-4e-7*max(0, weightMin +normal(0,dweight*weightMin))', # synaptic weight
+                'weight':cfg.connFactor + '*-4*max(0, weightMin +normal(0,dweight*weightMin))', # synaptic weight
                 'delay':'max(0.1, delayMin_i +normal(0,ddelay*delayMin_i))',  # transmission delay (ms)
                 'synMech' : syn}                                                  # synaptic mechanism
             # netParams.connParams[str(L[c])+'->'+str(L[r])] = { 
@@ -559,10 +559,10 @@ rates['cldiff'] = {'species' : 'cl[ecs]', 'regions' : ['ecs'],
 
 ## Glia K+/Na+ pump current 
 rates['glia_k_current'] = {'species' : 'k[ecs]', 'regions' : ['ecs'],
-    'rate' : '-(%s) - (2.0 * (%s))' % (glia12, gliapump)}
+    'rate' : '5*(-(%s) - (2.0 * (%s)))' % (glia12, gliapump)}
 
 rates['glia_na_current'] = {'species' : 'na[ecs]', 'regions' : ['ecs'],
-    'rate' : '3.0 * (%s)' % (gliapump)}
+    'rate' : '5*(3.0 * (%s))' % (gliapump)}
 
 ## Glial O2 depletion 
 # rates['o2_pump'] = {'species' : o2ecs, 'regions' : ['ecs_o2'],
