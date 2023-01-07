@@ -4514,6 +4514,22 @@ given that weights here represent changes in conductance in NEURON μS units.
 ** tried increasing Na/K pump currents to prevent SD 
 *** 5x on glia and neurons prevented spiking altogether 
 *** 5x on glia alone resulted in SD 
+** parameters which could be tuned (prevent SD, normal network activtity, no integration errors)
+*** network connection weights
+**** right now using 1e-7
+*** Poisson connection weights 
+**** right now using 7e-7
+*** return to netstims
+**** may want to include layer 6 
+*** thalamocortical inputs 
+**** haven't tried yet, maybe in combo w/ non-spiking poisson inputs 
+*** Na/K pump currents
+**** glial seem to have little effect 
+***** may want to represent glia more like neurons 
+**** neuronal seem to have large effect 
+*** O2 concentration 
+**** currently using 0.1, for 23 mm/Hg in vivo should really be using 0.04 
+**** on the other hand, this is an appx, so could be appx is underestimating atp reserves 
 
 * TODOS
 ** TODO: rescalability of rxd version of PD model 
@@ -4521,4 +4537,7 @@ given that weights here represent changes in conductance in NEURON μS units.
 ** TODO: find proper weight scaling 
 *** right now things run, but turn into SD 
 ** DONE: colored cell types for raster plot 
-** TODO: get poisson inputs working  
+** DONE: get poisson inputs working  
+*** currently working without integration errors, but need to find parameter combo 
+that doesn't result in SD 
+** TODO: look into biophysical version of the model
