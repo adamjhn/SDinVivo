@@ -4508,11 +4508,17 @@ given that weights here represent changes in conductance in NEURON μS units.
 *** there is a difference in spiking activity 
 ** poisson inputs scaled by 1e-7, no spiking, but runs ok 
 *** went down to 1e-6, but looks like turn into SD 
+*** trying to increase Na/K pump current to prevent SD
 
+* [2023-1-7 Sat] - looking for regular network activity 
+** tried increasing Na/K pump currents to prevent SD 
+*** 5x on glia and neurons prevented spiking altogether 
+*** 5x on glia alone resulted in SD 
 
 * TODOS
 ** TODO: rescalability of rxd version of PD model 
 ** DONE: fix uniformdensity raster plot 
 ** TODO: find proper weight scaling 
-** TODO: colored cell types for raster plot 
+*** right now things run, but turn into SD 
+** DONE: colored cell types for raster plot 
 ** TODO: get poisson inputs working  

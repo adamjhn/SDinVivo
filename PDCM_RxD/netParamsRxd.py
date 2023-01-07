@@ -510,11 +510,11 @@ mcReactions['cl_current'] = {'reactant' : 'cl[cyt]', 'product' : 'cl[ecs]',
 
 # ## Na+/K+ pump current in neuron (2K+ in, 3Na+ out)
 mcReactions['pump_current'] = {'reactant' : 'k[cyt]', 'product' : 'k[ecs]', 
-                            'rate_f' : "5*(-2.0 * %s * %s)" % (pump, volume_scale), 
+                            'rate_f' : "2*(-2.0 * %s * %s)" % (pump, volume_scale), 
                             'membrane' : 'mem', 'custom_dynamics' : True, 'membrane_flux' : True}
 
 mcReactions['pump_current_na'] = {'reactant' : 'na[cyt]', 'product' : 'na[ecs]', 
-                                'rate_f' : "5*(3.0 * %s * %s)" % (pump, volume_scale), 
+                                'rate_f' : "2*(3.0 * %s * %s)" % (pump, volume_scale), 
                                 'membrane' : 'mem', 'custom_dynamics' : True, 'membrane_flux' : True}
 
 # O2 depletrion from Na/K pump in neuron
