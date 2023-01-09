@@ -165,11 +165,18 @@ if cfg.DC == False: # External Input as Poisson
                         'delay': 0}
         
         auxConn=np.array([range(0,N_[r],1),range(0,N_[r],1)])
+        # netParams.connParams['poiss->'+str(L[r])] = {
+        #     'preConds': {'pop': 'poiss'+str(L[r])},  
+        #     'postConds': {'pop': L[r]},
+        #     'connList': auxConn.T,   
+        #     'weight': cfg.poissonFactor + '*max(0, weightMin+normal(0,dweight*weightMin))',  
+        #     'delay': 0.5,
+        #     'synMech' : 'exc'} # 1 delay
         netParams.connParams['poiss->'+str(L[r])] = {
             'preConds': {'pop': 'poiss'+str(L[r])},  
             'postConds': {'pop': L[r]},
             'connList': auxConn.T,   
-            'weight': cfg.poissonFactor + '*max(0, weightMin+normal(0,dweight*weightMin))',  
+            'weight': cfg.connFactor + '*max(0, weightMin+normal(0,dweight*weightMin))',  
             'delay': 0.5,
             'synMech' : 'exc'} # 1 delay
         # netParams.connParams['poiss->'+str(L[r])] = {
@@ -510,11 +517,11 @@ mcReactions['cl_current'] = {'reactant' : 'cl[cyt]', 'product' : 'cl[ecs]',
 
 # ## Na+/K+ pump current in neuron (2K+ in, 3Na+ out)
 mcReactions['pump_current'] = {'reactant' : 'k[cyt]', 'product' : 'k[ecs]', 
-                            'rate_f' : "2*(-2.0 * %s * %s)" % (pump, volume_scale), 
+                            'rate_f' : "(-2.0 * %s * %s)" % (pump, volume_scale), 
                             'membrane' : 'mem', 'custom_dynamics' : True, 'membrane_flux' : True}
 
 mcReactions['pump_current_na'] = {'reactant' : 'na[cyt]', 'product' : 'na[ecs]', 
-                                'rate_f' : "2*(3.0 * %s * %s)" % (pump, volume_scale), 
+                                'rate_f' : "(3.0 * %s * %s)" % (pump, volume_scale), 
                                 'membrane' : 'mem', 'custom_dynamics' : True, 'membrane_flux' : True}
 
 # O2 depletrion from Na/K pump in neuron
@@ -559,10 +566,10 @@ rates['cldiff'] = {'species' : 'cl[ecs]', 'regions' : ['ecs'],
 
 ## Glia K+/Na+ pump current 
 rates['glia_k_current'] = {'species' : 'k[ecs]', 'regions' : ['ecs'],
-    'rate' : '5*(-(%s) - (2.0 * (%s)))' % (glia12, gliapump)}
+    'rate' : '(-(%s) - (2.0 * (%s)))' % (glia12, gliapump)}
 
 rates['glia_na_current'] = {'species' : 'na[ecs]', 'regions' : ['ecs'],
-    'rate' : '5*(3.0 * (%s))' % (gliapump)}
+    'rate' : '(3.0 * (%s))' % (gliapump)}
 
 ## Glial O2 depletion 
 # rates['o2_pump'] = {'species' : o2ecs, 'regions' : ['ecs_o2'],
@@ -581,3 +588,4 @@ netParams.rxdParams['rates'] = rates
 # v0.2 - adding connections back in 
 # v0.3 - scaled original connections by 1e-7
 # v0.4 - original poisson, rather than netstim inputs
+# v0.5 - now includes thalamocortical inputs 

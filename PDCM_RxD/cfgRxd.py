@@ -14,7 +14,7 @@ cfg.hParams['celsius'] = 37.0
 cfg.dt = 0.025 #0.025              # Internal integration timestep to use
 cfg.verbose = False            # Show detailed messages 
 cfg.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
-cfg.filename = 'Data/conn1e-7_poisson7e-7_5xG2xNNaK_1s/'   # Set file output name
+cfg.filename = 'Data/conn1e-7_poissonAndTH1e-7_500ms/'   # Set file output name
 cfg.printPopAvgRates = True
 cfg.printRunTime = 1
 cfg.Kceil = 15.0
@@ -83,7 +83,7 @@ cfg.ScaleFactor = 0.10  # 1.0 = 80.000
 cfg.DC = False #True = DC // False = Poisson
 
 # Thalamic input in 4th and 6th layer on or off
-cfg.TH = False #True = on // False = off
+cfg.TH = True #False #True = on // False = off
 
 # Balanced and Unbalanced external input as PD article
 cfg.Balanced = False #True=Balanced // False=Unbalanced
