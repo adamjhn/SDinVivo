@@ -4531,6 +4531,10 @@ given that weights here represent changes in conductance in NEURON μS units.
 **** currently using 0.1, for 23 mm/Hg in vivo should really be using 0.04 
 **** on the other hand, this is an appx, so could be appx is underestimating atp reserves 
 
+* [2023-1-11 Wed] - still looking
+** bill suggested trying increasing weights of inhibitory conns 
+
+
 * TODOS
 ** TODO: rescalability of rxd version of PD model 
 ** DONE: fix uniformdensity raster plot 
@@ -4540,4 +4544,9 @@ given that weights here represent changes in conductance in NEURON μS units.
 ** DONE: get poisson inputs working  
 *** currently working without integration errors, but need to find parameter combo 
 that doesn't result in SD 
-** TODO: look into biophysical version of the model
+** DONE: look into biophysical version of the model
+*** conversion probably more complicated that point cels (need Ca, add Na/K pumps)
+** TODO: look into running w/ netpyne 
+** TODO: look into netpyne sim data after running 
+** TODO: try different inhibitory scaling 
+** TODO: check out bluepyopt
