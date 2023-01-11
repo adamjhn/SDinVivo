@@ -223,7 +223,7 @@ for r in range(0,8):
             connFactor = cfg.connFactor
         else:
             syn = 'inh'
-            connFactor = '2*' + cfg.connFactor
+            connFactor = '1.5*' + cfg.connFactor
         if (c % 2) == 0:
             if c == 2 and r == 0:
                 netParams.connParams[str(L[c])+'->'+str(L[r])] = { 
