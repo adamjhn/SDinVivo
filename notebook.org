@@ -4536,11 +4536,16 @@ given that weights here represent changes in conductance in NEURON μS units.
 
 * [2023-1-12 Thu] - still tuning 
 ** trying netParams.scaleConnWeight (excludes netstims) rather than previous stategy
+** netParams.scaleConnWeight worked, most cells maintain reasonable activity for 2s 
+*** some L2e neurons still go into depol block 
+*** want to see if turns into full blown SD 
+*** could reduce inputs to L2 
+*** may need finer tuning of glia sink, conn weights, etc. 
 
 * TODOS
 ** TODO: rescalability of rxd version of PD model 
 ** DONE: fix uniformdensity raster plot 
-** TODO: find proper weight scaling 
+** DONE: find proper weight scaling 
 *** right now things run, but turn into SD 
 ** DONE: colored cell types for raster plot 
 ** DONE: get poisson inputs working  
@@ -4550,6 +4555,6 @@ that doesn't result in SD
 *** conversion probably more complicated that point cels (need Ca, add Na/K pumps)
 ** TODO: look into running w/ netpyne 
 ** TODO: look into netpyne sim data after running 
-** TODO: try different inhibitory scaling 
+** DONE: try different inhibitory scaling 
 ** TODO: check out bluepyopt
 ** TODO: fix y position issue for raster plot 
