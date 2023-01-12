@@ -212,7 +212,9 @@ def plotMemV(datadir, position='center'):
         for v, pos, pop in zip(data[0], data[1], data[2]):
             plt.figure()
             plt.plot(v)
-            plt.title(pop)
+            spks, _ = find_peaks(v, height=0)
+            freq = len(spks) / (len(v)/40e3)
+            plt.title(pop + ': ' + str(freq) + ' Hz')
             plt.savefig(datadir + 'vmembs/' + pop + '_' + str(count) + '.png')
             count = count + 1
             plt.close()
@@ -332,12 +334,13 @@ def traceExamples(datadir, figname, iss=[0, 7, 15], recNum=None):
 if __name__ == '__main__':
     from cfgRxd import cfg 
     # rasterPlot('Data/test_templates/', center=[cfg.sizeX/2, -cfg.sizeY/2, cfg.sizeZ], figname='Data/test_templates/raster.png')
-    datadir = 'Data/test_scaleConnWeight/'
-    outpath = 'Data/test_scaleConnWeight/mov_files/'
-    figname = 'Data/test_scaleConnWeight/all_species.mp4'
-    vmins = [3.5, 100, 30, 0.1]
-    vmaxes = [40, 130, 140, 0.1]
-    extent = (0,242.0,-1470.0, 0.0)
-    allSpeciesMov(datadir, outpath, vmins, vmaxes, figname, dur=0.5, extent=extent)
+    datadir = 'Data/scaleConnWeight1e-6_poissonInputs_2s/'
+    # outpath = 'Data/scaleConnWeight1e-6_poissonInputs_2s/mov_files/'
+    # figname = 'Data/scaleConnWeight1e-6_poissonInputs_2s/all_species.mp4'
+    # vmins = [3.5, 100, 30, 0.1]
+    # vmaxes = [40, 130, 140, 0.1]
+    # extent = (0,242.0,-1470.0, 0.0)
+    # allSpeciesMov(datadir, outpath, vmins, vmaxes, figname, dur=2, extent=extent, includeSpks=True)
+    plotMemV(datadir)
 
 # v0.0 - analysis scripts for raster plots, traces, etc.
