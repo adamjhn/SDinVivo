@@ -212,7 +212,7 @@ def plotMemV(datadir, position='center'):
         for v, pos, pop in zip(data[0], data[1], data[2]):
             plt.figure()
             plt.plot(v)
-            spks, _ = find_peaks(v, height=0)
+            spks, _ = find_peaks(v.as_numpy(), height=0)
             freq = len(spks) / (len(v)/40e3)
             plt.title(pop + ': ' + str(freq) + ' Hz')
             plt.savefig(datadir + 'vmembs/' + pop + '_' + str(count) + '.png')
