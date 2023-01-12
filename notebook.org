@@ -4534,6 +4534,8 @@ given that weights here represent changes in conductance in NEURON μS units.
 * [2023-1-11 Wed] - still looking
 ** bill suggested trying increasing weights of inhibitory conns 
 
+* [2023-1-12 Thu] - still tuning 
+** trying netParams.scaleConnWeight (excludes netstims) rather than previous stategy
 
 * TODOS
 ** TODO: rescalability of rxd version of PD model 
