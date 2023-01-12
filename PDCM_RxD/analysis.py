@@ -147,8 +147,54 @@ def allSpeciesMov(datadir, outpath, vmins, vmaxes, figname, condition='Perfused'
         imagesc.append(imageio.imread(outpath+filename)) 
     imageio.mimsave(figname, imagesc)
 
-def xyOfSpikeTime(datadir):
-    pass
+def combineMemFiles(datadirs, file):
+    # combine mem files from fragmented runs
+    ## load first file 
+    with open(os.path.join(datadirs[0],file), 'rb') as fileObj:
+        data = pickle.load(fileObj)
+    ## convert voltages to lists
+    for ind, v in enumerate(data[0]):
+        data[0][ind] = list(v)
+    ## load the rest of them 
+    for datadir in datadirs[1:]:
+        with open(os.path.join(datadir, file), 'rb') as fileObj:
+            data0 = pickle.load(fileObj)
+        for ind, v in enumerate(data0[0]):
+            data[0][ind].extend(list(v))
+        data[2].extend(data0[2])
+    return data 
+
+def xyOfSpikeTime(datadir, position='center'):
+    if isinstance(datadir, list):
+        files = os.listdir(datadir[0])
+    else:
+        files = os.listdir(datadir)
+    mem_files = [file for file in files if (file.startswith(position + 'membrane'))]
+    posBySpkTime = {}
+    for file in mem_files:
+        if isinstance(datadir, list):
+            data = combineMemFiles(datadir, file)
+        else:
+            with open(os.path.join(datadir,file), 'rb') as fileObj:
+                data = pickle.load(fileObj)
+        for v, pos in zip(data[0],data[1]):
+            if isinstance(v, list):
+                pks, _ = find_peaks(v, 0)
+            else:
+                pks, _ = find_peaks(v.as_numpy(), 0)
+            if len(pks):                
+                for ind in pks:
+                    t = int(data[2][ind])
+                    if t in posBySpkTime.keys():
+                        posBySpkTime[t]['x'].append(pos[0])
+                        posBySpkTime[t]['y'].append(pos[1])
+                        posBySpkTime[t]['z'].append(pos[2])
+                    else:
+                        posBySpkTime[t] = {}
+                        posBySpkTime[t]['x'] = [pos[0]]
+                        posBySpkTime[t]['y'] = [pos[1]]
+                        posBySpkTime[t]['z'] = [pos[2]]
+    return posBySpkTime
 
 def plotMemV(datadir, position='center'):
     try:

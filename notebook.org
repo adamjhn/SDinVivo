@@ -4552,3 +4552,4 @@ that doesn't result in SD
 ** TODO: look into netpyne sim data after running 
 ** TODO: try different inhibitory scaling 
 ** TODO: check out bluepyopt
+** TODO: fix y position issue for raster plot 
