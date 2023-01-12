@@ -95,6 +95,7 @@ def allSpeciesMov(datadir, outpath, vmins, vmaxes, figname, condition='Perfused'
         ax1 = fig.add_subplot(141)
         data = np.load(datadir+k_file)
         im = plt.imshow(np.transpose(data.mean(2)), vmin=vmins[0], vmax=vmaxes[0], interpolation='nearest', origin='lower', extent=extent)
+        # im = plt.imshow(np.transpose(data.mean(2)), vmin=vmins[0], vmax=vmaxes[0], interpolation='nearest', origin='lower')
         plt.colorbar(im, fraction=0.046, pad=0.04)
         if includeSpks:
             if len(spkTimes):
@@ -184,7 +185,7 @@ def xyOfSpikeTime(datadir, position='center'):
                 pks, _ = find_peaks(v.as_numpy(), 0)
             if len(pks):                
                 for ind in pks:
-                    t = int(data[2][ind])
+                    t = int(data[3][ind])
                     if t in posBySpkTime.keys():
                         posBySpkTime[t]['x'].append(pos[0])
                         posBySpkTime[t]['y'].append(pos[1])
@@ -330,4 +331,13 @@ def traceExamples(datadir, figname, iss=[0, 7, 15], recNum=None):
 
 if __name__ == '__main__':
     from cfgRxd import cfg 
-    rasterPlot('Data/test_templates/', center=[cfg.sizeX/2, -cfg.sizeY/2, cfg.sizeZ], figname='Data/test_templates/raster.png')
+    # rasterPlot('Data/test_templates/', center=[cfg.sizeX/2, -cfg.sizeY/2, cfg.sizeZ], figname='Data/test_templates/raster.png')
+    datadir = 'Data/test_scaleConnWeight/'
+    outpath = 'Data/test_scaleConnWeight/mov_files/'
+    figname = 'Data/test_scaleConnWeight/all_species.mp4'
+    vmins = [3.5, 100, 30, 0.1]
+    vmaxes = [40, 130, 140, 0.1]
+    extent = (0,242.0,-1470.0, 0.0)
+    allSpeciesMov(datadir, outpath, vmins, vmaxes, figname, dur=0.5, extent=extent)
+
+# v0.0 - analysis scripts for raster plots, traces, etc.
