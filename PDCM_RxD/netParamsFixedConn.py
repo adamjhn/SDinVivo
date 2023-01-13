@@ -163,7 +163,7 @@ if cfg.DC == False: # External Input as Poisson
         netParams.popParams['poiss'+str(L[r])] = {
                         'numCells': N_[r], 
                         'cellModel': 'NetStim',
-                        'rate': InpPoiss[r]*f_ext,   
+                        'rate': (InpPoiss[r]*f_ext)/2,   
                         'start': 0.0, 
                         'noise': 1.0, 
                         'delay': 0}
@@ -180,7 +180,7 @@ if cfg.DC == False: # External Input as Poisson
 			'preConds': {'pop': 'poiss'+str(L[r])},  
 			'postConds': {'pop': L[r]},
 			'connList': auxConn.T,   
-			'weight': 'max(0, (weightMin+normal(0,dweight*weightMin))/10)',  
+			'weight': 'max(0, weightMin+normal(0,dweight*weightMin))',  
 			'delay': 0.5} # 1 delay
         # netParams.connParams['poiss->'+str(L[r])] = {
         #     'preConds': {'pop': 'poiss'+str(L[r])},  
