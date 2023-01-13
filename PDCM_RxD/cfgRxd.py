@@ -14,7 +14,7 @@ cfg.hParams['celsius'] = 37.0
 cfg.dt = 0.025 #0.025              # Internal integration timestep to use
 cfg.verbose = False            # Show detailed messages 
 cfg.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
-cfg.filename = 'Data/connWeight1e-7_balanced_origSyns_500ms/'   # Set file output name
+cfg.filename = 'Data/connWeight1e-7_unbalanced_origSyns_500ms/'   # Set file output name
 cfg.printPopAvgRates = True
 cfg.printRunTime = 1
 cfg.Kceil = 15.0
@@ -86,6 +86,6 @@ cfg.DC = False #True = DC // False = Poisson
 cfg.TH = False #True = on // False = off
 
 # Balanced and Unbalanced external input as PD article
-cfg.Balanced = True #False #True=Balanced // False=Unbalanced
+cfg.Balanced = False #False #True=Balanced // False=Unbalanced
 
 # v0.0 - combination of cfg from ../uniformdensity and netpyne PD thalamocortical model
