@@ -180,7 +180,7 @@ if cfg.DC == False: # External Input as Poisson
 			'preConds': {'pop': 'poiss'+str(L[r])},  
 			'postConds': {'pop': L[r]},
 			'connList': auxConn.T,   
-			'weight': 'max(0, weightMin+normal(0,dweight*weightMin))',  
+			'weight': 'max(0, (weightMin+normal(0,dweight*weightMin))/10)',  
 			'delay': 0.5} # 1 delay
         # netParams.connParams['poiss->'+str(L[r])] = {
         #     'preConds': {'pop': 'poiss'+str(L[r])},  
