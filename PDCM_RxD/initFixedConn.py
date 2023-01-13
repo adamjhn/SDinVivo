@@ -83,7 +83,8 @@ if pcid == 0:
         for r, soma in zip(cell_positions, h.allsec()):
             if (10.0*i-2.5) < r < (10.0*i+2.5):
                 print(i,r)
-                rpos.append((soma.x3d(0)-cfg.sizeX/2, soma.y3d(0)+cfg.sizeY/2, soma.z3d(0)-cfg.sizeZ/2))
+                # rpos.append((soma.x3d(0)-cfg.sizeX/2, soma.y3d(0)+cfg.sizeY/2, soma.z3d(0)-cfg.sizeZ/2))
+                rpos.append((soma.x3d(0), soma.y3d(0), soma.z3d(0)))
                 cell_type.append(soma.name().split('.')[1].split('s')[0])
                 soma_v.append(h.Vector().record(soma(0.5)._ref_v))
                 soma_nai.append(h.Vector().record(soma(0.5)._ref_nai))
