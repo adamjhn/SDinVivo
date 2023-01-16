@@ -14,7 +14,7 @@ cfg.hParams['celsius'] = 37.0
 cfg.dt = 0.025 #0.025              # Internal integration timestep to use
 cfg.verbose = False            # Show detailed messages 
 cfg.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
-cfg.filename = 'Data/connWeight4e-7_unbalanced_origSyns_500ms/'   # Set file output name
+cfg.filename = 'Data/connWeight1e-9_p55poisRate_origSyns_500ms/'   # Set file output name
 cfg.printPopAvgRates = True
 cfg.printRunTime = 1
 cfg.Kceil = 15.0
@@ -31,6 +31,7 @@ cfg.Vtissue = cfg.sizeX * cfg.sizeY * cfg.sizeZ
 # scaling factors 
 cfg.poissonFactor = '1e-6' #'7e-7'
 cfg.connFactor = '1e-7'
+cfg.poissonRateFactor = 0.55
 
 # slice conditions 
 cfg.ox = 'perfused'
