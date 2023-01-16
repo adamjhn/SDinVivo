@@ -4551,7 +4551,8 @@ given that weights here represent changes in conductance in NEURON μS units.
 *** .5 firing rates too low but there is some spiking, 0.6 get SD 
 
 * [2023-1-16 Mon] - tuning input rate 
-
+** fixed raster plot 
+** finding rate scaling for fixed connections: 55% works well
 
 * TODOS
 ** TODO: rescalability of rxd version of PD model 
@@ -4568,5 +4569,5 @@ that doesn't result in SD
 ** TODO: look into netpyne sim data after running 
 ** DONE: try different inhibitory scaling 
 ** TODO: check out bluepyopt
-** TODO: fix y position issue for raster plot 
+** DONE: fix y position issue for raster plot 
 *** changing *rpos* didn't fix, but got rid of positive y

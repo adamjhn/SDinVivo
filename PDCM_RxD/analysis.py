@@ -37,7 +37,7 @@ def rasterPlot(datadir, center = [125, -450, 125], uniform=True, figname='raster
     if includerecs:
         with open(datadir+'recs.pkl', 'rb') as fileObj:
             data = pickle.load(fileObj)
-        for pos, v in zip(data['pos'], data['v']):
+        for pos, v, pop in zip(data['pos'], data['v'], data['cell_type']):
             pks, _ = find_peaks(v.as_numpy(), 0)
             if len(pks):
                 if orderBy == 'y':
@@ -334,8 +334,10 @@ def traceExamples(datadir, figname, iss=[0, 7, 15], recNum=None):
 if __name__ == '__main__':
     from cfgRxd import cfg 
     # rasterPlot('Data/test_templates/', center=[cfg.sizeX/2, -cfg.sizeY/2, cfg.sizeZ], figname='Data/test_templates/raster.png')
-    datadir = 'Data/scaleConnWeight1e-6_poissonInputs_2s/'
+    datadir = 'Data/fixedConn1e-6_p6RateInp_unbalanced_origSyns_2s/'
     rasterPlot(datadir, center=[cfg.sizeX/2, -cfg.sizeY/2, cfg.sizeZ], figname=datadir+'raster.png')
+    plt.ion()
+    plt.show()
     # outpath = 'Data/scaleConnWeight1e-6_poissonInputs_2s/mov_files/'
     # figname = 'Data/scaleConnWeight1e-6_poissonInputs_2s/all_species.mp4'
     # vmins = [3.5, 100, 30, 0.1]
