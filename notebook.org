@@ -4553,6 +4553,9 @@ given that weights here represent changes in conductance in NEURON μS units.
 * [2023-1-16 Mon] - tuning input rate 
 ** fixed raster plot 
 ** finding rate scaling for fixed connections: 55% works well
+** tried amping o2 up to 1, too high 
+** reasonable spike rates for normally distributed inputs (based of fixed) 
+*** fair number of silent cells, could be tweaked
 
 * TODOS
 ** TODO: rescalability of rxd version of PD model 
