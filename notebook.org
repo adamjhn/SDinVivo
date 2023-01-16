@@ -4550,6 +4550,8 @@ given that weights here represent changes in conductance in NEURON μS units.
 ** getting reasonable results with fixed weights and reducing rate of poisson inputs by between 50% and 60%
 *** .5 firing rates too low but there is some spiking, 0.6 get SD 
 
+* [2023-1-16 Mon] - tuning input rate 
+
 
 * TODOS
 ** TODO: rescalability of rxd version of PD model 
