@@ -4557,6 +4557,12 @@ given that weights here represent changes in conductance in NEURON μS units.
 ** reasonable spike rates for normally distributed inputs (based of fixed) 
 *** fair number of silent cells, could be tweaked
 
+* [2023-1-17 Tue] - more parameter tuning 
+** removing doubled weight to L2e didn't eliminate SD w/in 2s 
+** ok results with variable connection weights, but looks like some pops dont fire
+** increasing o2 x 10 resulted in almost no activity; glial o2x10 no difference
+*** might try increasing g_gliamax
+
 * TODOS
 ** TODO: rescalability of rxd version of PD model 
 ** DONE: fix uniformdensity raster plot 
