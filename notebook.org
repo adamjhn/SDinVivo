@@ -30,6 +30,7 @@ nkcc1 = unkcc1*fko*(log((ki * cli / vir**2) / (ko * clo / vor**2)) + log((nai * 
 kcc2 = ukcc2 * log((ki * cli / vir**2) / (ko * clo / vor**2))
 nkcc1 = unkcc1*fko*(log((ki * cli * vor**2) / (ko * clo * vir**2)) + log((nai * cli * vor**2) / (nao * clo * vir**2)))
 kcc2 = ukcc2 * log((ki * cli * vor**2) / (ko * clo * vir**2))
+
 * [2020-1-14 Tue]
 ** Notes on Wei et al Spikes, Seizures, Spreading Depression
 *** Unification of Neuronal Spikes, Seizures, and Spreading Depression
@@ -4562,6 +4563,10 @@ given that weights here represent changes in conductance in NEURON μS units.
 ** ok results with variable connection weights, but looks like some pops dont fire
 ** increasing o2 x 10 resulted in almost no activity; glial o2x10 no difference
 *** might try increasing g_gliamax
+
+* [2023-1-18 Wed] - still nothing reasonable looking 
+** adam looking at weight scaling 
+** tried getting rid of scaleConnWeight, no good 
 
 * TODOS
 ** TODO: rescalability of rxd version of PD model 
