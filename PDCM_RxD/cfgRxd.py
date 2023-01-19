@@ -18,7 +18,7 @@ cfg.filename = 'Data/scale2e-6_m1e-3v1e-4_p4poisRate_origSyns_500ms/'   # Set fi
 cfg.printPopAvgRates = True
 cfg.printRunTime = 1
 cfg.Kceil = 15.0
-cfg.nRec = 36
+cfg.nRec = 120
 cfg.recordCellsSpikes = ['L2e', 'L2i', 'L4e', 'L4i', 'L5e', 'L5i','L6e', 'L6i'] # record only spikes of cells (not ext stims)
 
  # Network dimensions
