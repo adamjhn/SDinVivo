@@ -4568,6 +4568,9 @@ given that weights here represent changes in conductance in NEURON μS units.
 ** adam looking at weight scaling 
 ** tried getting rid of scaleConnWeight, no good 
 
+* [2023-1-19 Thu] - found reasonable combo of stim and conn params 
+** scaleConnWeight: 2e-6; conn weights: x*0.001; 40% poisson input rate
+
 * TODOS
 ** TODO: rescalability of rxd version of PD model 
 ** DONE: fix uniformdensity raster plot 

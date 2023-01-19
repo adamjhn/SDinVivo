@@ -261,7 +261,7 @@ for r in range(0,8):
                     'preConds': {'pop': L[c]},                         # conditions of presyn cells
                     'postConds': {'pop': L[r]},                        # conditions of postsyn cells
                     'divergence': cfg.ScaleFactor*(np.log(1.-C[r][c])/np.log(1. -1./(N_Full[r]*N_Full[c])) ) /N_Full[c],
-                    'weight':'2*max(0, 0.001 +normal(0,0.0001*0.001))', # synaptic weight
+                    'weight':'2*max(0, 0.001 +normal(0,0.0005*0.001))', # synaptic weight
                     'delay':'max(0.1, delayMin_e +normal(0,ddelay*delayMin_e))',  # transmission delay (ms)
                     'synMech' : syn}
             else:
@@ -276,7 +276,7 @@ for r in range(0,8):
                     'preConds': {'pop': L[c]},                         # conditions of presyn cells
                     'postConds': {'pop': L[r]},                        # conditions of postsyn cells
                     'divergence': cfg.ScaleFactor*(np.log(1.-C[r][c])/np.log(1. -1./(N_Full[r]*N_Full[c])) ) /N_Full[c],
-                    'weight': 'max(0, 0.001 +normal(0,0.0001*0.001))', # synaptic weight
+                    'weight': 'max(0, 0.001 +normal(0,0.0005*0.001))', # synaptic weight
                     'delay':'max(0.1, delayMin_e +normal(0,ddelay*delayMin_e))',  # transmission delay (ms)
                     'synMech' : syn}                                                # synaptic mechanism
                 # netParams.connParams[str(L[c])+'->'+str(L[r])] = { 
@@ -305,7 +305,7 @@ for r in range(0,8):
                 'preConds': {'pop': L[c]},                         # conditions of presyn cells
                 'postConds': {'pop': L[r]},                        # conditions of postsyn cells
                 'divergence': cfg.ScaleFactor*(np.log(1.-C[r][c])/np.log(1. -1./(N_Full[r]*N_Full[c])) ) /N_Full[c],
-                'weight': '-4*max(0, 0.001 +normal(0,0.0001*0.001))', # synaptic weight
+                'weight': '-4*max(0, 0.001 +normal(0,0.0005*0.001))', # synaptic weight
                 'delay':'max(0.1, delayMin_i +normal(0,ddelay*delayMin_i))',  # transmission delay (ms)
                 'synMech' : syn}                                                  # synaptic mechanism
         
