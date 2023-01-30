@@ -163,7 +163,7 @@ def run(tstop):
         if pcid == 0: progress_bar(tstop)
         pc.psolve(pc.t(0)+h.dt)
 
-# run(500)
+run(500)
 
 # plt.imshow(mask)
 # plt.ion()
