@@ -4578,8 +4578,8 @@ K+ buildup, but unclear if it would regardless
 * [2023-1-30 Mon] - generating capilarries from histology data 
 ** tried analyzing image, generating ECS based on it, and inserting 
 O2 sources
-*** issue w/ consistent dimensions 
-*** issue w/ persistence of sources 
+*** issue w/ consistent dimensions
+*** issue w/ persistence of sources - fixed with finitialize and larger z-axis
 ** genCaps.py: v0.0 - generates ecs filled with o2 sources based on capillary labelled histology image
 
 * TODOS

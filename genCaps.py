@@ -75,7 +75,7 @@ except:
     pass
 x = [-xdim/2, xdim/2]
 y = [-ydim/2, ydim/2]
-z = [-100, 100]
+z = [-1000, 1000]
 ecs_o2 = rxd.Extracellular(x[0], y[0], z[0], x[1], y[1], z[1], dx=100,
                         volume_fraction=1.0, tortuosity=1.0)
 
@@ -84,7 +84,7 @@ ecs_o2 = rxd.Extracellular(x[0], y[0], z[0], x[1], y[1], z[1], dx=100,
 #                 isinstance(nd, rxd.node.Node1D) else ( 0.1
 #                 if (nd.x3d**2 + nd.y3d**2) <= 4000**2 else 0.04), ecs_boundary_conditions=None) # changed for separate ecs for o2 
 o2_extracellular = rxd.Species([ecs_o2], name='o2', d=3.3, initial= lambda nd: 100 if
-                isinstance(nd, rxd.node.Node1D) else (0.1 if mask[np.argmin((ybins-nd.y3d)**2)][np.argmin((xbins-nd.x3d)**2)] else 0.04), ecs_boundary_conditions=None) # changed for separate ecs for o2 
+                isinstance(nd, rxd.node.Node1D) else (0.1 if mask[np.argmin((ybins-nd.y3d)**2)][np.argmin((xbins-nd.x3d)**2)] else 0.04), ecs_boundary_conditions=0.04) # changed for separate ecs for o2 
 # o2_extracellular = rxd.Species([ecs_o2], name='o2', d=3.3, initial= lambda nd: 100 if
 #                 isinstance(nd, rxd.node.Node1D) else ( 100
 #                 if mask[np.argmin((ybins-nd.y3d)**2)][np.argmin(xbins-nd.x3d)**2] > 0 else 0.1), ecs_boundary_conditions=0.1) # changed for separate ecs for o2 
@@ -94,7 +94,7 @@ o2ecs = o2_extracellular[ecs_o2]
 
 # core conditions
 def cap(nd):
-    if mask[np.argmin((ybins-nd.y3d)**2)][np.argmin(xbins-nd.x3d)**2] > 0:
+    if mask[np.argmin((ybins-nd.y3d)**2)][np.argmin((xbins-nd.x3d)**2)] > 0:
         return 1.0
     return 0.0
 
@@ -119,9 +119,9 @@ ecsbc = rxd.Parameter([ecs_o2], name='ecsbc', value = lambda nd: bc(nd))
 
 hascap = rxd.Parameter([ecs_o2], name='hascap', value = lambda nd: cap(nd))
 
-# o2_source = rxd.Rate(o2ecs, hascap*(epsilon_o2 * (0.1 - o2ecs)))
-o2_source = rxd.Rate(o2ecs, hascap*10)
-o2diff = rxd.Rate(o2ecs, (epsilon_o2 * (0.04 - o2ecs))) 
+o2_source = rxd.Rate(o2ecs, hascap*(epsilon_o2 * (1.0 - o2ecs)))
+# o2_source = rxd.Rate(o2ecs, hascap*10)
+o2diff = rxd.Rate(o2ecs, ecsbc*(epsilon_o2 * (0.04 - o2ecs))) 
 
 # for nd in o2ecs.nodes:
 #     carg = np.argmin((xbins-nd.x3d)**2)
@@ -162,6 +162,8 @@ def run(tstop):
                                 % h.t)
         if pcid == 0: progress_bar(tstop)
         pc.psolve(pc.t(0)+h.dt)
+
+h.finitialize(-70)
 
 run(500)
 
