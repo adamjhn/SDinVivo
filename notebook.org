@@ -4582,6 +4582,11 @@ O2 sources
 *** issue w/ persistence of sources - fixed with finitialize and larger z-axis
 ** genCaps.py: v0.0 - generates ecs filled with o2 sources based on capillary labelled histology image
 
+* [2023-2-1 Wed] - extruding 2D capilarry data 
+** trying random walk w/ momentum
+** at the point where have 3D array with capillaries in each plane represented by single pixel/entry 
+*** need to edit *generateMask* to handle 3D array rather than original image 
+
 * TODOS
 ** TODO: rescalability of rxd version of PD model 
 ** DONE: fix uniformdensity raster plot 
@@ -4593,7 +4598,7 @@ O2 sources
 that doesn't result in SD 
 ** DONE: look into biophysical version of the model
 *** conversion probably more complicated that point cels (need Ca, add Na/K pumps)
-** TODO: look into running w/ netpyne 
+** DONE: look into running w/ netpyne 
 ** TODO: look into netpyne sim data after running 
 ** DONE: try different inhibitory scaling 
 ** TODO: check out bluepyopt
