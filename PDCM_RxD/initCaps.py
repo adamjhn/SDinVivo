@@ -181,13 +181,14 @@ run(cfg.duration)
 ## basic plotting
 if pcid == 0:
     from analysis import traceExamples, compareKwaves, rasterPlot, plotMemV, allSpeciesMov
-    traceExamples(cfg.filename, cfg.filename + 'traces.png', iss=[0,4,8,12,13])
+    traceExamples(cfg.filename, cfg.filename + 'traces.png', iss=[0,4,8])
     plt.close()
     compareKwaves([cfg.filename], [cfg.ox], 'Condition', colors=['r'], figname=cfg.filename+'kwave.png')
     plt.close()
     rasterPlot(cfg.filename, center=[cfg.sizeX/2, -cfg.sizeY/2, cfg.sizeZ], figname=cfg.filename+'raster.png')
     plt.close()
     plotMemV(cfg.filename)
+    plt.close()
     vmins = [3.5, 100, 30, 0.1]
     vmaxes = [40, 130, 140, 0.1]
     extent = (0,242.0,-1470.0, 0.0)
