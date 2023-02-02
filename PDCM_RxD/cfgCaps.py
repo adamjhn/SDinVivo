@@ -1,3 +1,5 @@
+import sys 
+sys.path.insert(0,'/u/craig/netpyne/')
 from netpyne import specs
 import numpy as np
 import cv2
