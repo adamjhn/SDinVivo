@@ -93,57 +93,19 @@ def capsPerVoxel(imarray, dx=25, px=0.2627, x=None, y=None, z=None):
 fig_file = 'test_mask.tif'
 img = cv2.imread(fig_file, cv2.IMREAD_GRAYSCALE)
 centers = findCapillaries(img)
-capillaries = extrudeCapillaries(centers, 20, img.shape[1], img.shape[0])
+capillaries = extrudeCapillaries(centers, 9, img.shape[1], img.shape[0])
 mask = mask3D(capillaries, img.shape[1], img.shape[0])
-o2sources = capsPerVoxel(mask)
 
-# def generateMask(filename, dx=25, px=0.2627, x=None, y=None):
-#     im = Image.open(filename)
-#     # imarray = np.array(im).transpose()
-#     imarray = np.array(im)
-#     ## make image array binary 
-#     ones = np.argwhere(imarray == 0)
-#     zs = np.argwhere(imarray == 255)
-#     for z in zs:
-#         imarray[z[0],z[1]] = 0
-#     for one in ones:
-#         imarray[one[0],one[1]] = 1
-    
-#     binsz = int(dx/px) #int(dx/px)
-#     if not x:
-#         x = imarray.shape[1] * px
-#     if not y:
-#         y = imarray.shape[0] * px 
-#     # xdim = imarray.shape[1] * px
-#     # ydim = imarray.shape[0] * px 
+px = 0.2627
+dx = 25
+o2sources = capsPerVoxel(mask, dx=dx, x=250, z=250)
 
-#     rstart = 0
-#     cstart = 0
-#     mask = []
-#     while (rstart+binsz)*px < y:
-#         row = []
-#         while (cstart+binsz)*px < x:
-#             zstack = []
-#             for z in range(imarray.shape[2]):
-#                 zstack.append(np.sum(imarray[rstart:rstart+binsz, cstart:cstart+binsz, z]))
-#             row.append(zstack)
-#             cstart = cstart + binsz 
-#         mask.append(row)
-#         rstart = rstart + binsz + 1
-#         cstart = 0
-#     mask = np.array(mask)
-#     mask[:,0] = 0
-#     mask[0,:] = 0
-
-#     return mask 
-
-# xbins = np.linspace(-xdim/2, xdim/2, mask.shape[1], endpoint=True)
-# ybins = np.linspace(-ydim/2, ydim/2, mask.shape[0], endpoint=True)
-px=0.2627
-dx = 100 
-xdim = img.shape[1] * px 
+# xdim = img.shape[1] * px 
+# ydim = img.shape[0] * px 
+# zdim = o2sources.shape[2] * dx 
+xdim = 250.0
 ydim = img.shape[0] * px 
-zdim = o2sources.shape[2] * dx 
+zdim = 250.0
 xbins = np.linspace(0, xdim, o2sources.shape[1], endpoint=True)
 ybins = np.linspace(-ydim, 0, o2sources.shape[0], endpoint=True)
 zbins = np.linspace(0, zdim, o2sources.shape[2], endpoint=True)
@@ -157,7 +119,6 @@ netParams.sizeZ = zdim        # z-dimension (horizontal length) size in um
 
 ### constants
 from neuron.units import sec, mM
-import math 
 
 e_charge =  1.60217662e-19
 scale = 1e-14/e_charge
@@ -199,7 +160,7 @@ netParams.rxdParams['constants'] = constants
 
 x = [0, xdim]
 y = [-ydim, 0]
-z = [0, 1000]
+z = [0, zdim]
 regions = {}
 regions['ecs_o2'] = {'extracellular' : True, 'xlo' : x[0],
                                             'xhi' : x[1],
@@ -207,16 +168,19 @@ regions['ecs_o2'] = {'extracellular' : True, 'xlo' : x[0],
                                             'yhi' : y[1],
                                             'zlo' : z[0],
                                             'zhi' : z[1],
-                                            'dx' : 100,
+                                            'dx' : dx,
                                             'volume_fraction' : 1.0,
                                             'tortuosity' : 1.0}
 netParams.rxdParams['regions'] = regions
 
 ### species 
 species = {}
-o2_init_str = 'o2_bath if isinstance(node, rxd.node.Node1D) else (0.1 if o2sources[numpy.argmin((ybins-node.y3d)**2),numpy.argmin((xbins-node.x3d)**2),numpy.argmin((zbins-node.z3d)**2)] else 0.04)'
+# o2_init_str = 'o2_bath if isinstance(node, rxd.node.Node1D) else (0.1 if o2sources[numpy.argmin((ybins-node.y3d)**2),numpy.argmin((xbins-node.x3d)**2),numpy.argmin((zbins-node.z3d)**2)] else 0.04)'
+o2_init_str = 'o2_bath if isinstance(node, rxd.node.Node1D) else (0.1*o2sources[numpy.argmin((ybins-node.y3d)**2),numpy.argmin((xbins-node.x3d)**2),numpy.argmin((zbins-node.z3d)**2)] if o2sources[numpy.argmin((ybins-node.y3d)**2),numpy.argmin((xbins-node.x3d)**2),numpy.argmin((zbins-node.z3d)**2)] else 0.04)'
+# species['o2_extracellular'] = {'regions' : ['ecs_o2'], 'd' : 3.3, 'initial' : 0.04,
+#                 'ecs_boundary_conditions' : constants['o2_bath'], 'name' : 'o2'}
 species['o2_extracellular'] = {'regions' : ['ecs_o2'], 'd' : 3.3, 'initial' : o2_init_str,
-                'ecs_boundary_conditions' : constants['o2_bath'], 'name' : 'o2'}
+                'ecs_boundary_conditions' : None, 'name' : 'o2'}
 netParams.rxdParams['species'] = species
 
 ### params 
@@ -224,8 +188,11 @@ params = {}
 params['ecsbc'] = {'regions' : ['ecs_o2'], 'name' : 'ecsbc', 'value' :
     '1 if (abs(node.x3d - ecs_o2._xlo) < ecs_o2._dx[0] or abs(node.x3d - ecs_o2._xhi) < ecs_o2._dx[0] or abs(node.y3d - ecs_o2._ylo) < ecs_o2._dx[1] or abs(node.y3d - ecs_o2._yhi) < ecs_o2._dx[1] or abs(node.z3d - ecs_o2._zlo) < ecs_o2._dx[2] or abs(node.z3d - ecs_o2._zhi) < ecs_o2._dx[2]) else 0'}
 
-params['hascap'] = {'regions' : ['ecs_o2'], 'name' : 'hascap', 'value' :
-    '1.0 if o2sources[numpy.argmin((ybins-node.y3d)**2),numpy.argmin((xbins-node.x3d)**2),numpy.argmin((zbins-node.z3d)**2)] else 0'}
+# params['hascap'] = {'regions' : ['ecs_o2'], 'name' : 'hascap', 'value' :
+#     '1.0 if o2sources[numpy.argmin((ybins-node.y3d)**2),numpy.argmin((xbins-node.x3d)**2),numpy.argmin((zbins-node.z3d)**2)] else 0'}
+
+params['numcap'] = {'regions' : ['ecs_o2'], 'name' : 'numcap', 'value' :
+    'o2sources[numpy.argmin((ybins-node.y3d)**2),numpy.argmin((xbins-node.x3d)**2),numpy.argmin((zbins-node.z3d)**2)]'}
 
 netParams.rxdParams['parameters'] = params
 
@@ -235,8 +202,10 @@ rates = {}
 rates['o2diff'] = {'species' : o2ecs, 'regions' : ['ecs_o2'],
     'rate' : 'ecsbc * (epsilon_o2 * (o2_bath - %s))' % (o2ecs)}
 
+# rates['o2source'] = {'species' : o2ecs, 'regions' : ['ecs_o2'],
+#     'rate' : 'hascap * (epsilon_o2 * (1.0 - %s))' % (o2ecs)}
 rates['o2source'] = {'species' : o2ecs, 'regions' : ['ecs_o2'],
-    'rate' : 'hascap * (epsilon_o2 * (1.0 - - %s))' % (o2ecs)}
+    'rate' : 'numcap * (epsilon_o2 * (1.0 - %s))' % (o2ecs)}
 
 netParams.rxdParams['rates'] = rates 
 
@@ -252,7 +221,7 @@ cfg.filename = 'test_cap_netpyne/'   # Set file output name
 
 cfg.sizeX = xdim #250.0 #1000
 cfg.sizeY = ydim #250.0 #1000
-cfg.sizeZ = 1000.0 #200.0
+cfg.sizeZ = zdim #200.0
 
 sim.initialize(netParams, cfg)  # create network object and set cfg and net params
 sim.net.createPops()                  # instantiate network populations
@@ -320,6 +289,8 @@ try:
     os.makedirs(cfg.filename)
 except:
     pass
+
+plt.ioff()
 
 run(500)
 

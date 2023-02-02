@@ -4587,6 +4587,10 @@ O2 sources
 ** at the point where have 3D array with capillaries in each plane represented by single pixel/entry 
 *** need to edit *generateMask* to handle 3D array rather than original image 
 
+* [2023-2-2 Thu] - combining O2 sources w/ network model 
+** ECS boundary condition for invivo should be Neumann/reflective 
+*** there are sources and sinks outside the boundaries, really can only assume they average out 
+
 * TODOS
 ** TODO: rescalability of rxd version of PD model 
 ** DONE: fix uniformdensity raster plot 
