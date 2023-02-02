@@ -4590,6 +4590,8 @@ O2 sources
 * [2023-2-2 Thu] - combining O2 sources w/ network model 
 ** ECS boundary condition for invivo should be Neumann/reflective 
 *** there are sources and sinks outside the boundaries, really can only assume they average out 
+** driving concentration for o2 point source set to 2.0 leads to fairly stable [o2]
+concentration 
 
 * TODOS
 ** TODO: rescalability of rxd version of PD model 
