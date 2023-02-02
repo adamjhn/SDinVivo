@@ -692,7 +692,7 @@ rates['o2diff'] = {'species' : o2ecs, 'regions' : ['ecs_o2'],
     'rate' : 'ecsbc * (epsilon_o2 * (o2_bath - %s/vol_ratio[ecs]))' % (o2ecs)} # original 
 
 rates['o2source'] = {'species' : o2ecs, 'regions' : ['ecs_o2'],
-    'rate' : 'numcap * (epsilon_o2 * (1.0 - %s))' % (o2ecs)}
+    'rate' : 'numcap * (epsilon_o2 * (2.0 - %s))' % (o2ecs)}
 
 # rates['o2diff'] = {'species' : o2ecs, 'regions' : ['ecs_o2'],
 #     'rate' : '(epsilon_o2 * (o2_bath - %s/vol_ratio[ecs]))' % (o2ecs)} # o2everywhere
