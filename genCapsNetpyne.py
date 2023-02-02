@@ -26,32 +26,32 @@ def findCapillaries(img):
                 passes = passes + 1
     return centers
 
-def takeStep(pos, xmax, ymax, dx=5, px=0.2627):
+def takeStep(pos, xmax, ymax, dz=5, px=0.2627):
     samp = np.random.rand()
     if samp < 0.44:
         newpos = [pos[0], pos[1]]
     elif samp < 0.51:
-        newpos = [pos[0], pos[1] + int(dx*px)]
+        newpos = [pos[0], pos[1] + int(dz*px)]
     elif samp < 0.58:
-        newpos = [pos[0], pos[1] - int(dx*px)]
+        newpos = [pos[0], pos[1] - int(dz*px)]
     elif samp < 0.65:
-        newpos = [pos[0] + int(dx*px), pos[1]]
+        newpos = [pos[0] + int(dz*px), pos[1]]
     elif samp < 0.72:
-        newpos = [pos[0] - int(dx*px), pos[1]]
+        newpos = [pos[0] - int(dz*px), pos[1]]
     elif samp < 0.79:
-        newpos = [pos[0] + int(dx*px), pos[1] + int(dx*px)]
+        newpos = [pos[0] + int(dz*px), pos[1] + int(dz*px)]
     elif samp < 0.86:
-        newpos = [pos[0] - int(dx*px), pos[1] - int(dx*px)]
+        newpos = [pos[0] - int(dz*px), pos[1] - int(dz*px)]
     elif samp < 0.93:
-        newpos = [pos[0] + int(dx*px), pos[1] - int(dx*px)]
+        newpos = [pos[0] + int(dz*px), pos[1] - int(dz*px)]
     else:
-        newpos = [pos[0] - int(dx*px), pos[1] + int(dx*px)]
+        newpos = [pos[0] - int(dz*px), pos[1] + int(dz*px)]
     if (0 < newpos[0] < xmax) and (0 < newpos[1] < ymax):
         return newpos
     else:
         return takeStep(pos)
 
-def extrudeCapillaries(positions, Nz, xmax, ymax, dx=5, px=0.2627):
+def extrudeCapillaries(positions, Nz, xmax, ymax, dz=5, px=0.2627):
     caps = []
     for cap in positions:
         zpos = [cap]
@@ -60,73 +60,100 @@ def extrudeCapillaries(positions, Nz, xmax, ymax, dx=5, px=0.2627):
         caps.append(zpos)
     return caps 
 
-def mask3D(capillaries, xshape, yshape, dx=25, px=0.2627, zstack=0):
-    xy_mask = np.zeros((xshape, yshape, len(capillaries[0])), dtype=np.int16)
+def mask3D(capillaries, xsz, ysz):
+    mask = np.zeros((xsz, ysz, len(capillaries[0])), dtype=np.int16)
     for cap in capillaries:
         for z in range(len(cap)):
-            xy_mask[cap[z][0], cap[z][1], z] = 1
-    return xy_mask
+            mask[cap[z][0], cap[z][1], z] = 1
+    return mask
 
-fig_file = 'test_mask.tif'
-img = cv2.imread(fig_file, cv2.IMREAD_GRAYSCALE)
-centers = findCapillaries(img)
-capillaries = extrudeCapillaries(centers, 20, img.shape[1], img.shape[0])
-mask = mask3D(capillaries, img.shape[1], img.shape[0])
-
-def generateMask(filename, dx=25, px=0.2627, x=None, y=None):
-    im = Image.open(filename)
-    # imarray = np.array(im).transpose()
-    imarray = np.array(im)
-    ## make image array binary 
-    ones = np.argwhere(imarray == 0)
-    zs = np.argwhere(imarray == 255)
-    for z in zs:
-        imarray[z[0],z[1]] = 0
-    for one in ones:
-        imarray[one[0],one[1]] = 1
-    
-    binsz = int(dx/px) #int(dx/px)
+def capsPerVoxel(imarray, dx=25, px=0.2627, x=None, y=None, z=None):
+    binsz = int(dx/px)
     if not x:
         x = imarray.shape[1] * px
     if not y:
-        y = imarray.shape[0] * px 
-    # xdim = imarray.shape[1] * px
-    # ydim = imarray.shape[0] * px 
-
+        y = imarray.shape[0] * px
     rstart = 0
     cstart = 0
     mask = []
     while (rstart+binsz)*px < y:
         row = []
         while (cstart+binsz)*px < x:
-            row.append(np.sum(imarray[rstart:rstart+binsz, cstart:cstart+binsz]))
+            zstack = []
+            for z in range(imarray.shape[2]):
+                zstack.append(np.sum(imarray[rstart:rstart+binsz, cstart:cstart+binsz, z]))
+            row.append(zstack)
             cstart = cstart + binsz 
         mask.append(row)
         rstart = rstart + binsz + 1
         cstart = 0
     mask = np.array(mask)
-    mask[:,0] = 0
-    mask[0,:] = 0
-
     return mask 
 
-def extrudeCapillaries(mask, zbins):
-    pass
-mask = generateMask('test_mask.tif', dx=5)
-plt.ion()
-plt.imshow(mask)
+fig_file = 'test_mask.tif'
+img = cv2.imread(fig_file, cv2.IMREAD_GRAYSCALE)
+centers = findCapillaries(img)
+capillaries = extrudeCapillaries(centers, 20, img.shape[1], img.shape[0])
+mask = mask3D(capillaries, img.shape[1], img.shape[0])
+o2sources = capsPerVoxel(mask)
+
+# def generateMask(filename, dx=25, px=0.2627, x=None, y=None):
+#     im = Image.open(filename)
+#     # imarray = np.array(im).transpose()
+#     imarray = np.array(im)
+#     ## make image array binary 
+#     ones = np.argwhere(imarray == 0)
+#     zs = np.argwhere(imarray == 255)
+#     for z in zs:
+#         imarray[z[0],z[1]] = 0
+#     for one in ones:
+#         imarray[one[0],one[1]] = 1
+    
+#     binsz = int(dx/px) #int(dx/px)
+#     if not x:
+#         x = imarray.shape[1] * px
+#     if not y:
+#         y = imarray.shape[0] * px 
+#     # xdim = imarray.shape[1] * px
+#     # ydim = imarray.shape[0] * px 
+
+#     rstart = 0
+#     cstart = 0
+#     mask = []
+#     while (rstart+binsz)*px < y:
+#         row = []
+#         while (cstart+binsz)*px < x:
+#             zstack = []
+#             for z in range(imarray.shape[2]):
+#                 zstack.append(np.sum(imarray[rstart:rstart+binsz, cstart:cstart+binsz, z]))
+#             row.append(zstack)
+#             cstart = cstart + binsz 
+#         mask.append(row)
+#         rstart = rstart + binsz + 1
+#         cstart = 0
+#     mask = np.array(mask)
+#     mask[:,0] = 0
+#     mask[0,:] = 0
+
+#     return mask 
 
 # xbins = np.linspace(-xdim/2, xdim/2, mask.shape[1], endpoint=True)
 # ybins = np.linspace(-ydim/2, ydim/2, mask.shape[0], endpoint=True)
-xbins = np.linspace(0, xdim, mask.shape[1], endpoint=True)
-ybins = np.linspace(-ydim, 0, mask.shape[0], endpoint=True)
+px=0.2627
+dx = 100 
+xdim = img.shape[1] * px 
+ydim = img.shape[0] * px 
+zdim = o2sources.shape[2] * dx 
+xbins = np.linspace(0, xdim, o2sources.shape[1], endpoint=True)
+ybins = np.linspace(-ydim, 0, o2sources.shape[0], endpoint=True)
+zbins = np.linspace(0, zdim, o2sources.shape[2], endpoint=True)
 
 #------------------------------------------------------------------------------------------
 netParams = specs.NetParams()
 
 netParams.sizeX = xdim       # x-dimension (horizontal length) size in um
 netParams.sizeY = ydim        # y-dimension (vertical height or cortical depth) size in um
-netParams.sizeZ = xdim        # z-dimension (horizontal length) size in um
+netParams.sizeZ = zdim        # z-dimension (horizontal length) size in um
 
 ### constants
 from neuron.units import sec, mM
@@ -164,9 +191,10 @@ constants = {'e_charge' : e_charge,
             'v_initial' : -70.0,
             'r0' : 100.0, 
             'k0' : 70.0, 
-            'mask' : mask,
-            'xbins' : np.linspace(0, xdim, mask.shape[1], endpoint=True),
-            'ybins' : np.linspace(-ydim, 0, mask.shape[0], endpoint=True)}
+            'o2sources' : o2sources,
+            'xbins' : xbins,
+            'ybins' : ybins,
+            'zbins' : zbins}
 netParams.rxdParams['constants'] = constants
 
 x = [0, xdim]
@@ -186,7 +214,7 @@ netParams.rxdParams['regions'] = regions
 
 ### species 
 species = {}
-o2_init_str = 'o2_bath if isinstance(node, rxd.node.Node1D) else (0.1 if mask[numpy.argmin((ybins-node.y3d)**2)][numpy.argmin((xbins-node.x3d)**2)] else 0.04)'
+o2_init_str = 'o2_bath if isinstance(node, rxd.node.Node1D) else (0.1 if o2sources[numpy.argmin((ybins-node.y3d)**2),numpy.argmin((xbins-node.x3d)**2),numpy.argmin((zbins-node.z3d)**2)] else 0.04)'
 species['o2_extracellular'] = {'regions' : ['ecs_o2'], 'd' : 3.3, 'initial' : o2_init_str,
                 'ecs_boundary_conditions' : constants['o2_bath'], 'name' : 'o2'}
 netParams.rxdParams['species'] = species
@@ -197,7 +225,7 @@ params['ecsbc'] = {'regions' : ['ecs_o2'], 'name' : 'ecsbc', 'value' :
     '1 if (abs(node.x3d - ecs_o2._xlo) < ecs_o2._dx[0] or abs(node.x3d - ecs_o2._xhi) < ecs_o2._dx[0] or abs(node.y3d - ecs_o2._ylo) < ecs_o2._dx[1] or abs(node.y3d - ecs_o2._yhi) < ecs_o2._dx[1] or abs(node.z3d - ecs_o2._zlo) < ecs_o2._dx[2] or abs(node.z3d - ecs_o2._zhi) < ecs_o2._dx[2]) else 0'}
 
 params['hascap'] = {'regions' : ['ecs_o2'], 'name' : 'hascap', 'value' :
-    '1.0 if mask[numpy.argmin((ybins-node.y3d)**2)][numpy.argmin((xbins-node.x3d)**2)] else 0'}
+    '1.0 if o2sources[numpy.argmin((ybins-node.y3d)**2),numpy.argmin((xbins-node.x3d)**2),numpy.argmin((zbins-node.z3d)**2)] else 0'}
 
 netParams.rxdParams['parameters'] = params
 
@@ -300,3 +328,4 @@ run(500)
 # plt.show()
 
 # v0.0 - generates ecs filled with o2 sources based on capillary labelled histology image
+# v0.1 - extrudes capillaries in histology into 3rd dimension, so o2 sources nonuniform in 3D
