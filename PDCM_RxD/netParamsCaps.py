@@ -667,9 +667,9 @@ mcReactions['pump_current_na'] = {'reactant' : 'na[cyt]', 'product' : 'na[ecs]',
                                 'membrane' : 'mem', 'custom_dynamics' : True, 'membrane_flux' : True}
 
 # O2 depletrion from Na/K pump in neuron
-# mcReactions['oxygen'] = {'reactant' : o2ecs, 'product' : 'dump[cyt]', 
-#                         'rate_f' : "(%s) * (%s)" % (pump, volume_scale), 
-#                         'membrane' : 'mem', 'custom_dynamics' : True}
+mcReactions['oxygen'] = {'reactant' : o2ecs, 'product' : 'dump[cyt]', 
+                        'rate_f' : "(%s) * (%s)" % (pump, volume_scale), 
+                        'membrane' : 'mem', 'custom_dynamics' : True}
 
 netParams.rxdParams['multicompartmentReactions'] = mcReactions
 
@@ -717,8 +717,8 @@ rates['glia_na_current'] = {'species' : 'na[ecs]', 'regions' : ['ecs'],
     'rate' : '(3.0 * (%s))' % (gliapump)}
 
 ## Glial O2 depletion 
-# rates['o2_pump'] = {'species' : o2ecs, 'regions' : ['ecs_o2'],
-#     'rate' : '-(%s)' % (gliapump)}
+rates['o2_pump'] = {'species' : o2ecs, 'regions' : ['ecs_o2'],
+    'rate' : '-(%s)' % (gliapump)}
 
 netParams.rxdParams['rates'] = rates
 
