@@ -214,13 +214,17 @@ netParams.sizeX = cfg.sizeX# - 2*cfg.somaR # x-dimension (horizontal length) siz
 netParams.sizeY = cfg.sizeY# - 2*cfg.somaR # y-dimension (vertical height or cortical depth) size in um
 netParams.sizeZ = cfg.sizeZ# - 2*cfg.somaR # z-dimension (horizontal length) size in um
 
-netParams.scaleConnWeight = 1.65e-5
+netParams.scaleConnWeight = 1.65e-6
 
 popDepths = [[0.08, 0.27], [0.08, 0.27], [0.27, 0.58], [0.27, 0.58], [0.58, 0.73], [0.58, 0.73], [0.73, 1.0], [0.73, 1.0]]
 
 #------------------------------------------------------------------------------
 # create populations
-# create populations
+# for i in range(0,8):
+#     netParams.popParams[L[i]] = {'cellType': str(L[i]), 'numCells': int(N_[i]), 'cellModel': L[i], 
+#         'xRange': [0.0, cfg.sizeX],
+#         'yRange' : [2 * cfg.somaR + popDepths[i][0] * cfg.sizeY, cfg.sizeY * popDepths[i][1] - 2 * cfg.somaR],
+#         'zRange' : [0.0, cfg.sizeZ]}
 for i in range(0,8):
     if i == 0 or i == 1:
         netParams.popParams[L[i]] = {'cellType': str(L[i]), 'numCells': int(N_[i]), 'cellModel': L[i], 
