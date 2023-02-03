@@ -130,21 +130,10 @@ popDepths = [[0.08, 0.27], [0.08, 0.27], [0.27, 0.58], [0.27, 0.58], [0.58, 0.73
 #------------------------------------------------------------------------------
 # create populations
 for i in range(0,8):
-    if i == 0 or i == 1:
-        netParams.popParams[L[i]] = {'cellType': str(L[i]), 'numCells': int(N_[i]), 'cellModel': L[i], 
-            'xRange': [0.0, cfg.sizeX],
-            'yRange' : [popDepths[i][0] * cfg.sizeY, cfg.sizeY * popDepths[i][1] - 2 * cfg.somaR],
-            'zRange' : [0.0, cfg.sizeZ]}
-    elif i == 6 or i == 7:
-        netParams.popParams[L[i]] = {'cellType': str(L[i]), 'numCells': int(N_[i]), 'cellModel': L[i], 
-            'xRange': [0.0, cfg.sizeX],
-            'yRange' : [2 * cfg.somaR + popDepths[i][0] * cfg.sizeY, cfg.sizeY * popDepths[i][1]],
-            'zRange' : [0.0, cfg.sizeZ]}
-    if i == 0:
-        netParams.popParams[L[i]] = {'cellType': str(L[i]), 'numCells': int(N_[i]), 'cellModel': L[i], 
-            'xRange': [0.0, cfg.sizeX],
-            'yRange' : [popDepths[i][0] * cfg.sizeY, cfg.sizeY * popDepths[i][1]],
-            'zRange' : [0.0, cfg.sizeZ]}
+    netParams.popParams[L[i]] = {'cellType': str(L[i]), 'numCells': int(N_[i]), 'cellModel': L[i], 
+        'xRange': [0.0, cfg.sizeX],
+        'yRange' : [2 * cfg.somaR + popDepths[i][0] * cfg.sizeY, cfg.sizeY * popDepths[i][1] - 2 * cfg.somaR],
+        'zRange' : [0.0, cfg.sizeZ]}
 
 # To atualization of Point Neurons
 # netParams.popParams['bkg_IF'] = {'numCells': 1, 'cellModel': 'NetStim','rate': 40000,  'start':0.0, 'noise': 0.0, 'delay':0}
