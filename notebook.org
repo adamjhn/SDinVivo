@@ -4593,7 +4593,14 @@ O2 sources
 ** driving concentration for o2 point source set to 2.0 leads to fairly stable [o2]
 concentration 
 
+* [2023-2-3 Fri] - getting stable activity 
+** stable firing, stable o2 w/ poisson rate * 0.3, o2 source driven by 2.0, unconnected 
+*** ran for 0.5s, want to see for 2s, connected, etc 
+** need ecsbc for o2? 
+** 
+
 * TODOS
+** TODO: fix mp4 
 ** TODO: rescalability of rxd version of PD model 
 ** DONE: fix uniformdensity raster plot 
 ** DONE: find proper weight scaling 
