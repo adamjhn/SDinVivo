@@ -4598,10 +4598,18 @@ concentration
 *** ran for 0.5s, want to see for 2s, connected, etc 
 *** turns to SD in L2 w/in 2s
 ** need ecsbc for o2? 
-** 
+
+* [2023-2-6 Mon] - stable activity, trying SD 
+** 2s of stable activity
+*** [[PDCM_RxD/Data/scale_1.65e-6_fixedConn_poisRate_0.3_o2drive_2_2s/][2s of stable activity]]
+*** only 1 cell *L2i_84* looks like about to go into depol block 
+*** most firing rates 0.5 - 10 Hz 
+*** this connectivity definitely works 
+*** O2 does go over 0.05, need to figure out how strict 
+
 
 * TODOS
-** TODO: fix mp4 
+** DONE: fix mp4 
 ** TODO: rescalability of rxd version of PD model 
 ** DONE: fix uniformdensity raster plot 
 ** DONE: find proper weight scaling 

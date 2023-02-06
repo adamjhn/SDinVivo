@@ -18,7 +18,7 @@ cfg.hParams['celsius'] = 37.0
 cfg.dt = 0.025 #0.025              # Internal integration timestep to use
 cfg.verbose = False            # Show detailed messages 
 cfg.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
-cfg.filename = 'Data/scale_1.65e-6_fixedConn_poisRate_0.3_o2drive_2_2s/'   # Set file output name
+cfg.filename = 'Data/k040r0200_scale_1.65e-6_fixedConn_poisRate_0.3_o2drive_2_500ms/'   # Set file output name
 cfg.printPopAvgRates = True
 cfg.printRunTime = 1
 cfg.Kceil = 15.0
@@ -73,8 +73,8 @@ else:
 cfg.cyt_fraction = cfg.rs**3 / cfg.somaR**3
 
 # sd init params 
-cfg.k0 = 3.5
-cfg.r0 = 100.0
+cfg.k0 = 40.0 #3.5
+cfg.r0 = 200 #100.0
 
 ###########################################################
 # Network Options
