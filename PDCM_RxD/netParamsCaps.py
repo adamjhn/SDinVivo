@@ -74,8 +74,8 @@ def generateO2sources(fig_file, Nz, px, dx, x=None, y=None, z=None):
     img = cv2.imread(fig_file, cv2.IMREAD_GRAYSCALE)
     img = img[:, round(250/px)]
     centers = findCapillaries(img)
-    capillaries = extrudeCapillaries(centers, Nz, img.shape[1], img.shape[0])
-    o2sources = mask3D(capillaries, img.shape[1], img.shape[0], px, dx)
+    capillaries = extrudeCapillaries(centers, int(img.shape[1]*px/dx)-1, img.shape[0], img.shape[1])
+    o2sources = mask3D(capillaries, img.shape[0], img.shape[1], px, dx)
     return o2sources
 
 # Reescaling function (move to separate module?)

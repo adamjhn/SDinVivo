@@ -96,7 +96,7 @@ px = 0.2627
 dx = 25
 img = img[:, :round(250/px)]
 centers = findCapillaries(img)
-capillaries = extrudeCapillaries(centers, int(img.shape[1]*px/dx), img.shape[0], img.shape[1])
+capillaries = extrudeCapillaries(centers, int(img.shape[1]*px/dx)-1, img.shape[0], img.shape[1])
 o2sources = mask3D(capillaries, img.shape[0], img.shape[1], px, dx)
 # o2sources = capsPerVoxel(mask, dx=dx, x=img.shape[1]*px, z=img.shape[1]*px)
 
