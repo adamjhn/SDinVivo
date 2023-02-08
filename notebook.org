@@ -4607,6 +4607,10 @@ concentration
 *** this connectivity definitely works 
 *** O2 does go over 0.05, need to figure out how strict 
 
+* [2023-2-8 Wed] - issues with prev version 
+** something was wrong with placing O2 sources, seems fixed 
+** O2 reaching as high as 0.09 (too high)
+
 
 * TODOS
 ** TODO: figure out K distribution plotting issue
