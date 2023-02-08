@@ -52,7 +52,7 @@ def takeStep(pos, xmax, ymax, dz=5, px=0.2627):
     if (0 < newpos[0] < xmax) and (0 < newpos[1] < ymax):
         return newpos
     else:
-        return takeStep(pos)
+        return pos #takeStep(pos, xmax, ymax, dz=dz, px=px)
 
 def extrudeCapillaries(positions, Nz, xmax, ymax, dz=5, px=0.2627):
     caps = []
@@ -63,42 +63,19 @@ def extrudeCapillaries(positions, Nz, xmax, ymax, dz=5, px=0.2627):
         caps.append(zpos)
     return caps 
 
-def mask3D(capillaries, xsz, ysz):
-    mask = np.zeros((xsz, ysz, len(capillaries[0])), dtype=np.int16)
+def mask3D(capillaries, xsz, ysz, px, dx):
+    mask = np.zeros((round(ysz*px/dx), round(xsz*px/dx), len(capillaries[0])), dtype=np.int16)
     for cap in capillaries:
         for z in range(len(cap)):
-            mask[cap[z][0], cap[z][1], z] = 1
+            mask[round(cap[z][0]*px/dx)-1, round(cap[z][1]*px/dx)-1, z] = mask[round(cap[z][0]*px/dx)-1, round(cap[z][1]*px/dx)-1, z] + 1
     return mask
-
-def capsPerVoxel(imarray, dx=25, px=0.2627, x=None, y=None, z=None):
-    binsz = int(dx/px)
-    if not x:
-        x = imarray.shape[1] * px
-    if not y:
-        y = imarray.shape[0] * px
-    rstart = 0
-    cstart = 0
-    mask = []
-    while (rstart+binsz)*px < y:
-        row = []
-        while (cstart+binsz)*px < x:
-            zstack = []
-            for z in range(imarray.shape[2]):
-                zstack.append(np.sum(imarray[rstart:rstart+binsz, cstart:cstart+binsz, z]))
-            row.append(zstack)
-            cstart = cstart + binsz 
-        mask.append(row)
-        rstart = rstart + binsz + 1
-        cstart = 0
-    mask = np.array(mask)
-    return mask 
 
 def generateO2sources(fig_file, Nz, px, dx, x=None, y=None, z=None):
     img = cv2.imread(fig_file, cv2.IMREAD_GRAYSCALE)
+    img = img[:, round(250/px)]
     centers = findCapillaries(img)
     capillaries = extrudeCapillaries(centers, Nz, img.shape[1], img.shape[0])
-    mask = mask3D(capillaries, img.shape[1], img.shape[0])
-    o2sources = capsPerVoxel(mask, dx=dx, x=x, y=y, z=z)
+    o2sources = mask3D(capillaries, img.shape[1], img.shape[0], px, dx)
     return o2sources
 
 # Reescaling function (move to separate module?)

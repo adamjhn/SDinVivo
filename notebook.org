@@ -4609,6 +4609,9 @@ concentration
 
 
 * TODOS
+** TODO: figure out K distribution plotting issue
+** TODO: run whole image dimensions 
+** TODO: start SD, O2 deficits 
 ** DONE: fix mp4 
 ** TODO: rescalability of rxd version of PD model 
 ** DONE: fix uniformdensity raster plot 
