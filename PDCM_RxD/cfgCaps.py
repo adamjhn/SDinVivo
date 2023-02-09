@@ -18,22 +18,23 @@ cfg.hParams['celsius'] = 37.0
 cfg.dt = 0.025 #0.025              # Internal integration timestep to use
 cfg.verbose = False            # Show detailed messages 
 cfg.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
-cfg.filename = 'Data/scale_1.8e-6_fixedConn_poisRate_0.3_o2drive_2_500ms/'   # Set file output name
+cfg.filename = 'Data/full_scale_1.8e-6_fixedConn_poisRate_0.3_o2drive_2_500ms/'   # Set file output name
 # cfg.filename = 'Data/unconnected_poisRate_0.3_o2drive_2_500ms_v1/'   # Set file output name
 cfg.printPopAvgRates = True
 cfg.printRunTime = 1
 cfg.Kceil = 15.0
-cfg.nRec = 240
+cfg.nRec = 320
 cfg.recordCellsSpikes = ['L2e', 'L2i', 'L4e', 'L4i', 'L5e', 'L5i','L6e', 'L6i'] # record only spikes of cells (not ext stims)
 
  # Network dimensions
 cfg.fig_file = '../test_mask.tif'
 img = cv2.imread(cfg.fig_file, cv2.IMREAD_GRAYSCALE) # image used for capillaries 
+img = img.transpose()
 cfg.px = 0.2627 # side of image pixel (microns)
 cfg.dx = 25 # side of ECS voxel (microns)
-cfg.sizeX = 250.0 #250.0 #1000
+cfg.sizeX = img.shape[1] * cfg.px#250.0 #1000
 cfg.sizeY = img.shape[0] * cfg.px #250.0 #1000
-cfg.sizeZ = 250.0 #200.0
+cfg.sizeZ = cfg.sizeX #200.0
 cfg.Nz = int(cfg.sizeZ/cfg.dx)-1
 cfg.density = 90000.0
 cfg.Vtissue = cfg.sizeX * cfg.sizeY * cfg.sizeZ
@@ -88,7 +89,7 @@ cfg.r0 = 100.0
 # DC=False ; TH=True;  Balanced=True   => Figure 10A. But I want a partial reproduce so I guess Figure 10C is not necessary
 
 # Size of Network. Adjust this constants, please!
-cfg.ScaleFactor = 0.10  # 1.0 = 80.000 
+cfg.ScaleFactor = 1.0 #= 80.000 
 
 # External input DC or Poisson
 cfg.DC = False #True = DC // False = Poisson

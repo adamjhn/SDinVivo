@@ -94,7 +94,8 @@ fig_file = 'test_mask.tif'
 img = cv2.imread(fig_file, cv2.IMREAD_GRAYSCALE)
 px = 0.2627
 dx = 25
-img = img[:, :round(250/px)]
+img = img.transpose()
+# img = img[:, :round(250/px)]
 centers = findCapillaries(img)
 capillaries = extrudeCapillaries(centers, int(img.shape[1]*px/dx)-1, img.shape[0], img.shape[1])
 o2sources = mask3D(capillaries, img.shape[0], img.shape[1], px, dx)
@@ -293,7 +294,17 @@ except:
 
 plt.ioff()
 
-run(500)
+# run(500)
+
+# fig, axs = plt.subplots(1,3)
+for i, ind in enumerate(zip([0,40,80], ['original', 'midway', 'end'])):
+    fig = plt.figure(); plt.imshow(o2_ecs.states3d[:,:,ind[0]], extent=o2_ecs.extent('xy'), aspect='auto'); 
+    cbar = plt.colorbar()
+    cbar.set_label('Capillaries/Voxel')
+    plt.title(ind[1]+': '+str(ind[0])+' steps')
+    fig.savefig(ind[1]+'.png')
+    # axs[i].colorbar()
+
 
 # plt.imshow(mask)
 # plt.ion()

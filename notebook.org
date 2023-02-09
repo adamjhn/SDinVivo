@@ -4609,7 +4609,9 @@ concentration
 
 * [2023-2-8 Wed] - issues with prev version 
 ** something was wrong with placing O2 sources, seems fixed 
-** O2 reaching as high as 0.09 (too high)
+** O2 reaching as high as 0.09 (too high) max 
+** scaleConnWeight=1.65e-6 too low, OK w/ scaleConnWeight=1.8e-6 (increased spiking over unconnected)
+*** stable activity for 500 ms, peak o2=0.09, average is ~0.04
 
 
 * TODOS
