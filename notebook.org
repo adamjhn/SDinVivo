@@ -4613,6 +4613,11 @@ concentration
 ** scaleConnWeight=1.65e-6 too low, OK w/ scaleConnWeight=1.8e-6 (increased spiking over unconnected)
 *** stable activity for 500 ms, peak o2=0.09, average is ~0.04
 
+* [2023-2-9 Thu] - full scale sims 
+** running full version of PD (80k cells) with o2 sources derived from histology 
+*** x,z = 1000, y>2000 um 
+** needed to rotate by -90 histology image for cortical depth as y-axis 
+ 
 
 * TODOS
 ** TODO: figure out K distribution plotting issue

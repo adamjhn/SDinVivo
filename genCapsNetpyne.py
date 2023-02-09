@@ -90,23 +90,24 @@ def capsPerVoxel(imarray, dx=25, px=0.2627, x=None, y=None, z=None):
     mask = np.array(mask)
     return mask 
 
-fig_file = 'test_mask.tif'
-img = cv2.imread(fig_file, cv2.IMREAD_GRAYSCALE)
 px = 0.2627
 dx = 25
-img = img.transpose()
-# img = img[:, :round(250/px)]
+fig_file = 'test_mask.tif'
+img = cv2.imread(fig_file, cv2.IMREAD_GRAYSCALE)
+img = np.rot90(img,k=-1)
+# img = img[:, :round(1000/px)]
+# img = img.transpose()
 centers = findCapillaries(img)
-capillaries = extrudeCapillaries(centers, int(img.shape[1]*px/dx)-1, img.shape[0], img.shape[1])
+capillaries = extrudeCapillaries(centers, int(img.shape[0]*px/dx)-1, img.shape[0], img.shape[1])
 o2sources = mask3D(capillaries, img.shape[0], img.shape[1], px, dx)
 # o2sources = capsPerVoxel(mask, dx=dx, x=img.shape[1]*px, z=img.shape[1]*px)
 
 # xdim = img.shape[1] * px 
 # ydim = img.shape[0] * px 
 # zdim = o2sources.shape[2] * dx 
-xdim = img.shape[0]*px #250.0
-ydim = img.shape[1] * px 
-zdim = img.shape[0]*px #250.0
+xdim = img.shape[1] * px #250.0
+ydim = img.shape[0] * px 
+zdim = img.shape[1] * px #250.0
 xbins = np.linspace(0, xdim, o2sources.shape[1], endpoint=True)
 ybins = np.linspace(-ydim, 0, o2sources.shape[0], endpoint=True)
 zbins = np.linspace(0, zdim, o2sources.shape[2], endpoint=True)
@@ -297,8 +298,8 @@ plt.ioff()
 # run(500)
 
 # fig, axs = plt.subplots(1,3)
-for i, ind in enumerate(zip([0,40,80], ['original', 'midway', 'end'])):
-    fig = plt.figure(); plt.imshow(o2_ecs.states3d[:,:,ind[0]], extent=o2_ecs.extent('xy'), aspect='auto'); 
+for i, ind in enumerate(zip([0,12,24], ['original', 'midway', 'end'])):
+    fig = plt.figure(); plt.imshow(o2_ecs.states3d[:,:,ind[0]], extent=o2_ecs.extent('xy')); 
     cbar = plt.colorbar()
     cbar.set_label('Capillaries/Voxel')
     plt.title(ind[1]+': '+str(ind[0])+' steps')

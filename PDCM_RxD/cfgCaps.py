@@ -29,10 +29,10 @@ cfg.recordCellsSpikes = ['L2e', 'L2i', 'L4e', 'L4i', 'L5e', 'L5i','L6e', 'L6i'] 
  # Network dimensions
 cfg.fig_file = '../test_mask.tif'
 img = cv2.imread(cfg.fig_file, cv2.IMREAD_GRAYSCALE) # image used for capillaries 
-img = img.transpose()
+img = np.rot90(img, k=-1)
 cfg.px = 0.2627 # side of image pixel (microns)
 cfg.dx = 25 # side of ECS voxel (microns)
-cfg.sizeX = img.shape[1] * cfg.px#250.0 #1000
+cfg.sizeX = 1000 #img.shape[1] * cfg.px#250.0 #1000
 cfg.sizeY = img.shape[0] * cfg.px #250.0 #1000
 cfg.sizeZ = cfg.sizeX #200.0
 cfg.Nz = int(cfg.sizeZ/cfg.dx)-1
@@ -59,11 +59,12 @@ cfg.prep = 'invitro'
 
 # neuron params 
 cfg.betaNrn = 0.24
-cfg.Ncell = int(cfg.density*(cfg.sizeX*cfg.sizeY*cfg.sizeZ*1e-9)) # default 90k / mm^3
-if cfg.density == 90000.0:
-    cfg.rs = ((cfg.betaNrn * cfg.Vtissue) / (2 * np.pi * cfg.Ncell)) ** (1/3)
-else:
-    cfg.rs = 7.52
+cfg.Ncell = 80000 #int(cfg.density*(cfg.sizeX*cfg.sizeY*cfg.sizeZ*1e-9)) # default 90k / mm^3
+cfg.rs = ((cfg.betaNrn * cfg.Vtissue) / (2 * np.pi * cfg.Ncell)) ** (1/3)
+# if cfg.density == 90000.0:
+#     cfg.rs = ((cfg.betaNrn * cfg.Vtissue) / (2 * np.pi * cfg.Ncell)) ** (1/3)
+# else:
+#     cfg.rs = 7.52
 
 cfg.epas = -70 # False
 cfg.gpas = 0.0001
