@@ -4616,12 +4616,25 @@ concentration
 * [2023-2-9 Thu] - full scale sims 
 ** running full version of PD (80k cells) with o2 sources derived from histology 
 *** x,z = 1000, y>2000 um 
+*** already spent 1hr on making connections 
 ** needed to rotate by -90 histology image for cortical depth as y-axis 
- 
+
+* [2023-2-10 Fri] - full scale PD network 
+** full scale PD sim w/ 80k neurons and capillaries from  1 mm in x dim of histology image 
+*** 500 ms took 13 hrs on is w/ 80 cores, 6 rxd threads 
+*** firing rates all >90Hz 
+*** cell density = 33417 cells/mm^3 
+**** neuron density for human cortex EM data is 12970/mm^3 
+** questions 
+*** how to handle *no L1 in PD* model?
+
+* [2023-2-12 Sun] - full PD, humam neural density 
+** sizeX=sizeZ=1600 -> 13053 neurons/mm^3
 
 * TODOS
 ** TODO: figure out K distribution plotting issue
-** TODO: run whole image dimensions 
+** TODO: run whole image dimensions
+*** ran full PD w/ half image  
 ** TODO: start SD, O2 deficits 
 ** DONE: fix mp4 
 ** TODO: rescalability of rxd version of PD model 
