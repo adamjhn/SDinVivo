@@ -23,7 +23,7 @@ cfg.filename = 'Data/full_13kpmm_dx_100_500ms/'   # Set file output name
 cfg.printPopAvgRates = True
 cfg.printRunTime = 1
 cfg.Kceil = 15.0
-cfg.nRec = 320
+cfg.nRec = 96
 cfg.recordCellsSpikes = ['L2e', 'L2i', 'L4e', 'L4i', 'L5e', 'L5i','L6e', 'L6i'] # record only spikes of cells (not ext stims)
 
  # Network dimensions
