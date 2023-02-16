@@ -4630,10 +4630,16 @@ concentration
 
 * [2023-2-12 Sun] - full PD, humam neural density 
 ** sizeX=sizeZ=1600 -> 13053 neurons/mm^3
+*** high ~100 Hz firing rates
+
+* [2023-2-16 Thu] - 
+
+** trying unconnected version of 
 
 * TODOS
 ** TODO: figure out K distribution plotting issue
-** TODO: run whole image dimensions
+** TODO: remove layer 1 
+** DONE: run whole image dimensions
 *** ran full PD w/ half image  
 ** TODO: start SD, O2 deficits 
 ** DONE: fix mp4 
