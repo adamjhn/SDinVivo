@@ -23,7 +23,7 @@ cfg.filename = 'Data/fullPD_unconnected_13kpmm_noL1_dx50_500ms/'   # Set file ou
 cfg.printPopAvgRates = True
 cfg.printRunTime = 1
 cfg.Kceil = 15.0
-cfg.nRec = 320
+cfg.nRec = 240
 cfg.recordCellsSpikes = ['L2e', 'L2i', 'L4e', 'L4i', 'L5e', 'L5i','L6e', 'L6i'] # record only spikes of cells (not ext stims)
 
  # Network dimensions
