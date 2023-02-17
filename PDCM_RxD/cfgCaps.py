@@ -1,5 +1,5 @@
 import sys 
-sys.path.insert(0,'/u/craig/netpyne/')
+sys.path.insert(0,'/home/craig/netpyne/')
 # sys.path.insert(0,'/home/craig/netpyne/')
 from netpyne import specs
 import numpy as np
@@ -12,13 +12,13 @@ import cv2
 
 # Run parameters
 cfg = specs.SimConfig()       # object of class cfg to store simulation configuration
-cfg.duration = 0.5e3        # Duration of the simulation, in ms
+cfg.duration = 0.2e3        # Duration of the simulation, in ms
 cfg.hParams['v_init'] = -70.0   # set v_init to -65 mV
 cfg.hParams['celsius'] = 37.0
 cfg.dt = 0.025 #0.025              # Internal integration timestep to use
 cfg.verbose = False            # Show detailed messages 
 cfg.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
-cfg.filename = 'Data/fullPD_unconnected_13kpmm_noL1_dx50_500ms/'   # Set file output name
+cfg.filename = 'Data/fullPD_unconnected_13kpmm_pois1e-7_dx50_500ms/'   # Set file output name
 # cfg.filename = 'Data/unconnected_poisRate_0.3_o2drive_2_500ms_v1/'   # Set file output name
 cfg.printPopAvgRates = True
 cfg.printRunTime = 1
@@ -40,7 +40,7 @@ cfg.density = 90000.0
 cfg.Vtissue = cfg.sizeX * cfg.sizeY * cfg.sizeZ
 
 # scaling factors 
-cfg.poissonFactor = '1e-6' #'7e-7'
+cfg.poissonFactor = '1e-7' #'7e-7'
 cfg.connFactor = '1e-7'
 cfg.poissonRateFactor = 0.3
 

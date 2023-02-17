@@ -4632,13 +4632,19 @@ concentration
 ** sizeX=sizeZ=1600 -> 13053 neurons/mm^3
 *** high ~100 Hz firing rates
 
-* [2023-2-16 Thu] - 
+* [2023-2-16 Thu] - ramping up running sims 
+** removed layer 1 from the sim - happens to be ~1000 pixels down 
+** trying unconnected version of PD 
+*** similar results to connected - bring down stim levels 
+** got setup on expanse 
 
-** trying unconnected version of 
+* [2023-2-17 Fri] 
+** ran 1 sim on expanse
+** need to bring down baseline, unconnected firing rates 
 
 * TODOS
 ** TODO: figure out K distribution plotting issue
-** TODO: remove layer 1 
+** DONE: remove layer 1 
 ** DONE: run whole image dimensions
 *** ran full PD w/ half image  
 ** TODO: start SD, O2 deficits 
