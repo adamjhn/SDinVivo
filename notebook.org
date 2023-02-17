@@ -4638,9 +4638,12 @@ concentration
 *** similar results to connected - bring down stim levels 
 ** got setup on expanse 
 
-* [2023-2-17 Fri] 
-** ran 1 sim on expanse
+* [2023-2-17 Fri] - expanse
+** ran 1 sim on expanse - unconnected 
 ** need to bring down baseline, unconnected firing rates 
+*** brough very low w/ poissonRateFactor = 0.1 
+** sims get killed making connections on expanse 
+*** tried shared and shared-large   
 
 * TODOS
 ** TODO: figure out K distribution plotting issue

@@ -1,5 +1,6 @@
 import sys 
-sys.path.insert(0,'/home/ckelley/netpyne/')
+# sys.path.insert(0,'/home/ckelley/netpyne/')
+sys.path.insert(0, '/u/craig/netpyne/')
 from netpyne import sim
 from netParamsCaps import netParams
 from cfgCaps import cfg
