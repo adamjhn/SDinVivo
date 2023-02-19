@@ -3,7 +3,7 @@ sys.path.insert(0,'/home/ckelley/netpyne/')
 # sys.path.insert(0, '/u/craig/netpyne/')
 from netpyne import specs
 import numpy as np
-from cfgCaps import cfg
+from cfg_swc16_pr2_thF_o22 import cfg
 from neuron.units import sec, mM
 import math 
 import cv2 
@@ -193,7 +193,7 @@ netParams.sizeX = cfg.sizeX# - 2*cfg.somaR # x-dimension (horizontal length) siz
 netParams.sizeY = cfg.sizeY# - 2*cfg.somaR # y-dimension (vertical height or cortical depth) size in um
 netParams.sizeZ = cfg.sizeZ# - 2*cfg.somaR # z-dimension (horizontal length) size in um
 
-netParams.scaleConnWeight = 1.7e-6
+netParams.scaleConnWeight = 1.6-6
 
 popDepths = [[0.08, 0.27], [0.08, 0.27], [0.27, 0.58], [0.27, 0.58], [0.58, 0.73], [0.58, 0.73], [0.73, 1.0], [0.73, 1.0]]
 

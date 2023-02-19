@@ -12,14 +12,14 @@ import cv2
 
 # Run parameters
 cfg = specs.SimConfig()       # object of class cfg to store simulation configuration
-cfg.duration = 0.2e3        # Duration of the simulation, in ms
+cfg.duration = 2e3        # Duration of the simulation, in ms
 cfg.hParams['v_init'] = -70.0   # set v_init to -65 mV
 cfg.hParams['celsius'] = 37.0
 cfg.dt = 0.025 #0.025              # Internal integration timestep to use
 cfg.verbose = False            # Show detailed messages 
 cfg.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
 exp_dir = '/expanse/lustre/scratch/ckelley/temp_project/SDinVivoData/'
-cfg.filename = exp_dir + 'fullPD_connected1.7e-6_13kpmm_pois0.2_dx50_200ms/'   # Set file output name
+cfg.filename = exp_dir + 'connected1.6e-6_o2d2_pr2_thT_13kpmm_dx50_2s//'   # Set file output name
 # cfg.filename = 'Data/unconnected_poisRate_0.3_o2drive_2_500ms_v1/'   # Set file output name
 cfg.printPopAvgRates = True
 cfg.printRunTime = 1
@@ -99,7 +99,7 @@ cfg.ScaleFactor = 1.0 #= 80.000
 cfg.DC = False #True = DC // False = Poisson
 
 # Thalamic input in 4th and 6th layer on or off
-cfg.TH = False #True = on // False = off
+cfg.TH = True #True = on // False = off
 
 # Balanced and Unbalanced external input as PD article
 cfg.Balanced = False #False #True=Balanced // False=Unbalanced
