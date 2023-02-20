@@ -4645,6 +4645,14 @@ concentration
 ** sims get killed making connections on expanse 
 *** tried shared and shared-large   
 
+* [2023-2-20 Mon] - first results from expanse 
+** connected1.6e-6_o2d2_pr2_thT_13kpmm_dx50_2s/ looks fairly reasonable
+*** burst of activity early, but most firing rates between 20-60 Hz 
+** connected1.7e-6_o2d2_pr1_thF_13kpmm_dx50_2s/ very sparse firing 
+** connected1.6e-6_o2d2_pr1_thF_13kpmm_dx50_2s/ also very sparse 
+** 2 sims didn't run all the way through 
+*** connected1.6e-6_o2d2_pr2_thF_13kpmm_dx50_2s/ - dk why
+*** connected1.7e-6_o2d2_pr1_thT_13kpmm_dx50_2s/ - typo 
 * TODOS
 ** TODO: figure out K distribution plotting issue
 ** DONE: remove layer 1 
