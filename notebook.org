@@ -4653,6 +4653,7 @@ concentration
 ** 2 sims didn't run all the way through 
 *** connected1.6e-6_o2d2_pr2_thF_13kpmm_dx50_2s/ - dk why
 *** connected1.7e-6_o2d2_pr1_thT_13kpmm_dx50_2s/ - typo 
+
 * TODOS
 ** TODO: figure out K distribution plotting issue
 ** DONE: remove layer 1 
