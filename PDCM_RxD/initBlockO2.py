@@ -132,8 +132,6 @@ def run(tstop):
             # plot extracellular concentrations averaged over depth every 100ms 
             if pcid == 0:
                 saveconc()
-                runSS()
-                saveRxd()
         if pcid == 0: progress_bar(tstop)
         pc.psolve(pc.t(0)+h.dt)  # run the simulation for 1 time step
 
