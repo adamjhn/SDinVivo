@@ -4682,6 +4682,10 @@ for i in range(len(data['v'])):
   *** was importing wrong cfg 
   ** running no O2 sources on expanse 
 
+  * [2023-2-27 Mon] - sims from weekend 
+  ** k040 r0300 500ms - kwave moved just a little, need to run for longer 
+  ** 
+
 * TODOS
 ** DONE: figure out K distribution plotting issue
 ** DONE: remove layer 1 
