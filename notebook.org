@@ -4684,7 +4684,9 @@ for i in range(len(data['v'])):
 
   * [2023-2-27 Mon] - sims from weekend 
   ** k040 r0300 500ms - kwave moved just a little, need to run for longer 
-  ** 
+  *** running for 10s on expanse 
+  ** half o2 - start of SD in l2 and 4 after ~4s, should run for longer 
+  *** running for 10s on expanse 
 
 * TODOS
 ** DONE: figure out K distribution plotting issue
