@@ -4692,6 +4692,10 @@ for i in range(len(data['v'])):
 * [2023-2-28 Tue] - half o2 failed 
 ** need to revisit savestate 
 
+* [2023-3-1 Wed] - long sims 
+** fixed savestate, testing on is 
+** in contact w/ sdsc about communication issue with neuron 
+
 
 * TODOS
 ** TODO: fix save/restore state 

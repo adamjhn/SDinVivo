@@ -5,15 +5,25 @@ from scipy.signal import find_peaks
 import pickle
 import imageio
 
-def rasterPlot(datadir, center = [125, -450, 125], uniform=True, figname='raster.png', orderBy='y', position='center', includerecs=True):
-    files = os.listdir(datadir)
-    mem_files = [file for file in files if (file.startswith(position + 'membrane'))]
+def rasterPlot(datadir, center = [125, -450, 125], uniform=True, figname='raster.png', orderBy='y', position='center', includerecs=True, dur=None):
+    if not isinstance(datadir, list):
+        files = os.listdir(datadir)
+        mem_files = [file for file in files if (file.startswith(position + 'membrane'))]
+    else:
+        files = os.listdir(datadir[0])
+        mem_files = [file for file in files if (file.startswith(position + 'membrane'))]
     raster = {}
     for file in mem_files:
-        with open(os.path.join(datadir,file), 'rb') as fileObj:
-            data = pickle.load(fileObj)
+        if not isinstance(datadir, list):
+            with open(os.path.join(datadir,file), 'rb') as fileObj:
+                data = pickle.load(fileObj)
+        else:
+            data = combineMemFiles(datadir, file)
         for v, pos, pop in zip(data[0], data[1], data[2]):
-            pks, _ = find_peaks(v.as_numpy(), 0)
+            if isinstance(v, list):
+                pks, _ = find_peaks(v,0)
+            else:
+                pks, _ = find_peaks(v.as_numpy(), 0)
             if len(pks):
                 if uniform:
                     r = ((pos[0]-center[0])**2 + (pos[1]-center[1])**2 + (pos[2]-center[2])**2)**(0.5)
@@ -35,10 +45,16 @@ def rasterPlot(datadir, center = [125, -450, 125], uniform=True, figname='raster
                     raster[pos[1]] = {'t': [data[3][ind] for ind in pks],
                         'pop' : pop}
     if includerecs:
-        with open(datadir+'recs.pkl', 'rb') as fileObj:
-            data = pickle.load(fileObj)
+        if not isinstance(datadir, list):
+            with open(datadir+'recs.pkl', 'rb') as fileObj:
+                data = pickle.load(fileObj)
+        else:
+            data = combineRecs(datadir)
         for pos, v, pop in zip(data['pos'], data['v'], data['cell_type']):
-            pks, _ = find_peaks(v.as_numpy(), 0)
+            if isinstance(v, list):
+                pks, _ = find_peaks(v,0)
+            else:
+                pks, _ = find_peaks(v.as_numpy(), 0)
             if len(pks):
                 if orderBy == 'y':
                     raster[pos[1]] = {'t': [data['t'][ind] for ind in pks],
@@ -67,6 +83,8 @@ def rasterPlot(datadir, center = [125, -450, 125], uniform=True, figname='raster
             plt.plot(np.divide(raster[key]['t'],1000), [key for i in range(len(raster[key]['t']))], '.', color=c, label=raster[key]['pop'])
         else:
             plt.plot(np.divide(raster[key]['t'],1000), [key for i in range(len(raster[key]['t']))], '.', color=c)
+    if dur:
+        plt.xlim(0,dur)
     plt.legend()
     plt.savefig(figname)
 
@@ -151,7 +169,7 @@ def allSpeciesMov(datadir, outpath, vmins, vmaxes, figname, condition='Perfused'
 def combineMemFiles(datadirs, file):
     # combine mem files from fragmented runs
     ## load first file 
-    with open(os.path.join(datadirs[0],file), 'rb') as fileObj:
+    with open(os.path.join(datadirs[0], file), 'rb') as fileObj:
         data = pickle.load(fileObj)
     ## convert voltages to lists
     for ind, v in enumerate(data[0]):
@@ -162,7 +180,9 @@ def combineMemFiles(datadirs, file):
             data0 = pickle.load(fileObj)
         for ind, v in enumerate(data0[0]):
             data[0][ind].extend(list(v))
+        data[1].extend(data0[1])
         data[2].extend(data0[2])
+        data[3].extend(data0[3])
     return data 
 
 def xyOfSpikeTime(datadir, position='center'):
@@ -252,6 +272,43 @@ def compareKwaves(dirs, labels, legendTitle, colors=None, trimDict=None, sbplt=N
     if figname:
         plt.savefig(figname)
 
+def combineRecs(dirs, recNum=None):
+    """tool for combining recordings from multiple recordings.  dirs is a list of
+    directories with data.  intended for use with state saving/restoring"""
+    # open first file 
+    if recNum:
+        filename = 'recs' + str(recNum) + '.pkl'
+    else:
+        filename = 'recs.pkl'
+
+    with open(dirs[0]+filename,'rb') as fileObj:
+        data = pickle.load(fileObj)
+    ## convert first file to all lists 
+    for key in data.keys():
+        if isinstance(data[key], list) and key != 'cell_type':
+            for i in range(len(data[key])):
+                try:
+                    data[key][i] = list(data[key][i])
+                except:
+                    pass
+        else:
+            data[key] = list(data[key])
+    # load each new data file
+    for datadir in dirs[1:]:
+        with open(datadir+filename, 'rb') as fileObj:
+            new_data = pickle.load(fileObj)
+        ## extend lists in original data with new data
+        for key in new_data.keys():
+            if isinstance(new_data[key], list):
+                for i in range(len(new_data[key])):
+                    try:
+                        data[key][i].extend(list(new_data[key][i]))
+                    except:
+                        pass
+            else:
+                data[key].extend(list(new_data[key]))
+    return data
+
 def traceExamples(datadir, figname, iss=[0, 7, 15], recNum=None):
     """Function for plotting Vmemb, as well as ion and o2 concentration, for selected (iss) recorded
     neurons"""
@@ -260,8 +317,11 @@ def traceExamples(datadir, figname, iss=[0, 7, 15], recNum=None):
     else:
         filename = 'recs.pkl'
         
-    with open(datadir+filename, 'rb') as fileObj:
-        data = pickle.load(fileObj)
+    if isinstance(datadir, list):
+        data = combineRecs(datadir)
+    else:
+        with open(datadir+filename, 'rb') as fileObj:
+            data = pickle.load(fileObj)
     # fig = plt.figure(figsize=(18,9))
     fig, axs = plt.subplots(2,4)
     fig.set_figheight(9)
@@ -332,10 +392,11 @@ def traceExamples(datadir, figname, iss=[0, 7, 15], recNum=None):
     plt.savefig(figname)
 
 if __name__ == '__main__':
-    from cfgRxd import cfg 
+    from cfgReduced import cfg 
     # rasterPlot('Data/test_templates/', center=[cfg.sizeX/2, -cfg.sizeY/2, cfg.sizeZ], figname='Data/test_templates/raster.png')
-    datadir = 'Data/fixedConn1e-6_p6RateInp_unbalanced_origSyns_2s/'
-    rasterPlot(datadir, center=[cfg.sizeX/2, -cfg.sizeY/2, cfg.sizeZ], figname=datadir+'raster.png')
+    # datadir = 'Data/fixedConn1e-6_p6RateInp_unbalanced_origSyns_2s/'
+    datadir = ['test_dir/', 'test_dir_cont/']
+    rasterPlot(datadir, center=[cfg.sizeX/2, -cfg.sizeY/2, cfg.sizeZ], figname='test_dir_cont/raster.png')
     plt.ion()
     plt.show()
     # outpath = 'Data/scaleConnWeight1e-6_poissonInputs_2s/mov_files/'
