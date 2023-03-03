@@ -218,38 +218,59 @@ def xyOfSpikeTime(datadir, position='center'):
     return posBySpkTime
 
 def plotMemV(datadir, position='center'):
-    try:
-        os.mkdir(datadir + 'vmembs/')
-    except:
-        pass
     plt.ioff()
-    files = os.listdir(datadir)
+    if isinstance(datadir, list):
+        try:
+            os.mkdir(datadir[-1] + 'vmembs/')
+        except:
+            pass
+        files = os.listdir(datadir[0])
+    else:
+        try:
+            os.mkdir(datadir + 'vmembs/')
+        except:
+            pass
+        files = os.listdir(datadir[0])
     count = 0
     mem_files = [file for file in files if (file.startswith(position + 'membrane'))]
     for file in mem_files:
-        with open(os.path.join(datadir,file), 'rb') as fileObj:
-            data = pickle.load(fileObj)
+        if isinstance(datadir, list):
+            data = combineMemFiles(datadir, file)
+        else:
+            with open(os.path.join(datadir,file), 'rb') as fileObj:
+                data = pickle.load(fileObj)
         for v, pos, pop in zip(data[0], data[1], data[2]):
             plt.figure()
             plt.plot(v)
-            spks, _ = find_peaks(v.as_numpy(), height=0)
+            if isinstance(v, list):
+                spks, _ = find_peaks(v, height=0)
+            else:
+                spks, _ = find_peaks(v.as_numpy(), height=0)
             freq = len(spks) / (len(v)/40e3)
             plt.title(pop + ': ' + str(freq) + ' Hz')
-            plt.savefig(datadir + 'vmembs/' + pop + '_' + str(count) + '.png')
+            plt.savefig(datadir[-1] + 'vmembs/' + pop + '_' + str(count) + '.png')
             count = count + 1
             plt.close()
 
 def compareKwaves(dirs, labels, legendTitle, colors=None, trimDict=None, sbplt=None, figname=None):
     """plots K+ wave trajectories from sims stored in list of folders dirs"""
     # plt.figure(figsize=(10,6))
-    for d, l, c in zip(dirs, labels, colors):
-        f = open(d + 'wave_progress.txt', 'r')
+    for dr, l, c in zip(dirs, labels, colors):
         times = []
         wave_pos = []
-        for line in f.readlines():
-            times.append(float(line.split()[0]))
-            wave_pos.append(float(line.split()[-2]))
-        f.close()
+        if isinstance(dr, list):
+            for d in dr:
+                f = open(d + 'wave_progress.txt', 'r')
+                for line in f.readlines():
+                    times.append(float(line.split()[0]))
+                    wave_pos.append(float(line.split()[-2]))
+                f.close()
+        else:
+            f = open(dr + 'wave_progress.txt', 'r')
+            for line in f.readlines():
+                times.append(float(line.split()[0]))
+                wave_pos.append(float(line.split()[-2]))
+            f.close()
         if sbplt:
             plt.subplot(sbplt)
         if trimDict:
@@ -394,9 +415,8 @@ def traceExamples(datadir, figname, iss=[0, 7, 15], recNum=None):
 if __name__ == '__main__':
     from cfgReduced import cfg 
     # rasterPlot('Data/test_templates/', center=[cfg.sizeX/2, -cfg.sizeY/2, cfg.sizeZ], figname='Data/test_templates/raster.png')
-    # datadir = 'Data/fixedConn1e-6_p6RateInp_unbalanced_origSyns_2s/'
+    # datadir = 'Data/fixedConn1e-6_p6RateInp_unbalancedk   _origSyns_2s/'
     datadir = ['test_dir/', 'test_dir_cont/']
-    rasterPlot(datadir, center=[cfg.sizeX/2, -cfg.sizeY/2, cfg.sizeZ], figname='test_dir_cont/raster.png')
     plt.ion()
     plt.show()
     # outpath = 'Data/scaleConnWeight1e-6_poissonInputs_2s/mov_files/'
@@ -405,6 +425,8 @@ if __name__ == '__main__':
     # vmaxes = [40, 130, 140, 0.1]
     # extent = (0,242.0,-1470.0, 0.0)
     # allSpeciesMov(datadir, outpath, vmins, vmaxes, figname, dur=2, extent=extent, includeSpks=True)
+    compareKwaves([[cfg.restoredir, cfg.filename]], [cfg.ox], 'Condition', colors=['r'], figname=cfg.filename+'kwave.png')
     # plotMemV(datadir)
 
-# v0.0 - analysis scripts for raster plots, traces, etc.
+# v0.0 - analysis functions for raster plots, traces, etc.
+# v0.1 - updating functions to handle fragmented sims 

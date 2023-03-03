@@ -202,18 +202,32 @@ saveRxd()
 ## basic plotting
 if pcid == 0:
     from analysis import traceExamples, compareKwaves, rasterPlot, plotMemV, allSpeciesMov
-    traceExamples(cfg.filename, cfg.filename + 'traces.png', iss=[0,4,8])
-    plt.close()
-    compareKwaves([cfg.filename], [cfg.ox], 'Condition', colors=['r'], figname=cfg.filename+'kwave.png')
-    plt.close()
-    rasterPlot(cfg.filename, center=[cfg.sizeX/2, -cfg.sizeY/2, cfg.sizeZ], figname=cfg.filename+'raster.png')
-    plt.close()
-    plotMemV(cfg.filename)
-    plt.close()
-    vmins = [3.5, 100, 30, 0.03]
-    vmaxes = [40, 130, 140, 0.05]
-    extent = (0,cfg.sizeX,-cfg.sizeY, 0.0)
-    allSpeciesMov(cfg.filename, cfg.filename+'mov_files/', vmins, vmaxes, cfg.filename+'all_species.mp4', dur=cfg.duration/1000, extent=extent, includeSpks=True)
+    if cfg.restoredir:
+        traceExamples([cfg.restoredir, cfg.filename], cfg.filename + 'traces.png', iss=[0,4,8])
+        plt.close()
+        compareKwaves([cfg.filename], [cfg.ox], 'Condition', colors=['r'], figname=cfg.filename+'kwave.png')
+        plt.close()
+        rasterPlot([cfg.restoredir, cfg.filename], center=[cfg.sizeX/2, -cfg.sizeY/2, cfg.sizeZ], figname=cfg.filename+'raster.png')
+        plt.close()
+        plotMemV([cfg.restoredir, cfg.filename])
+        plt.close()
+        vmins = [3.5, 100, 30, 0.03]
+        vmaxes = [40, 130, 140, 0.05]
+        extent = (0,cfg.sizeX,-cfg.sizeY, 0.0)
+        allSpeciesMov(cfg.filename, cfg.filename+'mov_files/', vmins, vmaxes, cfg.filename+'all_species.mp4', dur=cfg.duration/1000, extent=extent, includeSpks=True)    
+    else:
+        traceExamples(cfg.filename, cfg.filename + 'traces.png', iss=[0,4,8])
+        plt.close()
+        compareKwaves([cfg.filename], [cfg.ox], 'Condition', colors=['r'], figname=cfg.filename+'kwave.png')
+        plt.close()
+        rasterPlot(cfg.filename, center=[cfg.sizeX/2, -cfg.sizeY/2, cfg.sizeZ], figname=cfg.filename+'raster.png')
+        plt.close()
+        plotMemV(cfg.filename)
+        plt.close()
+        vmins = [3.5, 100, 30, 0.03]
+        vmaxes = [40, 130, 140, 0.05]
+        extent = (0,cfg.sizeX,-cfg.sizeY, 0.0)
+        allSpeciesMov(cfg.filename, cfg.filename+'mov_files/', vmins, vmaxes, cfg.filename+'all_species.mp4', dur=cfg.duration/1000, extent=extent, includeSpks=True)
 
 pc.barrier()
 h.quit()
