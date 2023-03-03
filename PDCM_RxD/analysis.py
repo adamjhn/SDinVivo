@@ -230,7 +230,7 @@ def plotMemV(datadir, position='center'):
             os.mkdir(datadir + 'vmembs/')
         except:
             pass
-        files = os.listdir(datadir[0])
+        files = os.listdir(datadir)
     count = 0
     mem_files = [file for file in files if (file.startswith(position + 'membrane'))]
     for file in mem_files:
@@ -425,7 +425,8 @@ if __name__ == '__main__':
     # vmaxes = [40, 130, 140, 0.1]
     # extent = (0,242.0,-1470.0, 0.0)
     # allSpeciesMov(datadir, outpath, vmins, vmaxes, figname, dur=2, extent=extent, includeSpks=True)
-    compareKwaves([[cfg.restoredir, cfg.filename]], [cfg.ox], 'Condition', colors=['r'], figname=cfg.filename+'kwave.png')
+    # compareKwaves([[cfg.restoredir, cfg.filename]], [cfg.ox], 'Condition', colors=['r'], figname=cfg.filename+'kwave.png')
+    compareKwaves([cfg.filename], [cfg.ox], 'Condition', colors=['r'], figname=cfg.filename+'kwave.png')
     # plotMemV(datadir)
 
 # v0.0 - analysis functions for raster plots, traces, etc.

@@ -12,14 +12,14 @@ import cv2
 
 # Run parameters
 cfg = specs.SimConfig()       # object of class cfg to store simulation configuration
-cfg.duration = 10e3        # Duration of the simulation, in ms
+cfg.duration = 5e3        # Duration of the simulation, in ms
 cfg.hParams['v_init'] = -70.0   # set v_init to -65 mV
 cfg.hParams['celsius'] = 37.0
 cfg.dt = 0.025 #0.025              # Internal integration timestep to use
 cfg.verbose = False            # Show detailed messages 
 cfg.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
 exp_dir = '/expanse/lustre/scratch/ckelley/temp_project/SDinVivoData/'
-cfg.filename = exp_dir + 'O2drive1.0_conn1.6e-6_pois0.2_ThT_13kpmm_dx50_10s/'   # Set file output name
+cfg.filename = exp_dir + 'O2drive1.0_conn1.6e-6_pois0.2_ThT_13kpmm_dx50_5s/'   # Set file output name
 cfg.printPopAvgRates = True
 cfg.printRunTime = 1
 cfg.Kceil = 15.0

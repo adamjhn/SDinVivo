@@ -4703,9 +4703,14 @@ for i in range(len(data['v'])):
 *** A22-312CD34NEUN_region_0_original.jpg - original image 
 *** o2fig_init.py - script for generating stack of o2 source heatmaps 
 
+* [2023-3-3 Fri] - savestate working 
+** running the o2 deficit sims on expanse, can continue w/ savestate after finish / fail 
+** running highK 1 sec at a time on is 
+
+
 * TODOS
 ** TODO: make methods fig 
-** TODO: fix repeated savestates 
+** DONE: fix repeated savestates 
 ** DONE: fix save/restore state 
 *** some plotting integration still needed 
 ** DONE: figure out K distribution plotting issue
