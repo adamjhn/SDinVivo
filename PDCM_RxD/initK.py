@@ -127,6 +127,7 @@ def run(tstop):
     time = []
     saveint = 100
     ssint = 500 
+    lastss = 0
 
     while h.t < tstop:
         time.append(h.t)
@@ -134,9 +135,10 @@ def run(tstop):
             # plot extracellular concentrations averaged over depth every 100ms 
             if pcid == 0:
                 saveconc()
-        if int(h.t) % ssint == 0:
-            runSS()
-            saveRxd()
+        if (int(h.t) % ssint == 0) and (h.t - lastss) > 10:
+                runSS()
+                saveRxd()
+                lastss = h.t
         if pcid == 0: progress_bar(tstop)
         pc.psolve(pc.t(0)+h.dt)  # run the simulation for 1 time step
 

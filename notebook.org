@@ -4696,9 +4696,18 @@ for i in range(len(data['v'])):
 ** fixed savestate, testing on is 
 ** in contact w/ sdsc about communication issue with neuron 
 
+* [2023-3-2 Thu] - plotting, savestate 
+** running savestate ~10x, need to bring down to once 
+** worked on methods fig 
+*** test_mask.tif - binary mask 
+*** A22-312CD34NEUN_region_0_original.jpg - original image 
+*** o2fig_init.py - script for generating stack of o2 source heatmaps 
 
 * TODOS
-** TODO: fix save/restore state 
+** TODO: make methods fig 
+** TODO: fix repeated savestates 
+** DONE: fix save/restore state 
+*** some plotting integration still needed 
 ** DONE: figure out K distribution plotting issue
 ** DONE: remove layer 1 
 ** DONE: run whole image dimensions
