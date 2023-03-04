@@ -4707,6 +4707,10 @@ for i in range(len(data['v'])):
 ** running the o2 deficit sims on expanse, can continue w/ savestate after finish / fail 
 ** running highK 1 sec at a time on is 
 
+* [2023-3-4 Sat] - 
+** blockO2 ran on expanse, didn't quit though 
+** 
+
 
 * TODOS
 ** TODO: make methods fig 

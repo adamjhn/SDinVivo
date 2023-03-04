@@ -12,21 +12,21 @@ import cv2
 
 # Run parameters
 cfg = specs.SimConfig()       # object of class cfg to store simulation configuration
-cfg.duration = 5e3        # Duration of the simulation, in ms
+cfg.duration = 10e3        # Duration of the simulation, in ms
 cfg.hParams['v_init'] = -70.0   # set v_init to -65 mV
 cfg.hParams['celsius'] = 37.0
 cfg.dt = 0.025 #0.025              # Internal integration timestep to use
 cfg.verbose = False            # Show detailed messages 
 cfg.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
 exp_dir = '/expanse/lustre/scratch/ckelley/temp_project/SDinVivoData/'
-cfg.filename = exp_dir + 'O2drive1.0_conn1.6e-6_pois0.2_ThT_13kpmm_dx50_5s/'   # Set file output name
+cfg.filename = exp_dir + 'O2drive1.0_conn1.6e-6_pois0.2_ThT_13kpmm_dx50_5-10s/'   # Set file output name
 cfg.printPopAvgRates = True
 cfg.printRunTime = 1
 cfg.Kceil = 15.0
 cfg.nRec = 240
 cfg.recordCellsSpikes = ['L2e', 'L2i', 'L4e', 'L4i', 'L5e', 'L5i','L6e', 'L6i'] # record only spikes of cells (not ext stims)
 cfg.seed = 120194
-cfg.restoredir = None
+cfg.restoredir = exp_dir + 'O2drive1.0_conn1.6e-6_pois0.2_ThT_13kpmm_dx50_5s/'
 
  # Network dimensions
 cfg.fig_file = '../test_mask.tif'
