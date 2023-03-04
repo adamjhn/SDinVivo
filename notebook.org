@@ -4709,10 +4709,14 @@ for i in range(len(data['v'])):
 
 * [2023-3-4 Sat] - 
 ** blockO2 ran on expanse, didn't quit though 
-** 
+** progress 
+*** blockO2 - 3.9s 
+*** halfO2 - 6.9s 
+*** highK - 1.9s 
 
 
 * TODOS
+** TODO: plotting fragmented runs needs to ignore repeated data 
 ** TODO: make methods fig 
 ** DONE: fix repeated savestates 
 ** DONE: fix save/restore state 
