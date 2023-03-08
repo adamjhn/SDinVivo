@@ -1,6 +1,6 @@
 import sys 
-# sys.path.insert(0,'/home/ckelley/netpyne/')
-sys.path.insert(0, '/u/craig/netpyne/')
+sys.path.insert(0,'/home/ckelley/netpyne/')
+# sys.path.insert(0, '/u/craig/netpyne/')
 from netpyne import specs
 import numpy as np
 import cv2
@@ -20,7 +20,7 @@ cfg.verbose = False            # Show detailed messages
 cfg.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
 exp_dir = '/expanse/lustre/scratch/ckelley/temp_project/SDinVivoData/'
 # cfg.filename = exp_dir + 'k040_r0300_conn1.6e-6_pois0.2_o22_13kpmm_dx50_1s_v1/'   # Set file output name
-cfg.filename = 'k040_r0300_conn1.6e-6_pois0.2_o22_13kpmm_3mm3_dx50_5s/'
+cfg.filename = exp_dir + 'k040_r0300_conn1.6e-6_pois0.2_o22_13kpmm_3mm3_dx50_5s/'
 # cfg.filename = 'Data/unconnected_poisRate_0.3_o2drive_2_500ms_v1/'   # Set file output name
 cfg.printPopAvgRates = True
 cfg.printRunTime = 1

@@ -1,6 +1,6 @@
 import sys 
-# sys.path.insert(0,'/home/ckelley/netpyne/')
-sys.path.insert(0, '/u/craig/netpyne/')
+sys.path.insert(0,'/home/ckelley/netpyne/')
+# sys.path.insert(0, '/u/craig/netpyne/')
 from netpyne import specs
 import numpy as np
 from cfgK import cfg
