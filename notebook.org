@@ -4707,20 +4707,32 @@ for i in range(len(data['v'])):
 ** running the o2 deficit sims on expanse, can continue w/ savestate after finish / fail 
 ** running highK 1 sec at a time on is 
 
-* [2023-3-4 Sat] - 
+* [2023-3-4 Sat] - working on expanse 
 ** blockO2 ran on expanse, didn't quit though 
 ** progress 
 *** blockO2 - 3.9s 
 *** halfO2 - 6.9s 
 *** highK - 1.9s 
 
+* [2023-3-6 Mon] - working on methods fig 
+** code for baseline raster 
+from analysis import rasterPlot
+datadir = 'expanse_scratch/connected1.6e-6_o2d2_pr2_thT_13kpmm_dx50_2s/'
+from cfgK import cfg 
+rasterPlot(datadir, center=[sizeX/2, sizeY/2, sizeZ])
+
+* [2023-3-7 Tue] - stracher essay 
+** wrote essay for alfred stracher student author award, using that to start intro for SD in thesis 
+
+* [2023-3-8 Wed] - analyzing fragmented sims, smaller tissue 
+** interval saving is not enough to run the analysis
 
 * TODOS
 ** TODO: plotting fragmented runs needs to ignore repeated data 
 ** TODO: make methods fig 
 ** DONE: fix repeated savestates 
 ** DONE: fix save/restore state 
-*** some plotting integration still needed 
+*** some plotting integration still needed
 ** DONE: figure out K distribution plotting issue
 ** DONE: remove layer 1 
 ** DONE: run whole image dimensions
