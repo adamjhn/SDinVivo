@@ -248,7 +248,10 @@ def plotMemV(datadir, position='center'):
                 spks, _ = find_peaks(v.as_numpy(), height=0)
             freq = len(spks) / (len(v)/40e3)
             plt.title(pop + ': ' + str(freq) + ' Hz')
-            plt.savefig(datadir[-1] + 'vmembs/' + pop + '_' + str(count) + '.png')
+            if isinstance(datadir, list):
+                plt.savefig(datadir[-1] + 'vmembs/' + pop + '_' + str(count) + '.png')
+            else:
+                plt.savefig(datadir + 'vmembs/' + pop + '_' + str(count) + '.png')
             count = count + 1
             plt.close()
 
