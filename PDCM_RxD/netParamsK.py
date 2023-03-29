@@ -636,6 +636,7 @@ rates['o2diff'] = {'species' : o2ecs, 'regions' : ['ecs_o2'],
 
 rates['o2source'] = {'species' : o2ecs, 'regions' : ['ecs_o2'],
     'rate' : 'numcap * (epsilon_o2 * (%s - %s))' % (cfg.o2drive, o2ecs)}
+'numcap * (epsilon_o2 * (1.0 - o2ecs))
 
 # rates['o2diff'] = {'species' : o2ecs, 'regions' : ['ecs_o2'],
 #     'rate' : '(epsilon_o2 * (o2_bath - %s/vol_ratio[ecs]))' % (o2ecs)} # o2everywhere

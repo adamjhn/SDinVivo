@@ -4727,6 +4727,11 @@ rasterPlot(datadir, center=[sizeX/2, sizeY/2, sizeZ])
 * [2023-3-8 Wed] - analyzing fragmented sims, smaller tissue 
 ** interval saving is not enough to run the analysis
 
+* [2023-3-29 Wed] - back at it 
+** adam suggestion
+*** For the oxygen source, 1.0 - ecso2 , rather than 1.0 should it depend on the oxygen concentration in the blood (~75-100mmHg, so 0.096-0.13mM)?
+
+
 * TODOS
 ** TODO: plotting fragmented runs needs to ignore repeated data 
 ** TODO: make methods fig 

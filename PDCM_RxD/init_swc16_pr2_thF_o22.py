@@ -8,23 +8,9 @@ import numpy as np
 import os 
 import sys
 import pickle
-from neuron import h 
+from neuron import h, rxd
 import random 
 from matplotlib import pyplot as plt 
-# import argparse
-
-# parser = argparse.ArgumentParser(description = '''Run RxD version of PD cortical model''')
-# parser.add_argument('--poissonFactor', nargs='?', type=str, default=None)
-# parser.add_argument('--connFactor', nargs='?', type=str, default=None)
-# parser.add_argument('--filename', nargs='?', type=str, default=None)
-# args = parser.parse_args()
-
-# if args.poissonFactor:
-#     cfg.poissonFactor = args.poissonFactor
-# if args.connFactor:
-#     cfg.poissonFactor = args.connFactor
-# if args.filename:
-#     cfg.filename = args.filename
 
 # Instantiate network 
 sim.initialize(netParams, cfg)  # create network object and set cfg and net params
@@ -44,7 +30,7 @@ nhost = pc.nhost()
 pc.timeout(0)
 pc.set_maxstep(100) # required when using multiple processes
 
-random.seed(pcid+120194)
+random.seed(pcid+cfg.seed)
 all_secs = [sec for sec in h.allsec()]
 cells_per_node = len(all_secs)
 rec_inds = random.sample(range(cells_per_node), int(cfg.nRec / nhost))
@@ -104,6 +90,18 @@ if pcid == 0:
             'pos':rpos, 'o2':soma_o2, 'rad':cell_positions, 
             'cell_type' : cell_type}
 
+outdir = cfg.filename   
+def saveRxd():
+    for sp in rxd.species._all_species:
+        s = sp()
+        np.save(os.path.join(outdir, s.name + '_concentrations_' + str(pcid) + '.npy'), s.nodes.concentration)
+
+def runSS():
+    svst = h.SaveState()
+    svst.save()
+    f = h.File(os.path.join(outdir,'save_test_' + str(pcid) + '.dat'))
+    svst.fwrite(f)
+
 def saveconc():
     np.save(os.path.join(cfg.filename,"k_%i.npy" % int(h.t)), k_ecs.states3d)
     np.save(os.path.join(cfg.filename,"na_%i.npy" % int(h.t)), na_ecs.states3d)
@@ -128,6 +126,8 @@ def run(tstop):
     last_print = 0
     time = []
     saveint = 100
+    ssint = 500 
+    lastss = 0
 
     while h.t < tstop:
         time.append(h.t)
@@ -135,7 +135,10 @@ def run(tstop):
             # plot extracellular concentrations averaged over depth every 100ms 
             if pcid == 0:
                 saveconc()
-
+        if (int(h.t) % ssint == 0) and (h.t - lastss) > 10:
+                runSS()
+                # saveRxd()
+                lastss = h.t
         if pcid == 0: progress_bar(tstop)
         pc.psolve(pc.t(0)+h.dt)  # run the simulation for 1 time step
 
@@ -171,29 +174,69 @@ def run(tstop):
     pc.barrier()    # wait for all processes to save
 
 h.load_file('stdrun.hoc')
-h.finitialize(cfg.hParams['v_init'])
 h.celsius = cfg.hParams['celsius']
 h.dt = cfg.dt
 
+## restore from previous sim 
+if cfg.restoredir:
+    restoredir = cfg.restoredir
+
+    # restore sim state functions 
+    def restoreSS():
+        svst = h.SaveState()
+        f = h.File(os.path.join(restoredir, 'save_test_'+str(pcid) + '.dat'))
+        svst.fread(f)
+        svst.restore()
+
+    # fih = h.FInitializeHandler(1, restoreSim)
+    fih = h.FInitializeHandler(1, restoreSS)
+    h.finitialize()
+else:
+    h.finitialize(cfg.hParams['v_init'])
+
 run(cfg.duration)
 
-# sim.analyze()  
+runSS()
+# saveRxd()
 
 ## basic plotting
 if pcid == 0:
     from analysis import traceExamples, compareKwaves, rasterPlot, plotMemV, allSpeciesMov
-    traceExamples(cfg.filename, cfg.filename + 'traces.png', iss=[0,4,8])
-    plt.close()
-    compareKwaves([cfg.filename], [cfg.ox], 'Condition', colors=['r'], figname=cfg.filename+'kwave.png')
-    plt.close()
-    rasterPlot(cfg.filename, center=[cfg.sizeX/2, -cfg.sizeY/2, cfg.sizeZ], figname=cfg.filename+'raster.png')
-    plt.close()
-    plotMemV(cfg.filename)
-    plt.close()
-    vmins = [3.5, 100, 30, 0.03]
-    vmaxes = [40, 130, 140, 0.05]
-    extent = (0,cfg.sizeX,-cfg.sizeY, 0.0)
-    allSpeciesMov(cfg.filename, cfg.filename+'mov_files/', vmins, vmaxes, cfg.filename+'all_species.mp4', dur=cfg.duration/1000, extent=extent, includeSpks=True)
+    if cfg.restoredir:
+        traceExamples([cfg.restoredir, cfg.filename], cfg.filename + 'traces.png', iss=[0,4,8])
+        plt.close()
+        compareKwaves([cfg.filename], [cfg.ox], 'Condition', colors=['r'], figname=cfg.filename+'kwave.png')
+        plt.close()
+        rasterPlot([cfg.restoredir, cfg.filename], center=[cfg.sizeX/2, -cfg.sizeY/2, cfg.sizeZ], figname=cfg.filename+'raster.png')
+        plt.close()
+        try:
+            plotMemV([cfg.restoredir, cfg.filename])
+        except:
+            pass
+        plt.close()
+        vmins = [3.5, 100, 30, 0.03]
+        vmaxes = [40, 130, 140, 0.05]
+        extent = (0,cfg.sizeX,-cfg.sizeY, 0.0)
+        try:
+            allSpeciesMov(cfg.filename, cfg.filename+'mov_files/', vmins, vmaxes, cfg.filename+'all_species.mp4', dur=cfg.duration/1000, extent=extent, includeSpks=True)
+        except:
+            pass
+    else:
+        traceExamples(cfg.filename, cfg.filename + 'traces.png', iss=[0,4,8])
+        plt.close()
+        compareKwaves([cfg.filename], [cfg.ox], 'Condition', colors=['r'], figname=cfg.filename+'kwave.png')
+        plt.close()
+        rasterPlot(cfg.filename, center=[cfg.sizeX/2, -cfg.sizeY/2, cfg.sizeZ], figname=cfg.filename+'raster.png')
+        plt.close()
+        try:
+            plotMemV(cfg.filename)
+        except:
+            pass
+        plt.close()
+        vmins = [3.5, 100, 30, 0.03]
+        vmaxes = [40, 130, 140, 0.05]
+        extent = (0,cfg.sizeX,-cfg.sizeY, 0.0)
+        allSpeciesMov(cfg.filename, cfg.filename+'mov_files/', vmins, vmaxes, cfg.filename+'all_species.mp4', dur=cfg.duration/1000, extent=extent, includeSpks=True)    
 
 pc.barrier()
 h.quit()
