@@ -4735,10 +4735,15 @@ rasterPlot(datadir, center=[sizeX/2, sizeY/2, sizeZ])
 *** didn't create output dir 
 *** need to base new sims off *initK.py*
 
+* [2023-3-30 Thu] - running smooth on is 
+** tried running new baseline, actually ran elevated k+ 
+** k+ sim looked similar to prev w/ higher o2 drive 
+
 * TODOS
 ** TODO: get on stampede 
-** TODO: new baseline based off initK.py 
+** DONE: new baseline based off initK.py 
 ** TODO: plotting fragmented runs needs to ignore repeated data 
+** TODO: rerun baseline (actually was k=40)
 ** DONE: make methods fig 
 ** DONE: fix repeated savestates 
 ** DONE: fix save/restore state 

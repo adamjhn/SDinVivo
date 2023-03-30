@@ -75,7 +75,7 @@ else:
 cfg.cyt_fraction = cfg.rs**3 / cfg.somaR**3
 
 # sd init params 
-cfg.k0 = 40
+cfg.k0 = 3.5
 cfg.r0 = 300.0
 
 ###########################################################
