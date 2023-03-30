@@ -1,6 +1,6 @@
 import sys 
-sys.path.insert(0,'/home/ckelley/netpyne/')
-# sys.path.insert(0, '/u/craig/netpyne/')
+# sys.path.insert(0,'/home/ckelley/netpyne/')
+sys.path.insert(0, '/u/craig/netpyne/')
 from netpyne import specs
 import numpy as np
 import cv2
@@ -19,13 +19,14 @@ cfg.dt = 0.025 #0.025              # Internal integration timestep to use
 cfg.verbose = False            # Show detailed messages 
 cfg.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
 exp_dir = '/expanse/lustre/scratch/ckelley/temp_project/SDinVivoData/'
-cfg.filename = exp_dir + 'connected1.6e-6_o2d0.13_pr2_thF_13kpmm_dx50_2s/'   # Set file output name
-# cfg.filename = 'Data/unconnected_poisRate_0.3_o2drive_2_500ms_v1/'   # Set file output name
+cfg.filename = 'Data/conn1.6e-6_pois0.2_o20.13_13kpmm_1mm3_dx50_2s/'
 cfg.printPopAvgRates = True
 cfg.printRunTime = 1
 cfg.Kceil = 15.0
-cfg.nRec = 240
+cfg.nRec = 160
 cfg.recordCellsSpikes = ['L2e', 'L2i', 'L4e', 'L4i', 'L5e', 'L5i','L6e', 'L6i'] # record only spikes of cells (not ext stims)
+cfg.seed = 120194
+cfg.restoredir = None
 
  # Network dimensions
 cfg.fig_file = '../test_mask.tif'
@@ -37,15 +38,14 @@ cfg.sizeX = 700 #img.shape[1] * cfg.px#250.0 #1000
 cfg.sizeY = (img.shape[0]-1000) * cfg.px #250.0 #1000
 cfg.sizeZ = cfg.sizeX #200.0
 cfg.Nz = int(cfg.sizeZ/cfg.dx)-1
-cfg.density = 90000.0
 cfg.Vtissue = cfg.sizeX * cfg.sizeY * cfg.sizeZ
 
 # scaling factors 
-cfg.poissonFactor = '1e-5' #'7e-7'
 cfg.connFactor = '1e-7'
 cfg.poissonRateFactor = 0.2
 cfg.connected = True 
 cfg.o2drive = '0.13'
+cfg.scaleConnWeight = 1.6e-6
 
 # slice conditions 
 cfg.ox = 'perfused'
@@ -62,13 +62,8 @@ cfg.prep = 'invitro'
 
 # neuron params 
 cfg.betaNrn = 0.24
-# cfg.Ncell = 80000 #int(cfg.density*(cfg.sizeX*cfg.sizeY*cfg.sizeZ*1e-9)) # default 90k / mm^3
-cfg.Ncell = 12767
+cfg.Ncell = 12767 
 cfg.rs = ((cfg.betaNrn * cfg.Vtissue) / (2 * np.pi * cfg.Ncell)) ** (1/3)
-# if cfg.density == 90000.0:
-#     cfg.rs = ((cfg.betaNrn * cfg.Vtissue) / (2 * np.pi * cfg.Ncell)) ** (1/3)
-# else:
-#     cfg.rs = 7.52
 
 cfg.epas = -70 # False
 cfg.gpas = 0.0001
@@ -80,8 +75,8 @@ else:
 cfg.cyt_fraction = cfg.rs**3 / cfg.somaR**3
 
 # sd init params 
-cfg.k0 = 3.5
-cfg.r0 = 100.0
+cfg.k0 = 40
+cfg.r0 = 300.0
 
 ###########################################################
 # Network Options
@@ -94,14 +89,13 @@ cfg.r0 = 100.0
 # DC=False ; TH=True;  Balanced=True   => Figure 10A. But I want a partial reproduce so I guess Figure 10C is not necessary
 
 # Size of Network. Adjust this constants, please!
-# cfg.ScaleFactor = 1.0 #= 80.000 
 cfg.ScaleFactor = 0.16 #= 80.000 
 
 # External input DC or Poisson
 cfg.DC = False #True = DC // False = Poisson
 
 # Thalamic input in 4th and 6th layer on or off
-cfg.TH = False #True = on // False = off
+cfg.TH = True #True = on // False = off
 
 # Balanced and Unbalanced external input as PD article
 cfg.Balanced = False #False #True=Balanced // False=Unbalanced

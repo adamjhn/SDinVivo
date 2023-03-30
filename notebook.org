@@ -4730,11 +4730,16 @@ rasterPlot(datadir, center=[sizeX/2, sizeY/2, sizeZ])
 * [2023-3-29 Wed] - back at it 
 ** adam suggestion
 *** For the oxygen source, 1.0 - ecso2 , rather than 1.0 should it depend on the oxygen concentration in the blood (~75-100mmHg, so 0.096-0.13mM)?
-
+** issues running on expanse 
+*** low level comm error ~80% way through.
+*** didn't create output dir 
+*** need to base new sims off *initK.py*
 
 * TODOS
+** TODO: get on stampede 
+** TODO: new baseline based off initK.py 
 ** TODO: plotting fragmented runs needs to ignore repeated data 
-** TODO: make methods fig 
+** DONE: make methods fig 
 ** DONE: fix repeated savestates 
 ** DONE: fix save/restore state 
 *** some plotting integration still needed
