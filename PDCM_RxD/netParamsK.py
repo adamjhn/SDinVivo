@@ -1,6 +1,6 @@
 import sys 
-sys.path.insert(0,'/home/ckelley/netpyne/')
-# sys.path.insert(0, '/u/craig/netpyne/')
+# sys.path.insert(0,'/home/ckelley/netpyne/')
+sys.path.insert(0, '/u/craig/netpyne/')
 from netpyne import specs
 import numpy as np
 from cfgK import cfg
@@ -246,33 +246,12 @@ if cfg.DC == False: # External Input as Poisson
                         'delay': 0}
         
         auxConn=np.array([range(0,N_[r],1),range(0,N_[r],1)])
-        # netParams.connParams['poiss->'+str(L[r])] = {
-        #     'preConds': {'pop': 'poiss'+str(L[r])},  
-        #     'postConds': {'pop': L[r]},
-        #     'connList': auxConn.T,   
-        #     'weight': cfg.poissonFactor + '*max(0, weightMin+normal(0,dweight*weightMin))',  
-        #     'delay': 0.5,
-        #     'synMech' : 'exc'} # 1 delay
         netParams.connParams['poiss->'+str(L[r])] = {
 			'preConds': {'pop': 'poiss'+str(L[r])},  
 			'postConds': {'pop': L[r]},
 			'connList': auxConn.T,   
 			'weight': 'max(0, weightMin+normal(0,dweight*weightMin))',  
 			'delay': 0.5} # 1 delay
-        # netParams.connParams['poiss->'+str(L[r])] = {
-        #     'preConds': {'pop': 'poiss'+str(L[r])},  
-        #     'postConds': {'pop': L[r]},
-        #     'connList': auxConn.T,   
-        #     'weight': cfg.connFactor + '*max(0, weightMin+normal(0,dweight*weightMin))',  
-        #     'delay': 0.5,
-        #     'synMech' : 'exc'} # 1 delay
-        # netParams.connParams['poiss->'+str(L[r])] = {
-        #     'preConds': {'pop': 'poiss'+str(L[r])},  
-        #     'postConds': {'pop': L[r]},
-        #     'connList': auxConn.T,   
-        #     'weight': 0.5,  
-        #     'delay': 0.5,
-        #     'synMech' : 'exc'} # 1 delay
 
 # Thalamus Input: increased of 15Hz that lasts 10 ms
 # 0.15 fires in 10 ms each 902 cells -> number of spikes = T*f*N_ = 0.15*902 -> 1 spike each N_*0.15
@@ -477,7 +456,7 @@ species['cl'] = {'regions' : ['cyt', 'mem', 'ecs'], 'd' : 2.1, 'charge' : -1,
 
 o2_init_str = 'o2_bath if isinstance(node, rxd.node.Node1D) else (0.4*o2sources[numpy.argmin((ybins-node.y3d)**2),numpy.argmin((xbins-node.x3d)**2),numpy.argmin((zbins-node.z3d)**2)] if o2sources[numpy.argmin((ybins-node.y3d)**2),numpy.argmin((xbins-node.x3d)**2),numpy.argmin((zbins-node.z3d)**2)] else 0.04)'
 species['o2_extracellular'] = {'regions' : ['ecs_o2'], 'd' : 3.3, 'initial' : 0.04,
-                'ecs_boundary_conditions' : None, 'name' : 'o2'}
+                'ecs_boundary_conditions' : 0.04, 'name' : 'o2'}
 # species['o2_extracellular'] = {'regions' : ['ecs_o2'], 'd' : 3.3, 'initial' : constants['o2_bath'],
 #                 'ecs_boundary_conditions' : constants['o2_bath'], 'name' : 'o2'}
 
@@ -636,7 +615,6 @@ rates['o2diff'] = {'species' : o2ecs, 'regions' : ['ecs_o2'],
 
 rates['o2source'] = {'species' : o2ecs, 'regions' : ['ecs_o2'],
     'rate' : 'numcap * (epsilon_o2 * (%s - %s))' % (cfg.o2drive, o2ecs)}
-'numcap * (epsilon_o2 * (1.0 - o2ecs))
 
 # rates['o2diff'] = {'species' : o2ecs, 'regions' : ['ecs_o2'],
 #     'rate' : '(epsilon_o2 * (o2_bath - %s/vol_ratio[ecs]))' % (o2ecs)} # o2everywhere
