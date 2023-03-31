@@ -3,7 +3,7 @@ import sys
 sys.path.insert(0, '/u/craig/netpyne/')
 from netpyne import specs
 import numpy as np
-from cfgK import cfg
+from cfgOuabain import cfg
 from neuron.units import sec, mM
 import math 
 import cv2 
@@ -583,19 +583,34 @@ mcReactions['cl_current'] = {'reactant' : 'cl[cyt]', 'product' : 'cl[ecs]',
                             'rate_f' : "gclbar_l * (%s - rxd.v)" % (ecl), 
                             'membrane' : 'mem', 'custom_dynamics' : True, 'membrane_flux' : True} 
 
-# ## Na+/K+ pump current in neuron (2K+ in, 3Na+ out)
-mcReactions['pump_current'] = {'reactant' : 'k[cyt]', 'product' : 'k[ecs]', 
-                            'rate_f' : "(-2.0 * %s * %s)" % (pump, volume_scale), 
-                            'membrane' : 'mem', 'custom_dynamics' : True, 'membrane_flux' : True}
-
-mcReactions['pump_current_na'] = {'reactant' : 'na[cyt]', 'product' : 'na[ecs]', 
-                                'rate_f' : "(3.0 * %s * %s)" % (pump, volume_scale), 
+if cfg.ouabain:
+    # ## Na+/K+ pump current in neuron (2K+ in, 3Na+ out)
+    mcReactions['pump_current'] = {'reactant' : 'k[cyt]', 'product' : 'k[ecs]', 
+                                'rate_f' : "(-2.0 * %s * %s) * anticore" % (pump, volume_scale), 
                                 'membrane' : 'mem', 'custom_dynamics' : True, 'membrane_flux' : True}
 
-# O2 depletrion from Na/K pump in neuron
-mcReactions['oxygen'] = {'reactant' : o2ecs, 'product' : 'dump[cyt]', 
-                        'rate_f' : "(%s) * (%s)" % (pump, volume_scale), 
-                        'membrane' : 'mem', 'custom_dynamics' : True}
+    mcReactions['pump_current_na'] = {'reactant' : 'na[cyt]', 'product' : 'na[ecs]', 
+                                    'rate_f' : "(3.0 * %s * %s) * anticore" % (pump, volume_scale), 
+                                    'membrane' : 'mem', 'custom_dynamics' : True, 'membrane_flux' : True}
+
+    # O2 depletrion from Na/K pump in neuron
+    mcReactions['oxygen'] = {'reactant' : o2ecs, 'product' : 'dump[cyt]', 
+                            'rate_f' : "(%s) * (%s) * anticore" % (pump, volume_scale), 
+                            'membrane' : 'mem', 'custom_dynamics' : True}
+else:
+    # ## Na+/K+ pump current in neuron (2K+ in, 3Na+ out)
+    mcReactions['pump_current'] = {'reactant' : 'k[cyt]', 'product' : 'k[ecs]', 
+                                'rate_f' : "(-2.0 * %s * %s)" % (pump, volume_scale), 
+                                'membrane' : 'mem', 'custom_dynamics' : True, 'membrane_flux' : True}
+
+    mcReactions['pump_current_na'] = {'reactant' : 'na[cyt]', 'product' : 'na[ecs]', 
+                                    'rate_f' : "(3.0 * %s * %s)" % (pump, volume_scale), 
+                                    'membrane' : 'mem', 'custom_dynamics' : True, 'membrane_flux' : True}
+
+    # O2 depletrion from Na/K pump in neuron
+    mcReactions['oxygen'] = {'reactant' : o2ecs, 'product' : 'dump[cyt]', 
+                            'rate_f' : "(%s) * (%s)" % (pump, volume_scale), 
+                            'membrane' : 'mem', 'custom_dynamics' : True}
 
 netParams.rxdParams['multicompartmentReactions'] = mcReactions
 
@@ -635,16 +650,28 @@ rates['nadiff'] = {'species' : 'na[ecs]', 'regions' : ['ecs'],
 rates['cldiff'] = {'species' : 'cl[ecs]', 'regions' : ['ecs'],
     'rate' : 'ecsbc * ((%s) * (clo_initial - cl[ecs]/vol_ratio[ecs]))' % (epsilon_k)}
 
-## Glia K+/Na+ pump current 
-rates['glia_k_current'] = {'species' : 'k[ecs]', 'regions' : ['ecs'],
-    'rate' : '(-(%s) - (2.0 * (%s)))' % (glia12, gliapump)}
+if cfg.ouabain:
+    ## Glia K+/Na+ pump current 
+    rates['glia_k_current'] = {'species' : 'k[ecs]', 'regions' : ['ecs'],
+        'rate' : '(-(%s) - (2.0 * (%s)) * anticore)' % (glia12, gliapump)}
 
-rates['glia_na_current'] = {'species' : 'na[ecs]', 'regions' : ['ecs'],
-    'rate' : '(3.0 * (%s))' % (gliapump)}
+    rates['glia_na_current'] = {'species' : 'na[ecs]', 'regions' : ['ecs'],
+        'rate' : '(3.0 * (%s) * anticore)' % (gliapump)}
 
-## Glial O2 depletion 
-rates['o2_pump'] = {'species' : o2ecs, 'regions' : ['ecs_o2'],
-    'rate' : '-(%s)' % (gliapump)}
+    ## Glial O2 depletion 
+    rates['o2_pump'] = {'species' : o2ecs, 'regions' : ['ecs_o2'],
+        'rate' : '-(%s) * anticore' % (gliapump)}
+else:
+    ## Glia K+/Na+ pump current 
+    rates['glia_k_current'] = {'species' : 'k[ecs]', 'regions' : ['ecs'],
+        'rate' : '(-(%s) - (2.0 * (%s)))' % (glia12, gliapump)}
+
+    rates['glia_na_current'] = {'species' : 'na[ecs]', 'regions' : ['ecs'],
+        'rate' : '(3.0 * (%s))' % (gliapump)}
+
+    ## Glial O2 depletion 
+    rates['o2_pump'] = {'species' : o2ecs, 'regions' : ['ecs_o2'],
+        'rate' : '-(%s)' % (gliapump)}
 
 netParams.rxdParams['rates'] = rates
 

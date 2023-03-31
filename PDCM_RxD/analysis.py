@@ -217,6 +217,38 @@ def xyOfSpikeTime(datadir, position='center'):
                         posBySpkTime[t]['z'] = [pos[2]]
     return posBySpkTime
 
+def plotMemExamples(datadir, position='center', cells=None):
+    fig, axs = plt.subplots(6,4, sharex=True)
+    if not cells:
+        cells = [[1, 3, 11, 37, 46, 54], 
+                [24, 44, 95, 20, 42, 199],
+                [5, 132, 232, 2, 101, 116], 
+                [13, 26, 92, 47, 73, 238]]
+    if isinstance(datadir, list):
+        files = os.listdir(datadir[0])
+    else:
+        files = os.listdir(datadir)
+    mem_files = [file for file in files if (file.startswith(position + 'membrane'))]
+    count = 0
+    for file in mem_files:
+        if isinstance(datadir, list):
+            data = combineMemFiles(datadir, file)
+        else:
+            with open(os.path.join(datadir,file), 'rb') as fileObj:
+                data = pickle.load(fileObj)
+        for v, pos, pop in zip(data[0], data[1], data[2]):
+            for col, nums in enumerate(cells):
+                if count in nums:
+                    row = np.argwhere(np.array(nums) == count)[0][0]
+                    axs[row][col].plot([i/40e3 for i in range(len(v))], v, 'k')
+                    if isinstance(v, list):
+                        spks, _ = find_peaks(v, height=0)
+                    else:
+                        spks, _ = find_peaks(v.as_numpy(), height=0)
+                    freq = len(spks) / (len(v)/40e3)
+                    axs[row][col].set_title(pop + ': ' + str(round(freq,2)) + ' Hz')
+            count = count + 1
+
 def plotMemV(datadir, position='center'):
     plt.ioff()
     if isinstance(datadir, list):

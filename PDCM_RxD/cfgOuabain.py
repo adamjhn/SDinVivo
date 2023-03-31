@@ -12,14 +12,14 @@ import cv2
 
 # Run parameters
 cfg = specs.SimConfig()       # object of class cfg to store simulation configuration
-cfg.duration = 10e3        # Duration of the simulation, in ms
+cfg.duration = 2e3        # Duration of the simulation, in ms
 cfg.hParams['v_init'] = -70.0   # set v_init to -65 mV
 cfg.hParams['celsius'] = 37.0
 cfg.dt = 0.025 #0.025              # Internal integration timestep to use
 cfg.verbose = False            # Show detailed messages 
 cfg.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
 exp_dir = '/expanse/lustre/scratch/ckelley/temp_project/SDinVivoData/'
-cfg.filename = 'Data/k0_conn1.6e-6_pois0.2_o20.13_13kpmm_1mm3_dx50_10s/'
+cfg.filename = 'Data/ouabain_conn1.6e-6_pois0.2_o20.13_13kpmm_1mm3_dx50_2s/'
 cfg.printPopAvgRates = True
 cfg.printRunTime = 1
 cfg.Kceil = 15.0
@@ -75,7 +75,7 @@ else:
 cfg.cyt_fraction = cfg.rs**3 / cfg.somaR**3
 
 # sd init params 
-cfg.k0 = 40.0
+cfg.k0 = 3.5
 cfg.r0 = 300.0
 
 ###########################################################
@@ -100,7 +100,7 @@ cfg.TH = True #True = on // False = off
 # Balanced and Unbalanced external input as PD article
 cfg.Balanced = False #False #True=Balanced // False=Unbalanced
 
-cfg.ouabain = False
+cfg.ouabain = True
 
 # v0.0 - combination of cfg from ../uniformdensity and netpyne PD thalamocortical model
 # v1.0 - cfg for o2 sources based on capillaries identified from histology
