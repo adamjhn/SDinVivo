@@ -470,7 +470,7 @@ params['ecsbc'] = {'regions' : ['ecs', 'ecs_o2'], 'name' : 'ecsbc', 'value' :
     '1 if (abs(node.x3d - ecs._xlo) < ecs._dx[0] or abs(node.x3d - ecs._xhi) < ecs._dx[0] or abs(node.y3d - ecs._ylo) < ecs._dx[1] or abs(node.y3d - ecs._yhi) < ecs._dx[1] or abs(node.z3d - ecs._zlo) < ecs._dx[2] or abs(node.z3d - ecs._zhi) < ecs._dx[2]) else 0'}
 
 if cfg.ouabain:
-    params['iscore'] = {'regions' : ['ecs_o2', 'ecs', 'mem'], 'name' : 'iscore', 'value' : 
+    params['anticore'] = {'regions' : ['ecs_o2', 'ecs', 'mem'], 'name' : 'iscore', 'value' : 
                         '(0 if ((node.x3d - %f/2)**2+(node.y3d + %f/2)**2+(node.z3d - %f/2)**2 <= %f**2) else 1)' % (cfg.sizeX, cfg.sizeY, cfg.sizeZ, cfg.r0)}
 
 params['numcap'] = {'regions' : ['ecs_o2'], 'name' : 'numcap', 'value' :
