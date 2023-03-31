@@ -241,13 +241,13 @@ def plotMemV(datadir, position='center'):
                 data = pickle.load(fileObj)
         for v, pos, pop in zip(data[0], data[1], data[2]):
             plt.figure()
-            plt.plot(v)
+            plt.plot(v, 'k')
             if isinstance(v, list):
                 spks, _ = find_peaks(v, height=0)
             else:
                 spks, _ = find_peaks(v.as_numpy(), height=0)
             freq = len(spks) / (len(v)/40e3)
-            plt.title(pop + ': ' + str(freq) + ' Hz')
+            plt.title(pop + ': ' + str(round(freq,2)) + ' Hz')
             if isinstance(datadir, list):
                 plt.savefig(datadir[-1] + 'vmembs/' + pop + '_' + str(count) + '.png')
             else:
@@ -414,6 +414,102 @@ def traceExamples(datadir, figname, iss=[0, 7, 15], recNum=None):
     fig.text(0.55, 0.01, 'Time (s)', fontsize=16)
     plt.tight_layout()
     plt.savefig(figname)
+    plt.close()
+
+def allTraces(datadir, figname, recNum=None):
+    """Function for plotting Vmemb, as well as ion and o2 concentration, for selected (iss) recorded
+    neurons"""
+    if recNum:
+        filename = 'recs' + str(recNum) + '.pkl'
+    else:
+        filename = 'recs.pkl'
+        
+    if isinstance(datadir, list):
+        data = combineRecs(datadir)
+    else:
+        with open(datadir+filename, 'rb') as fileObj:
+            data = pickle.load(fileObj)
+
+    try:
+        os.mkdir(datadir + 'all_traces/')
+    except:
+        pass 
+    
+    for i in range(len(data['v'])):
+        fig, axs = plt.subplots(2,4)
+        fig.set_figheight(9)
+        fig.set_figwidth(18)
+        l = data['cell_type'][i]
+        axs[0][0].plot(np.divide(data['t'],1000), data['v'][i], label=l)
+        axs[1][0].plot(np.divide(data['t'],1000), data['o2'][i])
+        axs[0][1].plot(np.divide(data['t'],1000), data['ki'][i])
+        axs[1][1].plot(np.divide(data['t'],1000), data['ko'][i])
+        axs[0][2].plot(np.divide(data['t'],1000), data['nai'][i])
+        axs[1][2].plot(np.divide(data['t'],1000), data['nao'][i])
+        axs[0][3].plot(np.divide(data['t'],1000), data['cli'][i])
+        axs[1][3].plot(np.divide(data['t'],1000), data['clo'][i])
+    
+        leg = axs[0][0].legend(title='Population', fontsize=11, bbox_to_anchor=(-0.275, 1.05))
+        plt.setp(leg.get_title(), fontsize=15)
+        axs[0][0].set_ylabel('Membrane Potential (mV)', fontsize=16)
+        plt.setp(axs[0][0].get_xticklabels(), fontsize=14)
+        plt.setp(axs[0][0].get_yticklabels(), fontsize=14)
+        axs[0][0].text(-0.15, 1.0, 'A)', transform=axs[0][0].transAxes,
+            fontsize=16, fontweight='bold', va='top', ha='right')
+        axs[0][0].set_ylim(-80,45)
+
+        axs[1][0].set_ylabel(r'Extracellular [O$_{2}$] (mM)', fontsize=16)
+        plt.setp(axs[1][0].get_xticklabels(), fontsize=14)
+        plt.setp(axs[1][0].get_yticklabels(), fontsize=14)
+        axs[1][0].text(-0.15, 1., 'E)', transform=axs[1][0].transAxes,
+            fontsize=16, fontweight='bold', va='top', ha='right')
+        axs[1][0].set_ylim(0.0, 0.045)
+        
+        axs[0][1].set_ylabel(r'Intracellular [K$^{+}$] (mM)', fontsize=16)
+        plt.setp(axs[0][1].get_xticklabels(), fontsize=14)
+        plt.setp(axs[0][1].get_yticklabels(), fontsize=14)
+        axs[0][1].text(-0.15, 1., 'B)', transform=axs[0][1].transAxes,
+            fontsize=18, fontweight='bold', va='top', ha='right')
+        axs[0][1].set_ylim(60, 145)
+
+        axs[1][1].set_ylabel(r'Extracellular [K$^{+}$] (mM)', fontsize=16)
+        plt.setp(axs[1][1].get_xticklabels(), fontsize=14)
+        plt.setp(axs[1][1].get_yticklabels(), fontsize=14)
+        axs[1][1].text(-0.15, 1.0, 'F)', transform=axs[1][1].transAxes,
+        fontsize=18, fontweight='bold', va='top', ha='right')
+        axs[1][1].set_ylim(2.0, 42.0)
+
+        axs[0][2].set_ylabel(r'Intracellular [Na$^{+}$] (mM)', fontsize=16)
+        plt.setp(axs[0][2].get_xticklabels(), fontsize=14)
+        plt.setp(axs[0][2].get_yticklabels(), fontsize=14)
+        axs[0][2].text(-0.15, 1.0, 'C)', transform=axs[0][2].transAxes,
+        fontsize=18, fontweight='bold', va='top', ha='right')
+        axs[0][2].set_ylim(10, 100)
+
+        axs[1][2].set_ylabel(r'Extracellular [Na$^{+}$] (mM)', fontsize=16)
+        plt.setp(axs[1][2].get_xticklabels(), fontsize=14)
+        plt.setp(axs[1][2].get_yticklabels(), fontsize=14)
+        axs[1][2].text(-0.15, 1.0, 'G)', transform=axs[1][2].transAxes,
+        fontsize=18, fontweight='bold', va='top', ha='right')
+        axs[1][2].set_ylim(120, 150)
+        
+        axs[0][3].set_ylabel(r'Intracellular [Cl$^{-}$] (mM)', fontsize=16)
+        plt.setp(axs[0][3].get_xticklabels(), fontsize=14)
+        plt.setp(axs[0][3].get_yticklabels(), fontsize=14)
+        axs[0][3].text(-0.15, 1.0, 'D)', transform=axs[0][3].transAxes,
+        fontsize=18, fontweight='bold', va='top', ha='right')
+        axs[0][3].set_ylim(5, 30)
+        
+        axs[1][3].set_ylabel(r'Extracellular [Cl$^{-}$] (mM)', fontsize=16)
+        plt.setp(axs[1][3].get_xticklabels(), fontsize=14)
+        plt.setp(axs[1][3].get_yticklabels(), fontsize=14)
+        axs[1][3].text(-0.15, 1.0, 'H)', transform=axs[1][3].transAxes,
+        fontsize=18, fontweight='bold', va='top', ha='right')
+        axs[1][3].set_ylim(100, 135)
+
+        fig.text(0.55, 0.01, 'Time (s)', fontsize=16)
+        plt.tight_layout()
+        plt.savefig(datadir + 'all_traces/' + l + '_' + str(i) + figname)
 
 if __name__ == '__main__':
     from cfgReduced import cfg 

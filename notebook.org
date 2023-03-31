@@ -4739,8 +4739,12 @@ rasterPlot(datadir, center=[sizeX/2, sizeY/2, sizeZ])
 ** tried running new baseline, actually ran elevated k+ 
 ** k+ sim looked similar to prev w/ higher o2 drive 
 
+* [2023-3-31 Fri] - 
+** running 10s elevated k+ sim on is
+
 * TODOS
 ** TODO: get on stampede 
+*** tried idev, got *ERROR: You have no project in the projectuser.map file (in accounting_check_prod.pl).*
 ** DONE: new baseline based off initK.py 
 ** TODO: plotting fragmented runs needs to ignore repeated data 
 ** TODO: rerun baseline (actually was k=40)

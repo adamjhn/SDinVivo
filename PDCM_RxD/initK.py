@@ -68,7 +68,7 @@ if pcid == 0:
     soma_o2 = []
     rpos = []
     cell_type = []
-    for i in range(int(cfg.sizeX//10)):
+    for i in range(int(cfg.sizeY//10)):
         for r, soma in zip(cell_positions, h.allsec()):
             if (10.0*i-2.5) < r < (10.0*i+2.5):
                 print(i,r)
