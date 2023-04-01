@@ -214,7 +214,7 @@ if pcid == 0:
         except:
             pass
         plt.close()
-        vmins = [3.5, 100, 30, 0.03]
+        vmins = [3.5, 100, 30, 0.0]
         vmaxes = [40, 130, 140, 0.05]
         extent = (0,cfg.sizeX,-cfg.sizeY, 0.0)
         try:
@@ -238,7 +238,7 @@ if pcid == 0:
         except:
             pass
         plt.close('all')
-        vmins = [3.5, 100, 30, 0.03]
+        vmins = [3.5, 100, 30, 0.0]
         vmaxes = [40, 130, 140, 0.05]
         extent = (0,cfg.sizeX,-cfg.sizeY, 0.0)
         allSpeciesMov(cfg.filename, cfg.filename+'mov_files/', vmins, vmaxes, cfg.filename+'all_species.mp4', dur=cfg.duration/1000, extent=extent, includeSpks=True)    
