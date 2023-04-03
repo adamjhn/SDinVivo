@@ -449,8 +449,7 @@ def traceExamples(datadir, figname, iss=[0, 7, 15], recNum=None):
     plt.close()
 
 def allTraces(datadir, figname, recNum=None):
-    """Function for plotting Vmemb, as well as ion and o2 concentration, for selected (iss) recorded
-    neurons"""
+    """Function for plotting Vmemb, as well as ion and o2 concentration, for all recorded neurons"""
     if recNum:
         filename = 'recs' + str(recNum) + '.pkl'
     else:
@@ -542,6 +541,7 @@ def allTraces(datadir, figname, recNum=None):
         fig.text(0.55, 0.01, 'Time (s)', fontsize=16)
         plt.tight_layout()
         plt.savefig(datadir + 'all_traces/' + l + '_' + str(i) + figname)
+        plt.close()
 
 if __name__ == '__main__':
     from cfgReduced import cfg 
