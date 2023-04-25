@@ -3,7 +3,7 @@ import sys
 sys.path.insert(0, '/u/craig/netpyne/')
 from netpyne import sim
 from netParamsIschem import netParams
-from cfgK import cfg
+from cfgIschem import cfg
 import numpy as np
 import os 
 import sys
