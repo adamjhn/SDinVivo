@@ -4746,6 +4746,18 @@ rasterPlot(datadir, center=[sizeX/2, sizeY/2, sizeZ])
 ** running 2s test version of ouabain sim on is
 *** if looks ok, try 10s 
 
+* [2023-4-3 Mon] - 20s of SD
+** 20s sim very interesting
+*** SD travels to all cortical layers (start in L4, then L2/3, then 5/6)
+*** K+ wave is does not just diffuse radially - high activity in L2/3 initiates 
+a seconds K+ wave 
+*** should consider running for 30s in case 
+*** could try startin SD in 2/3 to see if jumps to 5
+** ouabain didn't produce SD within 2s, should try 10s 
+
+* [2023-4-25 Tue] - back into sd 
+** trying ischemia (no o2 drive)
+
 * TODOS
 ** TODO: get on stampede 
 *** tried idev, got *ERROR: You have no project in the projectuser.map file (in accounting_check_prod.pl).*
