@@ -52,7 +52,7 @@ if pcid == 0:
     ## set variables for ecs concentrations 
     k_ecs = sim.net.rxd['species']['k']['hObj'][sim.net.rxd['regions']['ecs']['hObj']]
     na_ecs = sim.net.rxd['species']['na']['hObj'][sim.net.rxd['regions']['ecs']['hObj']]
-    cl_ecs = sim.net.rxd['species']['k']['hObj'][sim.net.rxd['regions']['ecs']['hObj']]
+    cl_ecs = sim.net.rxd['species']['cl']['hObj'][sim.net.rxd['regions']['ecs']['hObj']]
     o2_ecs = sim.net.rxd['species']['o2_extracellular']['hObj'][sim.net.rxd['regions']['ecs_o2']['hObj']]
 
     ## manually record from cells according to distance from the center of the slice
