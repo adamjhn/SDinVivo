@@ -4761,11 +4761,20 @@ a seconds K+ wave
 * [2023-4-27 Thu] - iscemia sim
 ** SD from ischemic insult 
 *** [[PDCM_RxD/Data/conn1.6e-6_pois0.2_o2none_13kpmm_1mm3_dx50_20s/][standard params, but no o2 sources]]
-**
+
+* [2023-4-28 Fri] - long baseline, ischem 
+** baseline sim still running 
+
+* [2023-5-1 Mon] - SD for baseline 
+** long baseline with SD 
+[[PDCM_RxD/Data/conn1.6e-6_pois0.2_o20.13_13kpmm_1mm3_dx50_20s/][20s no insult but get SD]]
+*** still get SD, just delayed by ~1/2 second compared to ischemic sim 
+** trying no boundary conditions / reflective boundary conditions to remedy 
 
 * TODOS
-** TODO: redo video w/ different vmax/mins 
-** TODO: run long baseline
+** TODO: fix titles of videos 
+** DONE: redo video w/ different vmax/mins 
+** DONE: run long baseline
 ** TODO: get on stampede 
 *** tried idev, got *ERROR: You have no project in the projectuser.map file (in accounting_check_prod.pl).*
 ** DONE: new baseline based off initK.py 

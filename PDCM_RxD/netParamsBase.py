@@ -454,9 +454,12 @@ species['cl'] = {'regions' : ['cyt', 'mem', 'ecs'], 'd' : 2.1, 'charge' : -1,
                 'initial' : 'cli_initial if isinstance(node, rxd.node.Node1D) else clo_initial',
                 'ecs_boundary_conditions' : constants['clo_initial'], 'name' : 'cl'}
 
+# o2_init_str = 'o2_bath if isinstance(node, rxd.node.Node1D) else (0.4*o2sources[numpy.argmin((ybins-node.y3d)**2),numpy.argmin((xbins-node.x3d)**2),numpy.argmin((zbins-node.z3d)**2)] if o2sources[numpy.argmin((ybins-node.y3d)**2),numpy.argmin((xbins-node.x3d)**2),numpy.argmin((zbins-node.z3d)**2)] else 0.04)'
+# species['o2_extracellular'] = {'regions' : ['ecs_o2'], 'd' : 3.3, 'initial' : 0.04,
+#                 'ecs_boundary_conditions' : 0.04, 'name' : 'o2'}
 o2_init_str = 'o2_bath if isinstance(node, rxd.node.Node1D) else (0.4*o2sources[numpy.argmin((ybins-node.y3d)**2),numpy.argmin((xbins-node.x3d)**2),numpy.argmin((zbins-node.z3d)**2)] if o2sources[numpy.argmin((ybins-node.y3d)**2),numpy.argmin((xbins-node.x3d)**2),numpy.argmin((zbins-node.z3d)**2)] else 0.04)'
 species['o2_extracellular'] = {'regions' : ['ecs_o2'], 'd' : 3.3, 'initial' : 0.04,
-                'ecs_boundary_conditions' : 0.04, 'name' : 'o2'}
+                'ecs_boundary_conditions' : None, 'name' : 'o2'}
 # species['o2_extracellular'] = {'regions' : ['ecs_o2'], 'd' : 3.3, 'initial' : constants['o2_bath'],
 #                 'ecs_boundary_conditions' : constants['o2_bath'], 'name' : 'o2'}
 
