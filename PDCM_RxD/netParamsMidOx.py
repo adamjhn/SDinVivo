@@ -3,7 +3,7 @@ import sys
 sys.path.insert(0, '/u/craig/netpyne/')
 from netpyne import specs
 import numpy as np
-from cfgBase import cfg
+from cfgMidOx import cfg
 from neuron.units import sec, mM
 import math 
 import cv2 
