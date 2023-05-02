@@ -2,8 +2,8 @@ import sys
 # sys.path.insert(0,'/home/ckelley/netpyne/')
 sys.path.insert(0, '/u/craig/netpyne/')
 from netpyne import sim
-from netParamsBase import netParams
-from cfgBase import cfg
+from netParamsMidOx import netParams
+from cfgMidOx import cfg
 import numpy as np
 import os 
 import sys
@@ -237,7 +237,7 @@ if pcid == 0:
         vmaxes = [18, 130, 140, 0.04]
         extent = (0,cfg.sizeX,-cfg.sizeY, 0.0)
         allSpeciesMov(cfg.filename, cfg.filename+'mov_files/', vmins, vmaxes, cfg.filename+'all_species.mp4', dur=cfg.duration/1000, extent=extent, includeSpks=True, condition='Oxygenated') 
-        allTraces(cfg.filename, '.png')   
+        allTraces(cfg.filename, '.png')
 
 pc.barrier()
 h.quit()
