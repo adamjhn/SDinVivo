@@ -4771,6 +4771,10 @@ a seconds K+ wave
 *** still get SD, just delayed by ~1/2 second compared to ischemic sim 
 ** trying no boundary conditions / reflective boundary conditions to remedy 
 
+* [2023-5-2 Tue] - working on baseline 
+** reflective boundary conditions didn't produce SD within 5s, but was coming in L2 
+** trying [o2]=0.08 per bill's suggestion and reflective bc 
+
 * TODOS
 ** TODO: fix titles of videos 
 ** DONE: redo video w/ different vmax/mins 

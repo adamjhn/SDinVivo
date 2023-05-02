@@ -19,7 +19,7 @@ cfg.dt = 0.025 #0.025              # Internal integration timestep to use
 cfg.verbose = False            # Show detailed messages 
 cfg.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
 exp_dir = '/expanse/lustre/scratch/ckelley/temp_project/SDinVivoData/'
-cfg.filename = 'Data/conn1.6e-6_pois0.2_o20.13_bcNone_13kpmm_1mm3_dx50_5s/'
+cfg.filename = 'Data/conn1.6e-6_pois0.2_o2d0.13_bcNone_o2b0.08_13kpmm_1mm3_dx50_5s/'
 cfg.printPopAvgRates = True
 cfg.printRunTime = 1
 cfg.Kceil = 15.0
@@ -50,7 +50,7 @@ cfg.scaleConnWeight = 1.6e-6
 # slice conditions 
 cfg.ox = 'perfused'
 if cfg.ox == 'perfused':
-    cfg.o2_bath = 0.04
+    cfg.o2_bath = 0.08
     cfg.alpha_ecs = 0.2 
     cfg.tort_ecs = 1.6
 elif cfg.ox == 'hypoxic':
