@@ -4775,8 +4775,10 @@ a seconds K+ wave
 ** reflective boundary conditions didn't produce SD within 5s, but was coming in L2 
 ** trying [o2]=0.08 per bill's suggestion and reflective bc 
 
+* [2023-5-3 Wed] - increasing o2 to 0.08 
+** still get start of SD in L2 
 * TODOS
-** TODO: fix titles of videos 
+** DONE: fix titles of videos 
 ** DONE: redo video w/ different vmax/mins 
 ** DONE: run long baseline
 ** TODO: get on stampede 
