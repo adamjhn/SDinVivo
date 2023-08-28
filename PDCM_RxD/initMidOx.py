@@ -1,6 +1,3 @@
-import sys 
-# sys.path.insert(0,'/home/ckelley/netpyne/')
-sys.path.insert(0, '/u/craig/netpyne/')
 from netpyne import sim
 from netParamsMidOx import netParams
 from cfgMidOx import cfg
@@ -19,7 +16,7 @@ sim.net.createCells()                 # instantiate network cells based on defin
 sim.net.connectCells()                # create connections between cells based on params
 sim.net.addStims()                    # add external stimulation to cells (IClamps etc)
 sim.net.addRxD(nthreads=6)    # add reaction-diffusion (RxD)
-# sim.setupRecording()             # setup variables to record for each cell (spikes, V traces, etc)
+sim.setupRecording()             # setup variables to record for each cell (spikes, V traces, etc)
 # sim.simulate()
 
 # Additional sim setup 
@@ -41,16 +38,16 @@ pops = [str(all_secs[ind]).split('.')[1].split('s')[0] for ind in rec_inds]
 ## only single core stuff
 if pcid == 0:
     ## create output dir 
-    if not os.path.exists(cfg.filename):
+    if not os.path.exists(cfg.saveFolder):
         try:
-            os.makedirs(cfg.filename)
+            os.makedirs(cfg.saveFolder)
         except:
             print("Unable to create the directory %r for the data and figures"
-                % cfg.filename)
+                % cfg.saveFolder)
             os._exit(1)
 
     ## set variables for ecs concentrations 
-    k_ecs = sim.net.rxd['species']['k']['hObj'][sim.net.rxd['regions']['ecs']['hObj']]
+    k_ecs = sim.net.rxd['species']['kk']['hObj'][sim.net.rxd['regions']['ecs']['hObj']]
     na_ecs = sim.net.rxd['species']['na']['hObj'][sim.net.rxd['regions']['ecs']['hObj']]
     cl_ecs = sim.net.rxd['species']['cl']['hObj'][sim.net.rxd['regions']['ecs']['hObj']]
     o2_ecs = sim.net.rxd['species']['o2_extracellular']['hObj'][sim.net.rxd['regions']['ecs_o2']['hObj']]
@@ -77,10 +74,10 @@ if pcid == 0:
                 cell_type.append(soma.name().split('.')[1].split('s')[0])
                 soma_v.append(h.Vector().record(soma(0.5)._ref_v))
                 soma_nai.append(h.Vector().record(soma(0.5)._ref_nai))
-                soma_ki.append(h.Vector().record(soma(0.5)._ref_ki))
+                soma_ki.append(h.Vector().record(soma(0.5)._ref_kki))
                 soma_cli.append(h.Vector().record(soma(0.5)._ref_cli))
                 soma_nao.append(h.Vector().record(soma(0.5)._ref_nao))
-                soma_ko.append(h.Vector().record(soma(0.5)._ref_ko))
+                soma_ko.append(h.Vector().record(soma(0.5)._ref_kko))
                 soma_clo.append(h.Vector().record(soma(0.5)._ref_clo))
                 soma_o2.append(h.Vector().record(o2_ecs.node_by_location(soma.x3d(0),soma.y3d(0),soma.z3d(0))._ref_concentration))
                 break
@@ -90,7 +87,7 @@ if pcid == 0:
             'pos':rpos, 'o2':soma_o2, 'rad':cell_positions, 
             'cell_type' : cell_type}
 
-outdir = cfg.filename   
+outdir = cfg.saveFolder   
 def saveRxd():
     for sp in rxd.species._all_species:
         s = sp()
@@ -103,10 +100,10 @@ def runSS():
     svst.fwrite(f)
 
 def saveconc():
-    np.save(os.path.join(cfg.filename,"k_%i.npy" % int(h.t)), k_ecs.states3d)
-    np.save(os.path.join(cfg.filename,"na_%i.npy" % int(h.t)), na_ecs.states3d)
-    np.save(os.path.join(cfg.filename,"cl_%i.npy" % int(h.t)), cl_ecs.states3d)
-    np.save(os.path.join(cfg.filename,'o2_%i.npy' % int(h.t)), o2_ecs.states3d)
+    np.save(os.path.join(cfg.saveFolder,"k_%i.npy" % int(h.t)), k_ecs.states3d)
+    np.save(os.path.join(cfg.saveFolder,"na_%i.npy" % int(h.t)), na_ecs.states3d)
+    np.save(os.path.join(cfg.saveFolder,"cl_%i.npy" % int(h.t)), cl_ecs.states3d)
+    np.save(os.path.join(cfg.saveFolder,'o2_%i.npy' % int(h.t)), o2_ecs.states3d)
 
 def progress_bar(tstop, size=40):
     """ report progress of the simulation """
@@ -122,7 +119,7 @@ def run(tstop):
     if pcid == 0:
         # record the wave progress (shown in figure 2)
         name = ''
-        fout = open(os.path.join(cfg.filename,'wave_progress%s.txt' % name),'a')
+        fout = open(os.path.join(cfg.saveFolder,'wave_progress%s.txt' % name),'a')
     last_print = 0
     time = []
     saveint = 100
@@ -151,7 +148,7 @@ def run(tstop):
             last_print = h.t
             dist = 0
             dist1 = 1e9
-            for nd in sim.net.rxd.species['k']['hObj'].nodes:
+            for nd in sim.net.rxd.species['kk']['hObj'].nodes:
                 if str(nd.region).split('(')[0] == 'Extracellular':
                     r = ((nd.x3d-cfg.sizeX/2.0)**2+(nd.y3d+cfg.sizeY/2.0)**2+(nd.z3d-cfg.sizeZ/2.0)**2)**0.5
                     if nd.concentration>cfg.Kceil and r > dist:
@@ -164,11 +161,11 @@ def run(tstop):
     if pcid == 0:
         progress_bar(tstop)
         fout.close()
-        with open(os.path.join(cfg.filename,"recs.pkl"),'wb') as fout:
+        with open(os.path.join(cfg.saveFolder,"recs.pkl"),'wb') as fout:
             pickle.dump(recs,fout)
         print("\nSimulation complete. Plotting membrane potentials")
 
-    with open(os.path.join(cfg.filename,"centermembrane_potential_%i.pkl" % pcid),'wb') as pout:
+    with open(os.path.join(cfg.saveFolder,"centermembrane_potential_%i.pkl" % pcid),'wb') as pout:
         pickle.dump([rec_cells, pos, pops, time], pout)
 
     pc.barrier()    # wait for all processes to save
@@ -203,14 +200,14 @@ runSS()
 if pcid == 0:
     from analysis import traceExamples, compareKwaves, rasterPlot, plotMemV, allSpeciesMov, allTraces
     if cfg.restoredir:
-        traceExamples([cfg.restoredir, cfg.filename], cfg.filename + 'traces.png', iss=[0,4,8])
+        traceExamples([cfg.restoredir, cfg.saveFolder], cfg.saveFolder + 'traces.png', iss=[0,4,8])
         plt.close()
-        compareKwaves([cfg.filename], [cfg.ox], 'Condition', colors=['r'], figname=cfg.filename+'kwave.png')
+        compareKwaves([cfg.saveFolder], [cfg.ox], 'Condition', colors=['r'], figname=cfg.saveFolder+'kwave.png')
         plt.close()
-        rasterPlot([cfg.restoredir, cfg.filename], center=[cfg.sizeX/2, -cfg.sizeY/2, cfg.sizeZ], figname=cfg.filename+'raster.png')
+        rasterPlot([cfg.restoredir, cfg.saveFolder], center=[cfg.sizeX/2, -cfg.sizeY/2, cfg.sizeZ], figname=cfg.saveFolder+'raster.png')
         plt.close()
         try:
-            plotMemV([cfg.restoredir, cfg.filename])
+            plotMemV([cfg.restoredir, cfg.saveFolder])
         except:
             pass
         plt.close()
@@ -218,28 +215,29 @@ if pcid == 0:
         vmaxes = [18, 130, 140, 0.04]
         extent = (0,cfg.sizeX,-cfg.sizeY, 0.0)
         try:
-            allSpeciesMov(cfg.filename, cfg.filename+'mov_files/', vmins, vmaxes, cfg.filename+'all_species.mp4', dur=cfg.duration/1000, extent=extent, includeSpks=True)
+            allSpeciesMov(cfg.saveFolder, cfg.saveFolder+'mov_files/', vmins, vmaxes, cfg.saveFolder+'all_species.mp4', dur=cfg.duration/1000, extent=extent, includeSpks=True)
         except:
             pass
     else:
-        traceExamples(cfg.filename, cfg.filename + 'traces.png', iss=[0,4,8])
+        traceExamples(cfg.saveFolder, cfg.saveFolder + 'traces.png', iss=[0,4,8])
         plt.close()
-        compareKwaves([cfg.filename], [cfg.ox], 'Condition', colors=['r'], figname=cfg.filename+'kwave.png')
+        compareKwaves([cfg.saveFolder], [cfg.ox], 'Condition', colors=['r'], figname=cfg.saveFolder+'kwave.png')
         plt.close()
-        rasterPlot(cfg.filename, center=[cfg.sizeX/2, -cfg.sizeY/2, cfg.sizeZ], figname=cfg.filename+'raster.png')
+        rasterPlot(cfg.saveFolder, center=[cfg.sizeX/2, -cfg.sizeY/2, cfg.sizeZ], figname=cfg.saveFolder+'raster.png')
         plt.close()
         try:
-            plotMemV(cfg.filename)
+            plotMemV(cfg.saveFolder)
         except:
             pass
         plt.close()
         vmins = [3.5, 127, 130, 0.0]
         vmaxes = [18, 130, 140, 0.04]
         extent = (0,cfg.sizeX,-cfg.sizeY, 0.0)
-        allSpeciesMov(cfg.filename, cfg.filename+'mov_files/', vmins, vmaxes, cfg.filename+'all_species.mp4', dur=cfg.duration/1000, extent=extent, includeSpks=True, condition='Oxygenated') 
-        allTraces(cfg.filename, '.png')
+        allSpeciesMov(cfg.saveFolder, cfg.saveFolder+'mov_files/', vmins, vmaxes, cfg.saveFolder+'all_species.mp4', dur=cfg.duration/1000, extent=extent, includeSpks=True, condition='Oxygenated') 
+        allTraces(cfg.saveFolder, '.png')
 
 pc.barrier()
+sim.saveData()
 h.quit()
 
 # v0.0 - direct copy from ../uniformdensity/init.py 

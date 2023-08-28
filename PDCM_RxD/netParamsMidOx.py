@@ -1,6 +1,3 @@
-import sys 
-# sys.path.insert(0,'/home/ckelley/netpyne/')
-sys.path.insert(0, '/u/craig/netpyne/')
 from netpyne import specs
 import numpy as np
 from cfgMidOx import cfg
@@ -442,9 +439,9 @@ species = {}
 
 k_init_str = 'ki_initial if isinstance(node, rxd.node.Node1D) else (%f if ((node.x3d - %f/2)**2+(node.y3d + %f/2)**2+(node.z3d - %f/2)**2 <= %f**2) else ko_initial)' % (cfg.k0, cfg.sizeX, cfg.sizeY, cfg.sizeZ, cfg.r0)
 # k_init_str = 'ki_initial if isinstance(node, rxd.node.Node1D) else (%f if (((node.x3d - %f/2)**2+(node.z3d - %f/2)**2 < %f**2) and (-1100 < node.y3d < -900)) and  else ko_initial)' % (cfg.k, cfg.sizeX, cfg.sizeZ, cfg.r0)
-species['k'] = {'regions' : ['cyt', 'mem', 'ecs'], 'd' : 2.62, 'charge' : 1,
+species['kk'] = {'regions' : ['cyt', 'mem', 'ecs'], 'd' : 2.62, 'charge' : 1,
                 'initial' : k_init_str,
-                'ecs_boundary_conditions' : constants['ko_initial'], 'name' : 'k'}
+                'ecs_boundary_conditions' : constants['ko_initial'], 'name' : 'kk'}
 
 species['na'] = {'regions' : ['cyt', 'mem', 'ecs'], 'd' : 1.78, 'charge' : 1,
                 'initial' : 'nai_initial if isinstance(node, rxd.node.Node1D) else nao_initial',
@@ -457,7 +454,10 @@ species['cl'] = {'regions' : ['cyt', 'mem', 'ecs'], 'd' : 2.1, 'charge' : -1,
 # o2_init_str = 'o2_bath if isinstance(node, rxd.node.Node1D) else (0.4*o2sources[numpy.argmin((ybins-node.y3d)**2),numpy.argmin((xbins-node.x3d)**2),numpy.argmin((zbins-node.z3d)**2)] if o2sources[numpy.argmin((ybins-node.y3d)**2),numpy.argmin((xbins-node.x3d)**2),numpy.argmin((zbins-node.z3d)**2)] else 0.04)'
 # species['o2_extracellular'] = {'regions' : ['ecs_o2'], 'd' : 3.3, 'initial' : 0.04,
 #                 'ecs_boundary_conditions' : 0.04, 'name' : 'o2'}
-o2_init_str = 'o2_bath if isinstance(node, rxd.node.Node1D) else (0.4*o2sources[numpy.argmin((ybins-node.y3d)**2),numpy.argmin((xbins-node.x3d)**2),numpy.argmin((zbins-node.z3d)**2)] if o2sources[numpy.argmin((ybins-node.y3d)**2),numpy.argmin((xbins-node.x3d)**2),numpy.argmin((zbins-node.z3d)**2)] else 0.04)'
+zscale = dx/(cfg.sizeZ/o2sources.shape[2])
+yscale = dx/(cfg.sizeY/o2sources.shape[1])
+xscale = dx/(cfg.sizeX/o2sources.shape[0])
+o2_init_str = f'o2_bath if isinstance(node, rxd.node.Node1D) else 0.4*max(o2sources[int(node._j*{xscale}), int(node._i*{yscale}), int(node._k*{zscale})],0.1)'
 species['o2_extracellular'] = {'regions' : ['ecs_o2'], 'd' : 3.3, 'initial' : 0.04,
                 'ecs_boundary_conditions' : None, 'name' : 'o2'}
 # species['o2_extracellular'] = {'regions' : ['ecs_o2'], 'd' : 3.3, 'initial' : constants['o2_bath'],
@@ -478,7 +478,7 @@ if cfg.ouabain:
 
 if cfg.o2drive:
     params['numcap'] = {'regions' : ['ecs_o2'], 'name' : 'numcap', 'value' :
-        'o2sources[numpy.argmin((ybins-node.y3d)**2),numpy.argmin((xbins-node.x3d)**2),numpy.argmin((zbins-node.z3d)**2)]'}
+        f'o2sources[int(node._i*{xscale}), int(node._j*{yscale}), int(node._k*{zscale})]'}
 
 netParams.rxdParams['parameters'] = params
 
@@ -491,26 +491,26 @@ netParams.rxdParams['states'] = {'vol_ratio' : {'regions' : ['cyt', 'ecs'], 'ini
 ### reactions
 gna = "gnabar*mgate**3*hgate"
 gk = "gkbar*ngate**4"
-fko = "1.0 / (1.0 + rxd.rxdmath.exp(16.0 - k[ecs] / vol_ratio[ecs]))"
-nkcc1A = "rxd.rxdmath.log((k[cyt] * cl[cyt] / vol_ratio[cyt]**2) / (k[ecs] * cl[ecs] / vol_ratio[ecs]**2))"
+fko = "1.0 / (1.0 + rxd.rxdmath.exp(16.0 - kk[ecs] / vol_ratio[ecs]))"
+nkcc1A = "rxd.rxdmath.log((kk[cyt] * cl[cyt] / vol_ratio[cyt]**2) / (kk[ecs] * cl[ecs] / vol_ratio[ecs]**2))"
 nkcc1B = "rxd.rxdmath.log((na[cyt] * cl[cyt] / vol_ratio[cyt]**2) / (na[ecs] * cl[ecs] / vol_ratio[ecs]**2))"
 nkcc1 = "unkcc1 * (%s) * (%s+%s)" % (fko, nkcc1A, nkcc1B)
-kcc2 = "ukcc2 * rxd.rxdmath.log((k[cyt] * cl[cyt] * vol_ratio[cyt]**2) / (k[ecs] * cl[ecs] * vol_ratio[ecs]**2))"
+kcc2 = "ukcc2 * rxd.rxdmath.log((kk[cyt] * cl[cyt] * vol_ratio[cyt]**2) / (kk[ecs] * cl[ecs] * vol_ratio[ecs]**2))"
 
 #Nerst equation - reversal potentials
 ena = "26.64 * rxd.rxdmath.log(na[ecs]*vol_ratio[cyt]/(na[cyt]*vol_ratio[ecs]))"
-ek = "26.64 * rxd.rxdmath.log(k[ecs]*vol_ratio[cyt]/(k[cyt]*vol_ratio[ecs]))"
+ek = "26.64 * rxd.rxdmath.log(kk[ecs]*vol_ratio[cyt]/(kk[cyt]*vol_ratio[ecs]))"
 ecl = "26.64 * rxd.rxdmath.log(cl[cyt]*vol_ratio[ecs]/(cl[ecs]*vol_ratio[cyt]))"
 
 o2ecs = "o2_extracellular[ecs_o2]"
 o2switch = "(1.0 + rxd.rxdmath.tanh(1e4 * (%s - 5e-4))) / 2.0" % (o2ecs)
 p = "%s * p_max / (1.0 + rxd.rxdmath.exp((20.0 - (%s/vol_ratio[ecs]) * alpha)/3.0))" % (o2switch, o2ecs)
 pumpA = "(%s / (1.0 + rxd.rxdmath.exp((25.0 - na[cyt] / vol_ratio[cyt])/3.0)))" % (p)
-pumpB = "(1.0 / (1.0 + rxd.rxdmath.exp(3.5 - k[ecs] / vol_ratio[ecs])))"
+pumpB = "(1.0 / (1.0 + rxd.rxdmath.exp(3.5 - kk[ecs] / vol_ratio[ecs])))"
 pump = "(%s) * (%s)" % (pumpA, pumpB)
-gliapump = "(1.0/3.0) * (%s / (1.0 + rxd.rxdmath.exp((25.0 - gnai_initial) / 3.0))) * (1.0 / (1.0 + rxd.rxdmath.exp(3.5 - k[ecs]/vol_ratio[ecs])))" % (p)
+gliapump = "(1.0/3.0) * (%s / (1.0 + rxd.rxdmath.exp((25.0 - gnai_initial) / 3.0))) * (1.0 / (1.0 + rxd.rxdmath.exp(3.5 - kk[ecs]/vol_ratio[ecs])))" % (p)
 g_glia = "g_gliamax / (1.0 + rxd.rxdmath.exp(-((%s)*alpha/vol_ratio[ecs] - 2.5)/0.2))" % (o2ecs)
-glia12 = "(%s) / (1.0 + rxd.rxdmath.exp((18.0 - k[ecs] / vol_ratio[ecs])/2.5))" % (g_glia)
+glia12 = "(%s) / (1.0 + rxd.rxdmath.exp((18.0 - kk[ecs] / vol_ratio[ecs])/2.5))" % (g_glia)
 
 # epsilon_k = "(epsilon_k_max/(1.0 + rxd.rxdmath.exp(-(((%s)/vol_ratio[ecs]) * alpha - 2.5)/0.2))) * (1.0/(1.0 + rxd.rxdmath.exp((-20 + ((1.0+1.0/beta0 -vol_ratio[ecs])/vol_ratio[ecs]) /2.0))))" % (o2ecs)
 epsilon_kA = "(epsilon_k_max/(1.0 + rxd.rxdmath.exp(-((%s/vol_ratio[ecs]) * alpha - 2.5)/0.2)))" % (o2ecs)
@@ -521,7 +521,7 @@ epsilon_k = '%s * %s' % (epsilon_kA, epsilon_kB)
 volume_scale = "1e-18 * avo * %f" % (1.0 / cfg.sa2v)
 
 avo = 6.0221409*(10**23)
-osm = "(1.1029 - 0.1029*rxd.rxdmath.exp( ( (na[ecs] + k[ecs] + cl[ecs] + 18.0)/vol_ratio[ecs] - (na[cyt] + k[cyt] + cl[cyt] + 132.0)/vol_ratio[cyt])/20.0))"
+osm = "(1.1029 - 0.1029*rxd.rxdmath.exp( ( (na[ecs] + kk[ecs] + cl[ecs] + 18.0)/vol_ratio[ecs] - (na[cyt] + kk[cyt] + cl[cyt] + 132.0)/vol_ratio[cyt])/20.0))"
 scalei = str(avo * 1e-18)
 scaleo = str(avo * 1e-18)
 
@@ -546,7 +546,7 @@ mcReactions['na_current'] = {'reactant' : 'na[cyt]', 'product' : 'na[ecs]',
                             'membrane' : 'mem', 'custom_dynamics' : True, 'membrane_flux' : True}
 
 # potassium (K) current
-mcReactions['k_current'] = {'reactant' : 'k[cyt]', 'product' : 'k[ecs]', 
+mcReactions['k_current'] = {'reactant' : 'kk[cyt]', 'product' : 'kk[ecs]', 
                             'rate_f' : "%s * (rxd.v - %s)" % (gk, ek), 
                             'membrane' : 'mem', 'custom_dynamics' : True, 'membrane_flux' : True}
 
@@ -555,7 +555,7 @@ mcReactions['nkcc1_current1'] = {'reactant': 'cl[cyt]', 'product': 'cl[ecs]',
                                 'rate_f': "2.0 * (%s) * (%s)" % (nkcc1, volume_scale), 
                                 'membrane': 'mem', 'custom_dynamics' : True, 'membrane_flux' : True}
 
-mcReactions['nkcc1_current2'] = {'reactant': 'k[cyt]', 'product': 'k[ecs]',
+mcReactions['nkcc1_current2'] = {'reactant': 'kk[cyt]', 'product': 'kk[ecs]',
                                 'rate_f': "%s * %s" % (nkcc1, volume_scale), 
                                 'membrane': 'mem', 'custom_dynamics' : True, 'membrane_flux' : True}
 
@@ -568,7 +568,7 @@ mcReactions['kcc2_current1'] = {'reactant' : 'cl[cyt]', 'product': 'cl[ecs]',
                                 'rate_f': "%s * %s" % (kcc2, volume_scale), 
                                 'membrane' : 'mem', 'custom_dynamics' : True, 'membrane_flux' : True}
 
-mcReactions['kcc2_current2'] = {'reactant' : 'k[cyt]', 'product' : 'k[ecs]', 
+mcReactions['kcc2_current2'] = {'reactant' : 'kk[cyt]', 'product' : 'kk[ecs]', 
                                 'rate_f': "%s * %s" % (kcc2, volume_scale), 
                                 'membrane' : 'mem', 'custom_dynamics' : True, 'membrane_flux' : True}
 
@@ -578,7 +578,7 @@ mcReactions['na_leak'] = {'reactant' : 'na[cyt]', 'product' : 'na[ecs]',
                         'membrane' : 'mem', 'custom_dynamics' : True, 'membrane_flux' : True}
 
 # ## potassium leak
-mcReactions['k_leak'] = {'reactant' : 'k[cyt]', 'product' : 'k[ecs]', 
+mcReactions['k_leak'] = {'reactant' : 'kk[cyt]', 'product' : 'kk[ecs]', 
                         'rate_f' : "gkbar_l * (rxd.v - %s)" % (ek), 
                         'membrane' : 'mem', 'custom_dynamics' : True, 'membrane_flux' : True}
 
@@ -588,7 +588,7 @@ mcReactions['cl_current'] = {'reactant' : 'cl[cyt]', 'product' : 'cl[ecs]',
                             'membrane' : 'mem', 'custom_dynamics' : True, 'membrane_flux' : True} 
 
 # ## Na+/K+ pump current in neuron (2K+ in, 3Na+ out)
-mcReactions['pump_current'] = {'reactant' : 'k[cyt]', 'product' : 'k[ecs]', 
+mcReactions['pump_current'] = {'reactant' : 'kk[cyt]', 'product' : 'kk[ecs]', 
                             'rate_f' : "(-2.0 * %s * %s)" % (pump, volume_scale), 
                             'membrane' : 'mem', 'custom_dynamics' : True, 'membrane_flux' : True}
 
@@ -631,8 +631,8 @@ if cfg.o2drive:
 # rates['o2diff'] = {'species' : o2ecs, 'regions' : ['ecs_o2'],
 #     'rate' : '(epsilon_o2 * (o2_bath - %s))' % (o2ecs)} # o2everywhereNoVolScale
 
-rates['kdiff'] = {'species' : 'k[ecs]', 'regions' : ['ecs'],
-    'rate' : 'ecsbc * ((%s) * (ko_initial - k[ecs]/vol_ratio[ecs]))' % (epsilon_k)}
+rates['kdiff'] = {'species' : 'kk[ecs]', 'regions' : ['ecs'],
+    'rate' : 'ecsbc * ((%s) * (ko_initial - kk[ecs]/vol_ratio[ecs]))' % (epsilon_k)}
 
 rates['nadiff'] = {'species' : 'na[ecs]', 'regions' : ['ecs'],
     'rate' : 'ecsbc * ((%s) * (nao_initial - na[ecs]/vol_ratio[ecs]))' % (epsilon_k)}
@@ -641,7 +641,7 @@ rates['cldiff'] = {'species' : 'cl[ecs]', 'regions' : ['ecs'],
     'rate' : 'ecsbc * ((%s) * (clo_initial - cl[ecs]/vol_ratio[ecs]))' % (epsilon_k)}
 
 ## Glia K+/Na+ pump current 
-rates['glia_k_current'] = {'species' : 'k[ecs]', 'regions' : ['ecs'],
+rates['glia_k_current'] = {'species' : 'kk[ecs]', 'regions' : ['ecs'],
     'rate' : '(-(%s) - (2.0 * (%s)))' % (glia12, gliapump)}
 
 rates['glia_na_current'] = {'species' : 'na[ecs]', 'regions' : ['ecs'],
