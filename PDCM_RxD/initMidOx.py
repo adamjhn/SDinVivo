@@ -114,66 +114,6 @@ def progress_bar(tstop, size=40):
     sys.stdout.write('[%s] %2.1f%% %6.1fms of %6.1fms\r' % (progress, 100*prog, h.t, tstop))
     sys.stdout.flush()
 
-def run(tstop):
-    """ Run the simulations saving figures every 100ms and recording the wave progression every time step"""
-    if pcid == 0:
-        # record the wave progress (shown in figure 2)
-        name = ''
-        fout = open(os.path.join(cfg.saveFolder,'wave_progress%s.txt' % name),'a')
-    last_print = 0
-    time = []
-    saveint = 100
-    ssint = 500 
-    lastss = 0
-
-    while h.t < tstop:
-        time.append(h.t)
-        if int(h.t) % saveint == 0:
-            # plot extracellular concentrations averaged over depth every 100ms 
-            if pcid == 0:
-                saveconc()
-        if (int(h.t) % ssint == 0) and (h.t - lastss) > 10:
-                runSS()
-                # saveRxd()
-                lastss = h.t
-        if pcid == 0: progress_bar(tstop)
-        pc.psolve(pc.t(0)+h.dt)  # run the simulation for 1 time step
-
-        # h.fadvance()
-        # determine the furthest distance from the origin where
-        # extracellular potassium exceeds cfg.Kceil (dist)
-        # And the shortest distance from the origin where the extracellular
-        # extracellular potassium is below cfg.Kceil (dist1)
-        if pcid == 0 and h.t - last_print > 1.0:
-            last_print = h.t
-            dist = 0
-            dist1 = 1e9
-            for nd in sim.net.rxd.species['kk']['hObj'].nodes:
-                if str(nd.region).split('(')[0] == 'Extracellular':
-                    r = ((nd.x3d-cfg.sizeX/2.0)**2+(nd.y3d+cfg.sizeY/2.0)**2+(nd.z3d-cfg.sizeZ/2.0)**2)**0.5
-                    if nd.concentration>cfg.Kceil and r > dist:
-                        dist = r
-                    if nd.concentration<=cfg.Kceil and r < dist1:
-                        dist1 = r
-            fout.write("%g\t%g\t%g\n" %(h.t, dist, dist1))
-            fout.flush()
-
-    if pcid == 0:
-        progress_bar(tstop)
-        fout.close()
-        with open(os.path.join(cfg.saveFolder,"recs.pkl"),'wb') as fout:
-            pickle.dump(recs,fout)
-        print("\nSimulation complete. Plotting membrane potentials")
-
-    with open(os.path.join(cfg.saveFolder,"centermembrane_potential_%i.pkl" % pcid),'wb') as pout:
-        pickle.dump([rec_cells, pos, pops, time], pout)
-
-    pc.barrier()    # wait for all processes to save
-
-h.load_file('stdrun.hoc')
-h.celsius = cfg.hParams['celsius']
-h.dt = cfg.dt
-
 ## restore from previous sim 
 if cfg.restoredir:
     restoredir = cfg.restoredir
@@ -187,15 +127,61 @@ if cfg.restoredir:
 
     # fih = h.FInitializeHandler(1, restoreSim)
     fih = h.FInitializeHandler(1, restoreSS)
-    h.finitialize()
-else:
-    h.finitialize(cfg.hParams['v_init'])
 
-run(cfg.duration)
 
+fout = None
+if pcid == 0:
+    # record the wave progress
+    name = ''
+    fout = open(os.path.join(cfg.saveFolder,'wave_progress%s.txt' % name),'a')
+lastss = 0
+
+def runIntervalFunc(t):
+    """Write the wave_progress every 1ms"""
+    global lastss
+    saveint = 100
+    ssint = 500 
+    lastss = 0
+    if pcid == nhost - 1:
+        if int(t) % saveint == 0:
+            # plot extracellular concentrations averaged over depth every 100ms 
+                saveconc()
+        if (int(t) % ssint == 0) and (t - lastss) > 10:
+            runSS()
+            lastss = t
+    if pcid == 0:
+        progress_bar(cfg.duration)
+        dist = 0
+        dist1 = 1e9
+        for nd in sim.net.rxd.species['kk']['hObj'].nodes:
+            if str(nd.region).split('(')[0] == 'Extracellular':
+                r = ((nd.x3d-cfg.sizeX/2.0)**2+(nd.y3d-cfg.sizeY/2.0)**2+(nd.z3d-cfg.sizeZ/2.0)**2)**0.5
+                if nd.concentration>cfg.Kceil and r > dist:
+                    dist = r
+                if nd.concentration<=cfg.Kceil and r < dist1:
+                    dist1 = r
+        fout.write("%g\t%g\t%g\n" %(h.t, dist, dist1))
+        fout.flush()
+
+sim.runSimWithIntervalFunc(1, runIntervalFunc)
+sim.gatherData()
+sim.saveData()
+sim.analysis.plotData() 
+
+
+
+if pcid == 0:
+    progress_bar(cfg.duration)
+    fout.close()
+    with open(os.path.join(cfg.saveFolder,"recs.pkl"),'wb') as fout:
+        pickle.dump(recs,fout)
+    print("\nSimulation complete. Plotting membrane potentials")
+
+with open(os.path.join(cfg.saveFolder,"centermembrane_potential_%i.pkl" % pcid),'wb') as pout:
+    pickle.dump([rec_cells, pos, pops], pout)
+
+pc.barrier()    # wait for all processes to save
 runSS()
-# saveRxd()
-
 ## basic plotting
 if pcid == 0:
     from analysis import traceExamples, compareKwaves, rasterPlot, plotMemV, allSpeciesMov, allTraces
@@ -237,7 +223,6 @@ if pcid == 0:
         allTraces(cfg.saveFolder, '.png')
 
 pc.barrier()
-sim.saveData()
 h.quit()
 
 # v0.0 - direct copy from ../uniformdensity/init.py 

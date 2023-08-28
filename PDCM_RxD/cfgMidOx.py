@@ -9,23 +9,24 @@ import cv2
 
 # Run parameters
 cfg = specs.SimConfig()       # object of class cfg to store simulation configuration
-cfg.duration = 1#e3        # Duration of the simulation, in ms
+cfg.duration = 10#e3        # Duration of the simulation, in ms
 cfg.hParams['v_init'] = -70.0   # set v_init to -65 mV
 cfg.hParams['celsius'] = 37.0
 cfg.dt = 0.025 #0.025              # Internal integration timestep to use
 cfg.verbose = False            # Show detailed messages 
 cfg.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
 cfg.simLabel = "test" #"conn1.6e-6_pois0.2_o2d0.13_bcNone_o2b0.06_13kpmm_1mm3_dx50_1s"
-cfg.saveFolder = f'/vast/palmer/scratch/mcdougal/ajn48/{cfg.simLabel}/'
-cfg.filename = "spikes.pkl"  # Set file output name
+cfg.saveFolder = f'/vast/palmer/scratch/mcdougal/ajn48/{cfg.simLabel}'
 cfg.savePickle = True         # Save params, network and sim output to pickle file
 cfg.saveJson = False
 cfg.recordStim = False
 
+
+
 cfg.printPopAvgRates = True
 cfg.printRunTime = 1
 cfg.Kceil = 15.0
-cfg.nRec = 240
+cfg.nRec = 1#240
 cfg.recordCellsSpikes = ['L2e', 'L2i', 'L4e', 'L4i', 'L5e', 'L5i','L6e', 'L6i'] # record only spikes of cells (not ext stims)
 cfg.seed = 120194
 cfg.restoredir = None #'Data/k0_conn1.6e-6_pois0.2_o20.13_13kpmm_1mm3_dx50_10s/'
@@ -91,7 +92,7 @@ cfg.r0 = 300.0
 # DC=False ; TH=True;  Balanced=True   => Figure 10A. But I want a partial reproduce so I guess Figure 10C is not necessary
 
 # Size of Network. Adjust this constants, please!
-cfg.ScaleFactor = 0.16 #= 80.000 
+cfg.ScaleFactor = 1 #0.16 #= 80.000 
 
 # External input DC or Poisson
 cfg.DC = False #True = DC // False = Poisson
