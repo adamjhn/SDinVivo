@@ -529,15 +529,16 @@ ecl = "26.64 * rxd.rxdmath.log(cl[cyt]*vol_ratio[ecs]/(cl[ecs]*vol_ratio[cyt]))"
 
 o2ecs = "o2_extracellular[ecs_o2]"
 o2switch = "(1.0 + rxd.rxdmath.tanh(1e4 * (%s - 5e-4))) / 2.0" % (o2ecs)
-p = "%s * p_max / (1.0 + rxd.rxdmath.exp((20.0 - (%s/vol_ratio[ecs]) * alpha)/3.0))" % (
+p = "%s / (1.0 + rxd.rxdmath.exp((20.0 - (%s/vol_ratio[ecs]) * alpha)/3.0))" % (
     o2switch,
     o2ecs,
 )
-pumpA = "(%s / (1.0 + rxd.rxdmath.exp((25.0 - na[cyt] / vol_ratio[cyt])/3.0)))" % (p)
+pumpA = "(1.0 / (1.0 + rxd.rxdmath.exp((25.0 - na[cyt] / vol_ratio[cyt])/3.0)))"
 pumpB = "(1.0 / (1.0 + rxd.rxdmath.exp(3.5 - kk[ecs] / vol_ratio[ecs])))"
-pump = "(%s) * (%s)" % (pumpA, pumpB)
+pump_max = "p_max * (%s) * (%s)" % (pumpA, pumpB) # pump with unlimited oxygen
+pump = "(%s) * (%s)" %(p, pump_max) 
 gliapump = (
-    "(1.0/3.0) * (%s / (1.0 + rxd.rxdmath.exp((25.0 - gnai_initial) / 3.0))) * (1.0 / (1.0 + rxd.rxdmath.exp(3.5 - kk[ecs]/vol_ratio[ecs])))"
+    "(1.0/3.0) * p_max * (%s / (1.0 + rxd.rxdmath.exp((25.0 - gnai_initial) / 3.0))) * (1.0 / (1.0 + rxd.rxdmath.exp(3.5 - kk[ecs]/vol_ratio[ecs])))"
     % (p)
 )
 g_glia = (
@@ -591,7 +592,7 @@ def initEval(ratestr):
     return eval(ratestr)
 
 
-min_pmax = f"p_max * ({nkcc1} + {kcc2} + {gk} * (v_initial - {ek})/({volume_scale}))/(2*{pump})"
+min_pmax = f"p_max * ({nkcc1} + {kcc2} + {gk} * (v_initial - {ek})/({volume_scale}))/(2*{pump_max})"
 pmin = initEval(min_pmax)
 if constants["p_max"] < pmin:
     print("Pump current is too low to balance K+ currents")
@@ -599,8 +600,8 @@ if constants["p_max"] < pmin:
     constants["p_max"] = pmin
 
 clbalance = f"-((2.0 * {nkcc1} +  {kcc2}) * {volume_scale})/({ecl} - v_initial)"
-kbalance = f"-(({nkcc1} + {kcc2} - 2 * {pump}) * {volume_scale} + ({gk} * (v_initial - {ek})))/(v_initial-{ek})"
-nabalance = f"-(({nkcc1} + 3 * {pump}) * {volume_scale} + ({gna} * (v_initial - {ena})))/(v_initial-{ena})"
+kbalance = f"-(({nkcc1} + {kcc2} - 2 * {pump_max}) * {volume_scale} + ({gk} * (v_initial - {ek})))/(v_initial-{ek})"
+nabalance = f"-(({nkcc1} + 3 * {pump_max}) * {volume_scale} + ({gna} * (v_initial - {ena})))/(v_initial-{ena})"
 
 constants["gclbar_l"] = initEval(clbalance)
 constants["gkbar_l"] = cfg.gkleak_scale * initEval(kbalance)
