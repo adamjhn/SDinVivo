@@ -10,15 +10,12 @@ import cv2
 
 # Run parameters
 cfg = specs.SimConfig()  # object of class cfg to store simulation configuration
-cfg.duration = 10e3  # Duration of the simulation, in ms
+cfg.duration = 1e3  # Duration of the simulation, in ms
 cfg.hParams["v_init"] = -70.0  # set v_init to -65 mV
 cfg.hParams["celsius"] = 37.0
 cfg.dt = 0.025  # 0.025              # Internal integration timestep to use
 cfg.verbose = False  # Show detailed messages
 cfg.recordStep = 1  # Step size in ms to save data (eg. V traces, LFP, etc)
-cfg.simLabel = (
-    "SD_hypoxic_conn1.6e-6_pois0.2_o2d0.13_bcNone_o2b0.06_13kpmm_1mm3_dx50_20s"
-)
 cfg.saveFolder = f"/vast/palmer/scratch/mcdougal/ajn48/{cfg.simLabel}/"
 cfg.savePickle = True  # Save params, network and sim output to pickle file
 cfg.saveJson = False
@@ -59,7 +56,7 @@ cfg.connFactor = "1e-7"
 cfg.poissonRateFactor = 0.2
 cfg.connected = True
 cfg.o2drive = "0.13"
-cfg.scaleConnWeight = 1.6e-6
+cfg.scaleConnWeight = 1  # 1.6e-6
 
 # slice conditions
 cfg.ox = "perfused"
@@ -131,6 +128,8 @@ cfg.TH = True  # True = on // False = off
 cfg.Balanced = False  # False #True=Balanced // False=Unbalanced
 
 cfg.ouabain = False
+
+cfg.simLabel = f"SD_scale{cfg.ScaleFactor}_{cfg.prep}_{cfg.ox}_pois{cfg.poissonRateFactor}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}_13kpmm_1mm3_dx{cfg.dx}_{cfg.duration/1000:0.2f}s"
 
 # v0.0 - combination of cfg from ../uniformdensity and netpyne PD thalamocortical model
 # v1.0 - cfg for o2 sources based on capillaries identified from histology

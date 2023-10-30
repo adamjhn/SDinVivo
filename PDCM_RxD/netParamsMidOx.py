@@ -327,8 +327,9 @@ if cfg.DC == False:  # External Input as Poisson
             "preConds": {"pop": "poiss" + str(L[r])},
             "postConds": {"pop": L[r]},
             "connList": auxConn.T,
-            "weight": "max(0, weightMin+normal(0,dweight*weightMin))",
+            "weight": f"max(0, {cfg.excWeight} * weightMin+normal(0,dweight*weightMin))",
             "delay": 0.5,
+            "synMech": "exc",
         }  # 1 delay
 
 # Thalamus Input: increased of 15Hz that lasts 10 ms
@@ -353,7 +354,7 @@ if cfg.TH == True:
             "preConds": {"pop": "bkg_TH" + str(L[r])},
             "postConds": {"pop": L[r]},
             "connList": auxConn.T,
-            "weight": "max(0, weightMin +normal(0,dweight*weightMin))",
+            "weight": f"max(0, {cfg.excWeight} * weightMin +normal(0,dweight*weightMin))",
             "delay": 0.5,
             "synMech": "exc",
         }  # 1 delay
@@ -375,9 +376,11 @@ if cfg.connected:
             if L[c][-1] == "e":
                 syn = "exc"
                 connFactor = cfg.connFactor
+                weightScale = cfg.excWeight
             else:
                 syn = "inh"
                 connFactor = "1.8*" + cfg.connFactor
+                weightScale = cfg.inhWeight
             if (c % 2) == 0:
                 if c == 2 and r == 0:
                     netParams.connParams[str(L[c]) + "->" + str(L[r])] = {
@@ -389,7 +392,7 @@ if cfg.connected:
                             / np.log(1.0 - 1.0 / (N_Full[r] * N_Full[c]))
                         )
                         / N_Full[c],
-                        "weight": 0.001,  # synaptic weight
+                        "weight": 0.001 * weightScale,  # synaptic weight
                         "delay": "max(0.1, delayMin_e +normal(0,ddelay*delayMin_e))",  # transmission delay (ms)
                         "synMech": syn,
                     }
@@ -403,7 +406,7 @@ if cfg.connected:
                             / np.log(1.0 - 1.0 / (N_Full[r] * N_Full[c]))
                         )
                         / N_Full[c],
-                        "weight": 0.002,  # synaptic weight
+                        "weight": 0.002 * weightScale,  # synaptic weight
                         "delay": "max(0.1, delayMin_e +normal(0,ddelay*delayMin_e))",  # transmission delay (ms)
                         "synMech": syn,
                     }  # synaptic mechanism
@@ -417,7 +420,7 @@ if cfg.connected:
                         / np.log(1.0 - 1.0 / (N_Full[r] * N_Full[c]))
                     )
                     / N_Full[c],
-                    "weight": -0.004,  # synaptic weight
+                    "weight": 0.004 * weightScale,  # synaptic weight
                     "delay": "max(0.1, delayMin_i +normal(0,ddelay*delayMin_i))",  # transmission delay (ms)
                     "synMech": syn,
                 }  # synaptic mechanism
