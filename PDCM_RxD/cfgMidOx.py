@@ -9,16 +9,18 @@ import cv2
 # ------------------------------------------------------------------------------
 
 # Run parameters
-cfg = specs.SimConfig()       # object of class cfg to store simulation configuration
-cfg.duration = 10e3        # Duration of the simulation, in ms
-cfg.hParams['v_init'] = -70.0   # set v_init to -65 mV
-cfg.hParams['celsius'] = 37.0
-cfg.dt = 0.025 #0.025              # Internal integration timestep to use
-cfg.verbose = False            # Show detailed messages 
-cfg.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
-cfg.simLabel = "SD_hypoxic_conn1.6e-6_pois0.2_o2d0.13_bcNone_o2b0.06_13kpmm_1mm3_dx50_20s"
-cfg.saveFolder = f'/vast/palmer/scratch/mcdougal/ajn48/{cfg.simLabel}/'
-cfg.savePickle = True         # Save params, network and sim output to pickle file
+cfg = specs.SimConfig()  # object of class cfg to store simulation configuration
+cfg.duration = 10e3  # Duration of the simulation, in ms
+cfg.hParams["v_init"] = -70.0  # set v_init to -65 mV
+cfg.hParams["celsius"] = 37.0
+cfg.dt = 0.025  # 0.025              # Internal integration timestep to use
+cfg.verbose = False  # Show detailed messages
+cfg.recordStep = 1  # Step size in ms to save data (eg. V traces, LFP, etc)
+cfg.simLabel = (
+    "SD_hypoxic_conn1.6e-6_pois0.2_o2d0.13_bcNone_o2b0.06_13kpmm_1mm3_dx50_20s"
+)
+cfg.saveFolder = f"/vast/palmer/scratch/mcdougal/ajn48/{cfg.simLabel}/"
+cfg.savePickle = True  # Save params, network and sim output to pickle file
 cfg.saveJson = False
 cfg.recordStim = False
 
@@ -38,7 +40,7 @@ cfg.recordCellsSpikes = [
     "L6i",
 ]  # record only spikes of cells (not ext stims)
 cfg.seed = 120194
-cfg.restoredir = None 
+cfg.restoredir = None
 
 # Network dimensions
 cfg.fig_file = "../test_mask.tif"
@@ -67,14 +69,14 @@ if cfg.ox == "perfused":
     cfg.alpha_ecs = 0.2
     cfg.tort_ecs = 1.6
     cfg.o2drive = 0.13
-elif cfg.ox == 'hypoxic':
+elif cfg.ox == "hypoxic":
     cfg.o2_bath = 0.01
     cfg.o2_init = 0.01
     cfg.alpha_ecs = 0.07
     cfg.tort_ecs = 1.8
-    cfg.o2drive = 0.13 * (1/6)
+    cfg.o2drive = 0.13 * (1 / 6)
 
-cfg.prep = "invivo" #"invitro"
+cfg.prep = "invivo"  # "invitro"
 
 # neuron params
 cfg.betaNrn = 0.24
@@ -102,7 +104,7 @@ else:
     cfg.somaR = cfg.rs
 cfg.cyt_fraction = cfg.rs**3 / cfg.somaR**3
 
-# sd init params 
+# sd init params
 cfg.k0 = 3.5
 cfg.r0 = 300.0
 
