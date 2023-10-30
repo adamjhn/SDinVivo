@@ -1,10 +1,17 @@
 from neuron import h
-from cfgRxd import cfg 
-import numpy as np 
-['L2e', 'L2i', 'L4e', 'L4i', 'L5e', 'L5i', 'L6e', 'L6i']
+import numpy as np
+
+
+try:
+    from __main__ import cfg  # import SimConfig object with params from parent module
+except:
+    from cfgMidOx import (
+        cfg,
+    )  # if no simConfig in parent module, import directly from cfg.py:cfg
+
 class L2e:
     def __init__(self):
-        self.soma = h.Section(name='L2e', cell=self)
+        self.soma = h.Section(name='soma', cell=self)
         # add 3D points to locate the neuron in the ECS  
         self.soma.pt3dadd(0.0, 0.0, 0.0, 2.0 * cfg.somaR)
         self.soma.pt3dadd(0.0, 2.0 * cfg.somaR, 0.0, 2.0 * cfg.somaR)
@@ -15,7 +22,7 @@ class L2e:
 
 class L2i:
     def __init__(self):
-        self.soma = h.Section(name='L2i', cell=self)
+        self.soma = h.Section(name='soma', cell=self)
         # add 3D points to locate the neuron in the ECS  
         self.soma.pt3dadd(0.0, 0.0, 0.0, 2.0 * cfg.somaR)
         self.soma.pt3dadd(0.0, 2.0 * cfg.somaR, 0.0, 2.0 * cfg.somaR)
@@ -26,7 +33,7 @@ class L2i:
 
 class L4e:
     def __init__(self):
-        self.soma = h.Section(name='L4e', cell=self)
+        self.soma = h.Section(name='soma', cell=self)
         # add 3D points to locate the neuron in the ECS  
         self.soma.pt3dadd(0.0, 0.0, 0.0, 2.0 * cfg.somaR)
         self.soma.pt3dadd(0.0, 2.0 * cfg.somaR, 0.0, 2.0 * cfg.somaR)
@@ -37,7 +44,7 @@ class L4e:
 
 class L4i:
     def __init__(self):
-        self.soma = h.Section(name='L4i', cell=self)
+        self.soma = h.Section(name='soma', cell=self)
         # add 3D points to locate the neuron in the ECS  
         self.soma.pt3dadd(0.0, 0.0, 0.0, 2.0 * cfg.somaR)
         self.soma.pt3dadd(0.0, 2.0 * cfg.somaR, 0.0, 2.0 * cfg.somaR)
@@ -48,7 +55,7 @@ class L4i:
 
 class L5e:
     def __init__(self):
-        self.soma = h.Section(name='L5e', cell=self)
+        self.soma = h.Section(name='soma', cell=self)
         # add 3D points to locate the neuron in the ECS  
         self.soma.pt3dadd(0.0, 0.0, 0.0, 2.0 * cfg.somaR)
         self.soma.pt3dadd(0.0, 2.0 * cfg.somaR, 0.0, 2.0 * cfg.somaR)
@@ -59,7 +66,7 @@ class L5e:
 
 class L5i:
     def __init__(self):
-        self.soma = h.Section(name='L5i', cell=self)
+        self.soma = h.Section(name='soma', cell=self)
         # add 3D points to locate the neuron in the ECS  
         self.soma.pt3dadd(0.0, 0.0, 0.0, 2.0 * cfg.somaR)
         self.soma.pt3dadd(0.0, 2.0 * cfg.somaR, 0.0, 2.0 * cfg.somaR)
@@ -71,7 +78,7 @@ class L5i:
 
 class L6e:
     def __init__(self):
-        self.soma = h.Section(name='L6e', cell=self)
+        self.soma = h.Section(name='soma', cell=self)
         # add 3D points to locate the neuron in the ECS  
         self.soma.pt3dadd(0.0, 0.0, 0.0, 2.0 * cfg.somaR)
         self.soma.pt3dadd(0.0, 2.0 * cfg.somaR, 0.0, 2.0 * cfg.somaR)
@@ -82,7 +89,7 @@ class L6e:
 
 class L6i:
     def __init__(self):
-        self.soma = h.Section(name='L6i', cell=self)
+        self.soma = h.Section(name='soma', cell=self)
         # add 3D points to locate the neuron in the ECS  
         self.soma.pt3dadd(0.0, 0.0, 0.0, 2.0 * cfg.somaR)
         self.soma.pt3dadd(0.0, 2.0 * cfg.somaR, 0.0, 2.0 * cfg.somaR)
@@ -91,3 +98,4 @@ class L6i:
             self.soma(0.5).pas.e = cfg.epas
             self.soma(0.5).pas.g = cfg.gpas
 # v0.00 - classes for each cell type in network
+# v0.01 - rename soma section to 'soma'
