@@ -8,7 +8,7 @@ import pickle
 from neuron import h, rxd
 import random 
 from matplotlib import pyplot as plt 
-
+from stats import networkStatsFromSim
 # Instantiate network 
 sim.initialize(netParams, cfg)  # create network object and set cfg and net params
 sim.net.createPops()                  # instantiate network populations
@@ -142,7 +142,7 @@ def runIntervalFunc(t):
     saveint = 100
     ssint = 500 
     lastss = 0
-    if pcid == nhost - 1:
+    if pcid == 0:
         if int(t) % saveint == 0:
             # plot extracellular concentrations averaged over depth every 100ms 
                 saveconc()
@@ -155,7 +155,7 @@ def runIntervalFunc(t):
         dist1 = 1e9
         for nd in sim.net.rxd.species['kk']['hObj'].nodes:
             if str(nd.region).split('(')[0] == 'Extracellular':
-                r = ((nd.x3d-cfg.sizeX/2.0)**2+(nd.y3d-cfg.sizeY/2.0)**2+(nd.z3d-cfg.sizeZ/2.0)**2)**0.5
+                r = ((nd.x3d-cfg.sizeX/2.0)**2+(nd.y3d+cfg.sizeY/2.0)**2+(nd.z3d-cfg.sizeZ/2.0)**2)**0.5
                 if nd.concentration>cfg.Kceil and r > dist:
                     dist = r
                 if nd.concentration<=cfg.Kceil and r < dist1:
@@ -165,6 +165,8 @@ def runIntervalFunc(t):
 
 sim.runSimWithIntervalFunc(1, runIntervalFunc)
 sim.gatherData()
+if pcid == 0:
+    networkStatsFromSim(sim,filename=os.path.join(cfg.saveFolder,"netstats.json"))
 sim.saveData()
 sim.analysis.plotData() 
 
@@ -173,6 +175,7 @@ sim.analysis.plotData()
 if pcid == 0:
     progress_bar(cfg.duration)
     fout.close()
+if pcid == 0:
     with open(os.path.join(cfg.saveFolder,"recs.pkl"),'wb') as fout:
         pickle.dump(recs,fout)
     print("\nSimulation complete. Plotting membrane potentials")

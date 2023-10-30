@@ -9,14 +9,14 @@ import cv2
 
 # Run parameters
 cfg = specs.SimConfig()       # object of class cfg to store simulation configuration
-cfg.duration = 10#e3        # Duration of the simulation, in ms
+cfg.duration = 20e3        # Duration of the simulation, in ms
 cfg.hParams['v_init'] = -70.0   # set v_init to -65 mV
 cfg.hParams['celsius'] = 37.0
 cfg.dt = 0.025 #0.025              # Internal integration timestep to use
 cfg.verbose = False            # Show detailed messages 
 cfg.recordStep = 1             # Step size in ms to save data (eg. V traces, LFP, etc)
-cfg.simLabel = "test" #"conn1.6e-6_pois0.2_o2d0.13_bcNone_o2b0.06_13kpmm_1mm3_dx50_1s"
-cfg.saveFolder = f'/vast/palmer/scratch/mcdougal/ajn48/{cfg.simLabel}'
+cfg.simLabel = "SD_hypoxic_conn1.6e-6_pois0.2_o2d0.13_bcNone_o2b0.06_13kpmm_1mm3_dx50_20s"
+cfg.saveFolder = f'/vast/palmer/scratch/mcdougal/ajn48/{cfg.simLabel}/'
 cfg.savePickle = True         # Save params, network and sim output to pickle file
 cfg.saveJson = False
 cfg.recordStim = False
@@ -26,10 +26,10 @@ cfg.recordStim = False
 cfg.printPopAvgRates = True
 cfg.printRunTime = 1
 cfg.Kceil = 15.0
-cfg.nRec = 1#240
+cfg.nRec = 240
 cfg.recordCellsSpikes = ['L2e', 'L2i', 'L4e', 'L4i', 'L5e', 'L5i','L6e', 'L6i'] # record only spikes of cells (not ext stims)
 cfg.seed = 120194
-cfg.restoredir = None #'Data/k0_conn1.6e-6_pois0.2_o20.13_13kpmm_1mm3_dx50_10s/'
+cfg.restoredir = cfg.saveFolder #None #'Data/k0_conn1.6e-6_pois0.2_o20.13_13kpmm_1mm3_dx50_10s/'
 
  # Network dimensions
 cfg.fig_file = '../test_mask.tif'
@@ -47,19 +47,20 @@ cfg.Vtissue = cfg.sizeX * cfg.sizeY * cfg.sizeZ
 cfg.connFactor = '1e-7'
 cfg.poissonRateFactor = 0.2
 cfg.connected = True 
-cfg.o2drive = '0.13'
 cfg.scaleConnWeight = 1.6e-6
 
 # slice conditions 
-cfg.ox = 'perfused'
+cfg.ox = 'hypoxic'
 if cfg.ox == 'perfused':
     cfg.o2_bath = 0.06
     cfg.alpha_ecs = 0.2 
     cfg.tort_ecs = 1.6
+    cfg.o2drive = 0.13
 elif cfg.ox == 'hypoxic':
     cfg.o2_bath = 0.01
     cfg.alpha_ecs = 0.07 
     cfg.tort_ecs = 1.8
+    cfg.o2drive = 0.13 * (1/6)
 
 cfg.prep = 'invitro'
 
@@ -78,7 +79,7 @@ else:
 cfg.cyt_fraction = cfg.rs**3 / cfg.somaR**3
 
 # sd init params 
-cfg.k0 = 3.5 
+cfg.k0 = 15.0 
 cfg.r0 = 300.0
 
 ###########################################################
@@ -92,7 +93,7 @@ cfg.r0 = 300.0
 # DC=False ; TH=True;  Balanced=True   => Figure 10A. But I want a partial reproduce so I guess Figure 10C is not necessary
 
 # Size of Network. Adjust this constants, please!
-cfg.ScaleFactor = 1 #0.16 #= 80.000 
+cfg.ScaleFactor = 0.16 #= 80.000 
 
 # External input DC or Poisson
 cfg.DC = False #True = DC // False = Poisson

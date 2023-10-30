@@ -163,7 +163,7 @@ def allSpeciesMov(datadir, outpath, vmins, vmaxes, figname, condition='Perfused'
     filenames_sort = [filenames[i] for i in inds]
     imagesc = []
     for filename in filenames_sort: 
-        imagesc.append(imageio.imread(outpath+filename)) 
+        imagesc.append(imageio.imread(os.path.join(outpath,filename))) 
     imageio.mimsave(figname, imagesc)
 
 def combineMemFiles(datadirs, file):
@@ -337,7 +337,7 @@ def combineRecs(dirs, recNum=None):
     else:
         filename = 'recs.pkl'
 
-    with open(dirs[0]+filename,'rb') as fileObj:
+    with open(os.path.join(dirs[0],filename),'rb') as fileObj:
         data = pickle.load(fileObj)
     ## convert first file to all lists 
     for key in data.keys():
@@ -351,7 +351,7 @@ def combineRecs(dirs, recNum=None):
             data[key] = list(data[key])
     # load each new data file
     for datadir in dirs[1:]:
-        with open(datadir+filename, 'rb') as fileObj:
+        with open(os.path.join(datadir,filename), 'rb') as fileObj:
             new_data = pickle.load(fileObj)
         ## extend lists in original data with new data
         for key in new_data.keys():
@@ -376,7 +376,7 @@ def traceExamples(datadir, figname, iss=[0, 7, 15], recNum=None):
     if isinstance(datadir, list):
         data = combineRecs(datadir)
     else:
-        with open(datadir+filename, 'rb') as fileObj:
+        with open(os.path.join(datadir,filename), 'rb') as fileObj:
             data = pickle.load(fileObj)
     # fig = plt.figure(figsize=(18,9))
     fig, axs = plt.subplots(2,4)
@@ -458,7 +458,7 @@ def allTraces(datadir, figname, recNum=None):
     if isinstance(datadir, list):
         data = combineRecs(datadir)
     else:
-        with open(datadir+filename, 'rb') as fileObj:
+        with open(os.path.join(datadir,filename), 'rb') as fileObj:
             data = pickle.load(fileObj)
 
     try:
