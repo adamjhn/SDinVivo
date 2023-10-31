@@ -529,7 +529,7 @@ ecl = "26.64 * rxd.rxdmath.log(cl[cyt]*vol_ratio[ecs]/(cl[ecs]*vol_ratio[cyt]))"
 
 o2ecs = "o2_extracellular[ecs_o2]"
 o2switch = "(1.0 + rxd.rxdmath.tanh(1e4 * (%s - 5e-4))) / 2.0" % (o2ecs)
-p = "%s / (1.0 + rxd.rxdmath.exp((20.0 - (%s/vol_ratio[ecs]) * alpha)/3.0))" % (
+p = "%s / (1.0 + rxd.rxdmath.exp((20.0 - (%s/vol_ratio[ecs]) * 640)/3.0))" % (
     o2switch,
     o2ecs,
 )

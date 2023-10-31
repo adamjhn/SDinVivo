@@ -10,13 +10,12 @@ import cv2
 
 # Run parameters
 cfg = specs.SimConfig()  # object of class cfg to store simulation configuration
-cfg.duration = 1e3  # Duration of the simulation, in ms
+cfg.duration = 20e3  # Duration of the simulation, in ms
 cfg.hParams["v_init"] = -70.0  # set v_init to -65 mV
 cfg.hParams["celsius"] = 37.0
 cfg.dt = 0.025  # 0.025              # Internal integration timestep to use
 cfg.verbose = False  # Show detailed messages
 cfg.recordStep = 1  # Step size in ms to save data (eg. V traces, LFP, etc)
-cfg.saveFolder = f"/vast/palmer/scratch/mcdougal/ajn48/{cfg.simLabel}/"
 cfg.savePickle = True  # Save params, network and sim output to pickle file
 cfg.saveJson = False
 cfg.recordStim = False
@@ -37,7 +36,6 @@ cfg.recordCellsSpikes = [
     "L6i",
 ]  # record only spikes of cells (not ext stims)
 cfg.seed = 120194
-cfg.restoredir = None
 
 # Network dimensions
 cfg.fig_file = "../test_mask.tif"
@@ -129,7 +127,9 @@ cfg.Balanced = False  # False #True=Balanced // False=Unbalanced
 
 cfg.ouabain = False
 
-cfg.simLabel = f"SD_scale{cfg.ScaleFactor}_{cfg.prep}_{cfg.ox}_pois{cfg.poissonRateFactor}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}_13kpmm_1mm3_dx{cfg.dx}_{cfg.duration/1000:0.2f}s"
+cfg.simLabel = f"SDox_scale{cfg.ScaleFactor}_{cfg.prep}_{cfg.ox}_pois{cfg.poissonRateFactor}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}_13kpmm_1mm3_dx{cfg.dx}_{cfg.duration/1000:0.2f}s"
+cfg.saveFolder = f"/vast/palmer/scratch/mcdougal/ajn48/{cfg.simLabel}/"
+cfg.restoredir = cfg.saveFolder
 
 # v0.0 - combination of cfg from ../uniformdensity and netpyne PD thalamocortical model
 # v1.0 - cfg for o2 sources based on capillaries identified from histology
