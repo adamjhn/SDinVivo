@@ -68,12 +68,10 @@ def networkStats(spkt, spkid, pops, duration, Nsample=1000):
     smpmap = {pop: np.random.choice(spkmap[pop], size=Nsample) for pop in L}
     maxid = spkmap[L[-1]][-1]
     spktimes = {pop: spkt[[i in spkmap[pop] for i in spkid]] for pop in L}
-    rates = {k: 1e3 * len(v) / duration for k, v in spktimes.items()}
-
-    smptimes = {pop: spkt[[i in smpmap[pop] for i in spkid]] for pop in L}
+    rates = {pop: 1e3 * len(v) / duration / len(spkmap[pop]) for pop, v in spktimes.items()}
 
     bins = np.array(range(0, int(duration), 3))
-    sample_hist = [np.histogram(st, bins=bins)[0] for st in smptimes.values()]
+    sample_hist = [np.histogram(st, bins=bins)[0] for st in spktimes.values()]
 
     sync = {}
     for pop, k in zip(L, sample_hist):
