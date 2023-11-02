@@ -9,31 +9,53 @@ import random
 from matplotlib import pyplot as plt
 from stats import networkStatsFromSim
 
+cfg, netParams = sim.readCmdLineArgs(                                           
+    simConfigDefault="cfgMidOx.py", netParamsDefault="netParamsMidOx.py"        
+)                                                                               
+
+# Additional sim setup
+## parallel context
+pc = h.ParallelContext()
+pcid = pc.id()
+nhost = pc.nhost()
+pc.timeout(0)
+pc.set_maxstep(100)  # required when using multiple processes
+random.seed(pcid + cfg.seed)
+
+
+def restoreSS():
+    """restore sim state from saved files"""
+    restoredir = cfg.restoredir
+    svst = h.SaveState()
+    f = h.File(os.path.join(restoredir, "save_test_" + str(pcid) + ".dat"))
+    svst.fread(f)
+    svst.restore()
+
 
 def fi(cells):
     """set steady state RMP each cell -- when not restoring from a previous simulation"""
-    if not cfg.restoredir:
-        cfg.e_pas = {}
-        for c in cells:
-            # skip artificial cells
-            if not hasattr(c.secs, "soma"):
-                continue
-            seg = c.secs.soma.hObj(0.5)
-            isum = 0
-            isum = (
-                (seg.ina if h.ismembrane("na_ion") else 0)
-                + (seg.ik if h.ismembrane("k_ion") else 0)
-                + (seg.ica if h.ismembrane("ca_ion") else 0)
-                + (seg.iother if h.ismembrane("other_ion") else 0)
-            )
-            seg.e_pas = cfg.hParams["v_init"] + isum / seg.g_pas
+    cfg.e_pas = {}
+    for c in cells:
+        # skip artificial cells
+        if not hasattr(c.secs, "soma"):
+            continue
+        seg = c.secs.soma.hObj(0.5)
+        isum = 0
+        isum = (
+            (seg.ina if h.ismembrane("na_ion") else 0)
+            + (seg.ik if h.ismembrane("k_ion") else 0)
+            + (seg.ica if h.ismembrane("ca_ion") else 0)
+            + (seg.iother if h.ismembrane("other_ion") else 0)
+        )
+        seg.e_pas = cfg.hParams["v_init"] + isum / seg.g_pas
+
+    ## restore from previous sim
+    if cfg.restoredir:
+        restoredir = cfg.restoredir
+        restoreSS()
 
 
-cfg, netParams = sim.readCmdLineArgs(
-    simConfigDefault="cfgMidOx.py", netParamsDefault="netParamsMidOx.py"
-)
 
-# Instantiate network
 sim.initialize(
     simConfig=cfg, netParams=netParams
 )  # create network object and set cfg and net params
@@ -44,17 +66,7 @@ sim.net.addStims()  # add external stimulation to cells (IClamps etc)
 sim.net.addRxD(nthreads=6)  # add reaction-diffusion (RxD)
 fih = h.FInitializeHandler(2, lambda: fi(sim.net.cells))
 sim.setupRecording()  # setup variables to record for each cell (spikes, V traces, etc)
-# sim.simulate()
 
-# Additional sim setup
-## parallel context
-pc = h.ParallelContext()
-pcid = pc.id()
-nhost = pc.nhost()
-pc.timeout(0)
-pc.set_maxstep(100)  # required when using multiple processes
-
-random.seed(pcid + cfg.seed)
 all_secs = [sec for sec in h.allsec()]
 cells_per_node = len(all_secs)
 rec_inds = random.sample(range(cells_per_node), int(cfg.nRec / nhost))
@@ -183,21 +195,6 @@ def progress_bar(tstop, size=40):
     sys.stdout.flush()
 
 
-## restore from previous sim
-if cfg.restoredir:
-    restoredir = cfg.restoredir
-
-    # restore sim state functions
-    def restoreSS():
-        svst = h.SaveState()
-        f = h.File(os.path.join(restoredir, "save_test_" + str(pcid) + ".dat"))
-        svst.fread(f)
-        svst.restore()
-
-    # fih = h.FInitializeHandler(1, restoreSim)
-    fih = h.FInitializeHandler(1, restoreSS)
-
-
 fout = None
 if pcid == 0:
     # record the wave progress
@@ -263,3 +260,4 @@ runSS()
 
 # v0.0 - direct copy from ../uniformdensity/init.py
 # v1.0 - added in o2 sources based on capillaries identified from histology
+# v1.1 - set pas.e to maintain RMP and move restore state function

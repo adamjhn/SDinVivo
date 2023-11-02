@@ -476,8 +476,6 @@ constants = {
     "o2_bath": cfg.o2_bath,
     "o2_init": cfg.o2_init,
     "v_initial": cfg.hParams["v_init"],
-    "r0": 100.0,
-    "k0": 70.0,
     "xbins": np.linspace(0, cfg.sizeX, o2sources.shape[1], endpoint=True),
     "ybins": np.linspace(-cfg.sizeY, 0, o2sources.shape[0], endpoint=True),
     "zbins": np.linspace(0, cfg.sizeZ, o2sources.shape[2], endpoint=True),
@@ -678,7 +676,7 @@ species["kk"] = {
     "d": 2.62,
     "charge": 1,
     "initial": k_init_str,
-    "ecs_boundary_conditions": constants["ko_initial"],
+    "ecs_boundary_conditions": constants["ko_initial"]  if cfg.prep == "invitro" else None,
     "name": "kk",
 }
 
@@ -687,7 +685,7 @@ species["na"] = {
     "d": 1.78,
     "charge": 1,
     "initial": "nai_initial if isinstance(node, rxd.node.Node1D) else nao_initial",
-    "ecs_boundary_conditions": constants["nao_initial"],
+    "ecs_boundary_conditions": constants["nao_initial"]  if cfg.prep == "invitro" else None,
     "name": "na",
 }
 
@@ -696,7 +694,7 @@ species["cl"] = {
     "d": 2.1,
     "charge": -1,
     "initial": "cli_initial if isinstance(node, rxd.node.Node1D) else clo_initial",
-    "ecs_boundary_conditions": constants["clo_initial"],
+    "ecs_boundary_conditions": constants["clo_initial"] if cfg.prep == "invitro" else None,
     "name": "cl",
 }
 
@@ -711,7 +709,7 @@ species["o2_extracellular"] = {
     "regions": ["ecs_o2"],
     "d": 3.3,
     "initial": constants["o2_init"],
-    "ecs_boundary_conditions": None,
+    "ecs_boundary_conditions": constants['o2_bath'] if cfg.prep == "invitro" else None,
     "name": "o2",
 }
 # species['o2_extracellular'] = {'regions' : ['ecs_o2'], 'd' : 3.3, 'initial' : constants['o2_bath'],
