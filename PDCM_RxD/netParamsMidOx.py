@@ -232,6 +232,7 @@ netParams.sizeZ = (
 )  # - 2*cfg.somaR # z-dimension (horizontal length) size in um
 
 netParams.scaleConnWeight = cfg.scaleConnWeight
+netParams.scaleConnWeightNetStims = cfg.scaleConnWeightNetStims
 
 popDepths = [
     [0.08, 0.27],
