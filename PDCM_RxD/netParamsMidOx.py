@@ -678,7 +678,7 @@ species["kk"] = {
     "charge": 1,
     "initial": k_init_str,
     "ecs_boundary_conditions": constants["ko_initial"]  if cfg.prep == "invitro" else None,
-    "name": "kk",
+    "name": "k",
 }
 
 species["na"] = {

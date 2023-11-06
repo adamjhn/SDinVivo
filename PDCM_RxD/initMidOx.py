@@ -128,10 +128,10 @@ if pcid == 0:
                 cell_type.append(soma.name().split(".")[1].split("s")[0])
                 soma_v.append(h.Vector().record(soma(0.5)._ref_v))
                 soma_nai.append(h.Vector().record(soma(0.5)._ref_nai))
-                soma_ki.append(h.Vector().record(soma(0.5)._ref_kki))
+                soma_ki.append(h.Vector().record(soma(0.5)._ref_ki))
                 soma_cli.append(h.Vector().record(soma(0.5)._ref_cli))
                 soma_nao.append(h.Vector().record(soma(0.5)._ref_nao))
-                soma_ko.append(h.Vector().record(soma(0.5)._ref_kko))
+                soma_ko.append(h.Vector().record(soma(0.5)._ref_ko))
                 soma_clo.append(h.Vector().record(soma(0.5)._ref_clo))
                 soma_o2.append(
                     h.Vector().record(
