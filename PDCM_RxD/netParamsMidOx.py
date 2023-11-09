@@ -153,7 +153,7 @@ Vreset = -65 (mV) : -49 (mV) :
 #Fixed firing threshold
 Vteta  = -50 (mV)"""
 # Membrane capacity
-C_m = cfg.Cm/(2e-8*np.pi*cfg.somaR**2)   # pF
+C_m = cfg.Cm / (2e-8 * np.pi * cfg.somaR**2)  # pF
 # Mean amplitude of the postsynaptic potential (in mV).
 w_v = 0.15
 # Mean amplitude of the postsynaptic potential (in pA).
@@ -359,13 +359,6 @@ if cfg.TH == True:
             "delay": 0.5,
             "synMech": "exc",
         }  # 1 delay
-        # netParams.connParams['bkg_TH->'+str(L[r])] = {
-        #     'preConds': {'pop': 'bkg_TH'+str(L[r])},
-        #     'postConds': {'pop': L[r]},
-        #     'connList': auxConn.T,
-        #     'weight': cfg.connFactor + ' * max(0, weightMin +normal(0,dweight*weightMin))',
-        #     'delay': 0.5,
-        #     'synMech' : 'exc'} # 1 delay
 
 ############################################################
 # Connectivity parameters
@@ -393,7 +386,7 @@ if cfg.connected:
                             / np.log(1.0 - 1.0 / (N_Full[r] * N_Full[c]))
                         )
                         / N_Full[c],
-                        "weight": 0.001 * weightScale,  # synaptic weight
+                        "weight": f"2*max(0, {weightScale} * (weightMin +normal(0,dweight*weightMin)))",  # synaptic weight
                         "delay": "max(0.1, delayMin_e +normal(0,ddelay*delayMin_e))",  # transmission delay (ms)
                         "synMech": syn,
                     }
@@ -407,7 +400,7 @@ if cfg.connected:
                             / np.log(1.0 - 1.0 / (N_Full[r] * N_Full[c]))
                         )
                         / N_Full[c],
-                        "weight": 0.002 * weightScale,  # synaptic weight
+                        "weight": f"max(0, {weightScale} *(weightMin +normal(0,dweight*weightMin)))",  # synaptic weight
                         "delay": "max(0.1, delayMin_e +normal(0,ddelay*delayMin_e))",  # transmission delay (ms)
                         "synMech": syn,
                     }  # synaptic mechanism
@@ -421,7 +414,7 @@ if cfg.connected:
                         / np.log(1.0 - 1.0 / (N_Full[r] * N_Full[c]))
                     )
                     / N_Full[c],
-                    "weight": 0.004 * weightScale,  # synaptic weight
+                    "weight": "4*max(0, {weightScale} * (weightMin +normal(0,dweight*weightMin)))",  # synaptic weight
                     "delay": "max(0.1, delayMin_i +normal(0,ddelay*delayMin_i))",  # transmission delay (ms)
                     "synMech": syn,
                 }  # synaptic mechanism
@@ -534,8 +527,8 @@ p = "%s / (1.0 + rxd.rxdmath.exp((20.0 - (%s/vol_ratio[ecs]) * 640)/3.0))" % (
 )
 pumpA = "(1.0 / (1.0 + rxd.rxdmath.exp((25.0 - na[cyt] / vol_ratio[cyt])/3.0)))"
 pumpB = "(1.0 / (1.0 + rxd.rxdmath.exp(3.5 - kk[ecs] / vol_ratio[ecs])))"
-pump_max = "p_max * (%s) * (%s)" % (pumpA, pumpB) # pump with unlimited oxygen
-pump = "(%s) * (%s)" %(p, pump_max) 
+pump_max = "p_max * (%s) * (%s)" % (pumpA, pumpB)  # pump with unlimited oxygen
+pump = "(%s) * (%s)" % (p, pump_max)
 gliapump = (
     "(1.0/3.0) * p_max * (%s / (1.0 + rxd.rxdmath.exp((25.0 - gnai_initial) / 3.0))) * (1.0 / (1.0 + rxd.rxdmath.exp(3.5 - kk[ecs]/vol_ratio[ecs])))"
     % (p)
@@ -677,7 +670,9 @@ species["kk"] = {
     "d": 2.62,
     "charge": 1,
     "initial": k_init_str,
-    "ecs_boundary_conditions": constants["ko_initial"]  if cfg.prep == "invitro" else None,
+    "ecs_boundary_conditions": constants["ko_initial"]
+    if cfg.prep == "invitro"
+    else None,
     "name": "k",
 }
 
@@ -686,7 +681,9 @@ species["na"] = {
     "d": 1.78,
     "charge": 1,
     "initial": "nai_initial if isinstance(node, rxd.node.Node1D) else nao_initial",
-    "ecs_boundary_conditions": constants["nao_initial"]  if cfg.prep == "invitro" else None,
+    "ecs_boundary_conditions": constants["nao_initial"]
+    if cfg.prep == "invitro"
+    else None,
     "name": "na",
 }
 
@@ -695,7 +692,9 @@ species["cl"] = {
     "d": 2.1,
     "charge": -1,
     "initial": "cli_initial if isinstance(node, rxd.node.Node1D) else clo_initial",
-    "ecs_boundary_conditions": constants["clo_initial"] if cfg.prep == "invitro" else None,
+    "ecs_boundary_conditions": constants["clo_initial"]
+    if cfg.prep == "invitro"
+    else None,
     "name": "cl",
 }
 
@@ -710,7 +709,7 @@ species["o2_extracellular"] = {
     "regions": ["ecs_o2"],
     "d": 3.3,
     "initial": constants["o2_init"],
-    "ecs_boundary_conditions": constants['o2_bath'] if cfg.prep == "invitro" else None,
+    "ecs_boundary_conditions": constants["o2_bath"] if cfg.prep == "invitro" else None,
     "name": "o2",
 }
 # species['o2_extracellular'] = {'regions' : ['ecs_o2'], 'd' : 3.3, 'initial' : constants['o2_bath'],

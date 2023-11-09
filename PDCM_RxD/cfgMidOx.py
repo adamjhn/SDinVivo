@@ -13,8 +13,8 @@ cfg = specs.SimConfig()  # object of class cfg to store simulation configuration
 cfg.duration = 5e3  # Duration of the simulation, in ms
 cfg.hParams["v_init"] = -70.0  # set v_init to -65 mV
 cfg.hParams["celsius"] = 37.0
-cfg.Cm = 1.0 #pF/cm**2
-cfg.dt = 0.01  # 0.025              # Internal integration timestep to use
+cfg.Cm = 1.0  # pF/cm**2
+cfg.dt = 0.025  # Internal integration timestep to use
 cfg.verbose = False  # Show detailed messages
 cfg.recordStep = 1  # Step size in ms to save data (eg. V traces, LFP, etc)
 cfg.savePickle = True  # Save params, network and sim output to pickle file
@@ -56,7 +56,7 @@ cfg.connected = True
 cfg.o2drive = "0.13"
 
 # TODO: do these paramater do anything?
-cfg.scaleConnWeight = 1e-6 
+cfg.scaleConnWeight = 1e-6
 cfg.scaleConnWeightNetStims = 1e-6
 
 # slice conditions
@@ -84,28 +84,16 @@ cfg.rs = ((cfg.betaNrn * cfg.Vtissue) / (2 * np.pi * cfg.Ncell)) ** (1 / 3)
 cfg.epas = -70  # False
 cfg.sa2v = 3.0  # False
 
-# parameters from Optuna search
-"""
-cfg.excWeight = 0.0016284565367175549
-cfg.inhWeight = 0.006192991751141277
-cfg.gnabar = 0.1267443756284917
-cfg.gkbar = 0.0003126247439529106
-cfg.ukcc2 = 0.13032458638156022
-cfg.unkcc1 = 0.2220562337956713
-cfg.pmax = 171.02755183037405
-cfg.gpas = 0.00047798767069961014
-cfg.gkleak_scale = 0.8213720820402047
-"""
-
-cfg.excWeight = 3e-5
-cfg.inhWeight = 3e-5
+# Neuron parameters
+cfg.excWeight = 2.3e-6
+cfg.inhWeight = 2.3e-6
 cfg.gnabar = 30 / 1000
 cfg.gkbar = 25 / 1000
 cfg.ukcc2 = 0.3
 cfg.unkcc1 = 0.1
 cfg.pmax = 2.5
 cfg.gpas = 0.0001
-cfg.gkleak_scale = 1 
+cfg.gkleak_scale = 1
 
 if cfg.sa2v:
     cfg.somaR = (cfg.sa2v * cfg.rs**3 / 2.0) ** (1 / 2)
@@ -142,8 +130,9 @@ cfg.Balanced = False  # False #True=Balanced // False=Unbalanced
 cfg.ouabain = False
 
 cfg.simLabel = f"SDfull_K{cfg.k0}_scale{cfg.ScaleFactor}_{cfg.prep}_{cfg.ox}_pois{cfg.poissonRateFactor}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}_Balanced{cfg.Balanced}_13kpmm_1mm3_dx{cfg.dx}_{cfg.duration/1000:0.2f}s"
-cfg.saveFolder = f"/vast/palmer/scratch/mcdougal/ajn48/{cfg.simLabel}/"
-cfg.restoredir = None #cfg.saveFolder
+# cfg.saveFolder = f"/vast/palmer/scratch/mcdougal/ajn48/{cfg.simLabel}/"
+cfg.saveFolder = f"/tera/adam/{cfg.simLabel}/"
+cfg.restoredir = None  # cfg.saveFolder
 
 # v0.0 - combination of cfg from ../uniformdensity and netpyne PD thalamocortical model
 # v1.0 - cfg for o2 sources based on capillaries identified from histology
