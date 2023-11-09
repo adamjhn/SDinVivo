@@ -153,7 +153,7 @@ Vreset = -65 (mV) : -49 (mV) :
 #Fixed firing threshold
 Vteta  = -50 (mV)"""
 # Membrane capacity
-C_m = 250  # pF
+C_m = cfg.Cm/(2e-8*np.pi*cfg.somaR**2)   # pF
 # Mean amplitude of the postsynaptic potential (in mV).
 w_v = 0.15
 # Mean amplitude of the postsynaptic potential (in pA).
@@ -328,7 +328,7 @@ if cfg.DC == False:  # External Input as Poisson
             "preConds": {"pop": "poiss" + str(L[r])},
             "postConds": {"pop": L[r]},
             "connList": auxConn.T,
-            "weight": f"max(0, {cfg.excWeight} * weightMin+normal(0,dweight*weightMin))",
+            "weight": f"max(0, {cfg.excWeight} * (weightMin+normal(0,dweight*weightMin)))",
             "delay": 0.5,
             "synMech": "exc",
         }  # 1 delay
@@ -355,7 +355,7 @@ if cfg.TH == True:
             "preConds": {"pop": "bkg_TH" + str(L[r])},
             "postConds": {"pop": L[r]},
             "connList": auxConn.T,
-            "weight": f"max(0, {cfg.excWeight} * weightMin +normal(0,dweight*weightMin))",
+            "weight": f"max(0, {cfg.excWeight} * (weightMin +normal(0,dweight*weightMin)))",
             "delay": 0.5,
             "synMech": "exc",
         }  # 1 delay

@@ -15,6 +15,7 @@ class L2e:
         # add 3D points to locate the neuron in the ECS  
         self.soma.pt3dadd(0.0, 0.0, 0.0, 2.0 * cfg.somaR)
         self.soma.pt3dadd(0.0, 2.0 * cfg.somaR, 0.0, 2.0 * cfg.somaR)
+        self.soma.cm = cfg.Cm
         if cfg.epas:
             self.soma.insert('pas')
             self.soma(0.5).pas.e = cfg.epas
@@ -26,6 +27,7 @@ class L2i:
         # add 3D points to locate the neuron in the ECS  
         self.soma.pt3dadd(0.0, 0.0, 0.0, 2.0 * cfg.somaR)
         self.soma.pt3dadd(0.0, 2.0 * cfg.somaR, 0.0, 2.0 * cfg.somaR)
+        self.soma.cm = cfg.Cm
         if cfg.epas:
             self.soma.insert('pas')
             self.soma(0.5).pas.e = cfg.epas
@@ -37,6 +39,7 @@ class L4e:
         # add 3D points to locate the neuron in the ECS  
         self.soma.pt3dadd(0.0, 0.0, 0.0, 2.0 * cfg.somaR)
         self.soma.pt3dadd(0.0, 2.0 * cfg.somaR, 0.0, 2.0 * cfg.somaR)
+        self.soma.cm = cfg.Cm
         if cfg.epas:
             self.soma.insert('pas')
             self.soma(0.5).pas.e = cfg.epas
@@ -48,6 +51,7 @@ class L4i:
         # add 3D points to locate the neuron in the ECS  
         self.soma.pt3dadd(0.0, 0.0, 0.0, 2.0 * cfg.somaR)
         self.soma.pt3dadd(0.0, 2.0 * cfg.somaR, 0.0, 2.0 * cfg.somaR)
+        self.soma.cm = cfg.Cm
         if cfg.epas:
             self.soma.insert('pas')
             self.soma(0.5).pas.e = cfg.epas
@@ -59,6 +63,7 @@ class L5e:
         # add 3D points to locate the neuron in the ECS  
         self.soma.pt3dadd(0.0, 0.0, 0.0, 2.0 * cfg.somaR)
         self.soma.pt3dadd(0.0, 2.0 * cfg.somaR, 0.0, 2.0 * cfg.somaR)
+        self.soma.cm = cfg.Cm
         if cfg.epas:
             self.soma.insert('pas')
             self.soma(0.5).pas.e = cfg.epas
@@ -70,6 +75,7 @@ class L5i:
         # add 3D points to locate the neuron in the ECS  
         self.soma.pt3dadd(0.0, 0.0, 0.0, 2.0 * cfg.somaR)
         self.soma.pt3dadd(0.0, 2.0 * cfg.somaR, 0.0, 2.0 * cfg.somaR)
+        self.soma.cm = cfg.Cm
         if cfg.epas:
             self.soma.insert('pas')
             self.soma(0.5).pas.e = cfg.epas
@@ -82,6 +88,7 @@ class L6e:
         # add 3D points to locate the neuron in the ECS  
         self.soma.pt3dadd(0.0, 0.0, 0.0, 2.0 * cfg.somaR)
         self.soma.pt3dadd(0.0, 2.0 * cfg.somaR, 0.0, 2.0 * cfg.somaR)
+        self.soma.cm = cfg.Cm
         if cfg.epas:
             self.soma.insert('pas')
             self.soma(0.5).pas.e = cfg.epas
@@ -93,6 +100,7 @@ class L6i:
         # add 3D points to locate the neuron in the ECS  
         self.soma.pt3dadd(0.0, 0.0, 0.0, 2.0 * cfg.somaR)
         self.soma.pt3dadd(0.0, 2.0 * cfg.somaR, 0.0, 2.0 * cfg.somaR)
+        self.soma.cm = cfg.Cm
         if cfg.epas:
             self.soma.insert('pas')
             self.soma(0.5).pas.e = cfg.epas

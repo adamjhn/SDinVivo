@@ -10,9 +10,10 @@ import cv2
 
 # Run parameters
 cfg = specs.SimConfig()  # object of class cfg to store simulation configuration
-cfg.duration = 1e3  # Duration of the simulation, in ms
+cfg.duration = 5e3  # Duration of the simulation, in ms
 cfg.hParams["v_init"] = -70.0  # set v_init to -65 mV
 cfg.hParams["celsius"] = 37.0
+cfg.Cm = 1.0 #pF/cm**2
 cfg.dt = 0.01  # 0.025              # Internal integration timestep to use
 cfg.verbose = False  # Show detailed messages
 cfg.recordStep = 1  # Step size in ms to save data (eg. V traces, LFP, etc)
@@ -96,15 +97,15 @@ cfg.gpas = 0.00047798767069961014
 cfg.gkleak_scale = 0.8213720820402047
 """
 
-cfg.excWeight = 0.0006436856597687237
-cfg.inhWeight = 0.002702394680091821
-cfg.gnabar = 0.15709886854750127
-cfg.gkbar = 2.9906122806242283
-cfg.ukcc2 = 0.13758986719011257
-cfg.unkcc1 = 0.2737797606585888
-cfg.pmax = 50.212987840483706
-cfg.gpas = 0.0007618388564190589
-cfg.gkleak_scale = 0.9255718044595836
+cfg.excWeight = 3e-5
+cfg.inhWeight = 3e-5
+cfg.gnabar = 30 / 1000
+cfg.gkbar = 25 / 1000
+cfg.ukcc2 = 0.3
+cfg.unkcc1 = 0.1
+cfg.pmax = 2.5
+cfg.gpas = 0.0001
+cfg.gkleak_scale = 1 
 
 if cfg.sa2v:
     cfg.somaR = (cfg.sa2v * cfg.rs**3 / 2.0) ** (1 / 2)
@@ -141,7 +142,7 @@ cfg.Balanced = False  # False #True=Balanced // False=Unbalanced
 cfg.ouabain = False
 
 cfg.simLabel = f"SDfull_K{cfg.k0}_scale{cfg.ScaleFactor}_{cfg.prep}_{cfg.ox}_pois{cfg.poissonRateFactor}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}_Balanced{cfg.Balanced}_13kpmm_1mm3_dx{cfg.dx}_{cfg.duration/1000:0.2f}s"
-cfg.saveFolder = f"/tera/adam/{cfg.simLabel}/"
+cfg.saveFolder = f"/vast/palmer/scratch/mcdougal/ajn48/{cfg.simLabel}/"
 cfg.restoredir = None #cfg.saveFolder
 
 # v0.0 - combination of cfg from ../uniformdensity and netpyne PD thalamocortical model
