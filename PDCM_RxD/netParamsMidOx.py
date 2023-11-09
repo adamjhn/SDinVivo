@@ -414,7 +414,7 @@ if cfg.connected:
                         / np.log(1.0 - 1.0 / (N_Full[r] * N_Full[c]))
                     )
                     / N_Full[c],
-                    "weight": "4*max(0, {weightScale} * (weightMin +normal(0,dweight*weightMin)))",  # synaptic weight
+                    "weight": f"4*max(0, {weightScale} * (weightMin +normal(0,dweight*weightMin)))",  # synaptic weight
                     "delay": "max(0.1, delayMin_i +normal(0,ddelay*delayMin_i))",  # transmission delay (ms)
                     "synMech": syn,
                 }  # synaptic mechanism
