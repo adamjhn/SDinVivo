@@ -231,9 +231,6 @@ netParams.sizeZ = (
     cfg.sizeZ
 )  # - 2*cfg.somaR # z-dimension (horizontal length) size in um
 
-netParams.scaleConnWeight = cfg.scaleConnWeight
-netParams.scaleConnWeightNetStims = cfg.scaleConnWeightNetStims
-
 popDepths = [
     [0.08, 0.27],
     [0.08, 0.27],
@@ -369,11 +366,9 @@ if cfg.connected:
         for c in range(0, 8):
             if L[c][-1] == "e":
                 syn = "exc"
-                connFactor = cfg.connFactor
                 weightScale = cfg.excWeight
             else:
                 syn = "inh"
-                connFactor = "1.8*" + cfg.connFactor
                 weightScale = cfg.inhWeight
             if (c % 2) == 0:
                 if c == 2 and r == 0:
