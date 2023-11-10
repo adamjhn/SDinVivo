@@ -10,7 +10,7 @@ import cv2
 
 # Run parameters
 cfg = specs.SimConfig()  # object of class cfg to store simulation configuration
-cfg.duration = 10e3  # Duration of the simulation, in ms
+cfg.duration = 0.2e3  # Duration of the simulation, in ms
 cfg.hParams["v_init"] = -70.0  # set v_init to -65 mV
 cfg.hParams["celsius"] = 37.0
 cfg.Cm = 1.0  # pF/cm**2
@@ -84,15 +84,15 @@ cfg.epas = -70  # False
 cfg.sa2v = 3.0  # False
 
 # Neuron parameters
-cfg.excWeight = 1.25e-7
-cfg.inhWeight = 1.25e-7
+cfg.excWeight = 5e-9
+cfg.inhWeight = 5e-9
 cfg.gnabar = 30 / 1000
 cfg.gkbar = 25 / 1000
 cfg.ukcc2 = 0.3
 cfg.unkcc1 = 0.1
-cfg.pmax = 2.5
+cfg.pmax = 3.0
 cfg.gpas = 0.0001
-cfg.gkleak_scale = 1
+cfg.gkleak_scale = 0.25
 
 if cfg.sa2v:
     cfg.somaR = (cfg.sa2v * cfg.rs**3 / 2.0) ** (1 / 2)
