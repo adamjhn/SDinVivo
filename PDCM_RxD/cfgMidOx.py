@@ -10,7 +10,7 @@ import cv2
 
 # Run parameters
 cfg = specs.SimConfig()  # object of class cfg to store simulation configuration
-cfg.duration = 0.2e3  # Duration of the simulation, in ms
+cfg.duration = 20e3  # Duration of the simulation, in ms
 cfg.hParams["v_init"] = -70.0  # set v_init to -65 mV
 cfg.hParams["celsius"] = 37.0
 cfg.Cm = 1.0  # pF/cm**2
@@ -84,8 +84,8 @@ cfg.epas = -70  # False
 cfg.sa2v = 3.0  # False
 
 # Neuron parameters
-cfg.excWeight = 5e-9
-cfg.inhWeight = 5e-9
+cfg.excWeight = 1.15e-7
+cfg.inhWeight = 1.15e-7
 cfg.gnabar = 30 / 1000
 cfg.gkbar = 25 / 1000
 cfg.ukcc2 = 0.3
@@ -129,8 +129,8 @@ cfg.Balanced = False  # False #True=Balanced // False=Unbalanced
 cfg.ouabain = False
 
 cfg.simLabel = f"SDP_{cfg.excWeight}_K{cfg.k0}_scale{cfg.ScaleFactor}_{cfg.prep}_{cfg.ox}_pois{cfg.poissonRateFactor}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}_Balanced{cfg.Balanced}_13kpmm_1mm3_dx{cfg.dx}_{cfg.duration/1000:0.2f}s"
-# cfg.saveFolder = f"/vast/palmer/scratch/mcdougal/ajn48/{cfg.simLabel}/"
-cfg.saveFolder = f"/tera/adam/{cfg.simLabel}/"
+cfg.saveFolder = f"/vast/palmer/scratch/mcdougal/ajn48/{cfg.simLabel}/"
+#cfg.saveFolder = f"/tera/adam/{cfg.simLabel}/"
 cfg.restoredir = None  # cfg.saveFolder
 
 # v0.0 - combination of cfg from ../uniformdensity and netpyne PD thalamocortical model
