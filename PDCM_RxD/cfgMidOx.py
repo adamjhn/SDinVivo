@@ -10,10 +10,11 @@ import cv2
 
 # Run parameters
 cfg = specs.SimConfig()  # object of class cfg to store simulation configuration
-cfg.duration = 20e3  # Duration of the simulation, in ms
+cfg.duration = 5e3  # Duration of the simulation, in ms
 cfg.hParams["v_init"] = -70.0  # set v_init to -65 mV
 cfg.hParams["celsius"] = 37.0
 cfg.Cm = 1.0  # pF/cm**2
+cfg.Ra = 100
 cfg.dt = 0.025  # Internal integration timestep to use
 cfg.verbose = False  # Show detailed messages
 cfg.recordStep = 1  # Step size in ms to save data (eg. V traces, LFP, etc)
@@ -84,15 +85,15 @@ cfg.epas = -70  # False
 cfg.sa2v = 3.0  # False
 
 # Neuron parameters
-cfg.excWeight = 1.15e-7
-cfg.inhWeight = 1.15e-7
-cfg.gnabar = 30 / 1000
-cfg.gkbar = 25 / 1000
-cfg.ukcc2 = 0.3
-cfg.unkcc1 = 0.1
-cfg.pmax = 3.0
-cfg.gpas = 0.0001
-cfg.gkleak_scale = 0.25
+cfg.excWeight = 1e-5
+cfg.inhWeight = 13.5*cfg.excWeight
+cfg.gnabar = 0.1660655052491427
+cfg.gkbar = 0.39804677287772244
+cfg.ukcc2 = 0.16955145151172496
+cfg.unkcc1 = 0.12951879972116337
+cfg.pmax = 5.198433934212125
+cfg.gpas = 0.0009465376456796403
+cfg.gkleak_scale = 0.5 
 
 if cfg.sa2v:
     cfg.somaR = (cfg.sa2v * cfg.rs**3 / 2.0) ** (1 / 2)
@@ -128,7 +129,7 @@ cfg.Balanced = False  # False #True=Balanced // False=Unbalanced
 
 cfg.ouabain = False
 
-cfg.simLabel = f"SDP_{cfg.excWeight}_K{cfg.k0}_scale{cfg.ScaleFactor}_{cfg.prep}_{cfg.ox}_pois{cfg.poissonRateFactor}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}_Balanced{cfg.Balanced}_13kpmm_1mm3_dx{cfg.dx}_{cfg.duration/1000:0.2f}s"
+cfg.simLabel = f"SD_{cfg.excWeight}_K{cfg.k0}_scale{cfg.ScaleFactor}_{cfg.prep}_{cfg.ox}_pois{cfg.poissonRateFactor}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}_Balanced{cfg.Balanced}_13kpmm_1mm3_dx{cfg.dx}_{cfg.duration/1000:0.2f}s"
 cfg.saveFolder = f"/vast/palmer/scratch/mcdougal/ajn48/{cfg.simLabel}/"
 #cfg.saveFolder = f"/tera/adam/{cfg.simLabel}/"
 cfg.restoredir = None  # cfg.saveFolder

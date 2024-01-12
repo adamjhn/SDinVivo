@@ -16,6 +16,7 @@ class L2e:
         self.soma.pt3dadd(0.0, 0.0, 0.0, 2.0 * cfg.somaR)
         self.soma.pt3dadd(0.0, 2.0 * cfg.somaR, 0.0, 2.0 * cfg.somaR)
         self.soma.cm = cfg.Cm
+        self.soma.Ra = cfg.Ra
         if cfg.epas:
             self.soma.insert('pas')
             self.soma(0.5).pas.e = cfg.epas
@@ -28,6 +29,7 @@ class L2i:
         self.soma.pt3dadd(0.0, 0.0, 0.0, 2.0 * cfg.somaR)
         self.soma.pt3dadd(0.0, 2.0 * cfg.somaR, 0.0, 2.0 * cfg.somaR)
         self.soma.cm = cfg.Cm
+        self.soma.Ra = cfg.Ra
         if cfg.epas:
             self.soma.insert('pas')
             self.soma(0.5).pas.e = cfg.epas
@@ -40,6 +42,7 @@ class L4e:
         self.soma.pt3dadd(0.0, 0.0, 0.0, 2.0 * cfg.somaR)
         self.soma.pt3dadd(0.0, 2.0 * cfg.somaR, 0.0, 2.0 * cfg.somaR)
         self.soma.cm = cfg.Cm
+        self.soma.Ra = cfg.Ra
         if cfg.epas:
             self.soma.insert('pas')
             self.soma(0.5).pas.e = cfg.epas
@@ -52,6 +55,7 @@ class L4i:
         self.soma.pt3dadd(0.0, 0.0, 0.0, 2.0 * cfg.somaR)
         self.soma.pt3dadd(0.0, 2.0 * cfg.somaR, 0.0, 2.0 * cfg.somaR)
         self.soma.cm = cfg.Cm
+        self.soma.Ra = cfg.Ra
         if cfg.epas:
             self.soma.insert('pas')
             self.soma(0.5).pas.e = cfg.epas
@@ -64,6 +68,7 @@ class L5e:
         self.soma.pt3dadd(0.0, 0.0, 0.0, 2.0 * cfg.somaR)
         self.soma.pt3dadd(0.0, 2.0 * cfg.somaR, 0.0, 2.0 * cfg.somaR)
         self.soma.cm = cfg.Cm
+        self.soma.Ra = cfg.Ra
         if cfg.epas:
             self.soma.insert('pas')
             self.soma(0.5).pas.e = cfg.epas
@@ -76,6 +81,7 @@ class L5i:
         self.soma.pt3dadd(0.0, 0.0, 0.0, 2.0 * cfg.somaR)
         self.soma.pt3dadd(0.0, 2.0 * cfg.somaR, 0.0, 2.0 * cfg.somaR)
         self.soma.cm = cfg.Cm
+        self.soma.Ra = cfg.Ra
         if cfg.epas:
             self.soma.insert('pas')
             self.soma(0.5).pas.e = cfg.epas
@@ -89,6 +95,7 @@ class L6e:
         self.soma.pt3dadd(0.0, 0.0, 0.0, 2.0 * cfg.somaR)
         self.soma.pt3dadd(0.0, 2.0 * cfg.somaR, 0.0, 2.0 * cfg.somaR)
         self.soma.cm = cfg.Cm
+        self.soma.Ra = cfg.Ra
         if cfg.epas:
             self.soma.insert('pas')
             self.soma(0.5).pas.e = cfg.epas
@@ -101,6 +108,7 @@ class L6i:
         self.soma.pt3dadd(0.0, 0.0, 0.0, 2.0 * cfg.somaR)
         self.soma.pt3dadd(0.0, 2.0 * cfg.somaR, 0.0, 2.0 * cfg.somaR)
         self.soma.cm = cfg.Cm
+        self.soma.Ra = cfg.Ra
         if cfg.epas:
             self.soma.insert('pas')
             self.soma(0.5).pas.e = cfg.epas
