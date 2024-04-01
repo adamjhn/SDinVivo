@@ -192,6 +192,8 @@ Inp = np.array([1600, 1500, 2100, 1900, 2000, 1900, 2900, 2100])
 if cfg.Balanced == False:
     InpUnb = np.array([2000, 1850, 2000, 1850, 2000, 1850, 2000, 1850])
 
+
+
 ###########################################################
 # Reescaling calculation
 ###########################################################
@@ -241,6 +243,11 @@ popDepths = [
     [0.73, 1.0],
     [0.73, 1.0],
 ]
+
+#Scale weights
+netParams.scaleConnWeight = cfg.scaleConnWeight
+#Does not do anything directly -- insteat apply to weights 
+#netParams.scaleConnWeightNetStims = cfg.scaleConnWeightNetStims
 
 # ------------------------------------------------------------------------------
 # create populations
@@ -325,7 +332,7 @@ if cfg.DC == False:  # External Input as Poisson
             "preConds": {"pop": "poiss" + str(L[r])},
             "postConds": {"pop": L[r]},
             "connList": auxConn.T,
-            "weight": f"max(0, {cfg.excWeight} * (weightMin+normal(0,dweight*weightMin)))",
+            "weight": f"max(0, {cfg.excWeight*cfg.scaleConnWeightNetStims} * (weightMin+normal(0,dweight*weightMin)))",
             "delay": 0.5,
             "synMech": "exc",
         }  # 1 delay
@@ -352,7 +359,7 @@ if cfg.TH == True:
             "preConds": {"pop": "bkg_TH" + str(L[r])},
             "postConds": {"pop": L[r]},
             "connList": auxConn.T,
-            "weight": f"max(0, {cfg.excWeight} * (weightMin +normal(0,dweight*weightMin)))",
+            "weight": f"max(0, {cfg.excWeight * cfg.scaleConnWeightNetStims} * (weightMin +normal(0,dweight*weightMin)))",
             "delay": 0.5,
             "synMech": "exc",
         }  # 1 delay
@@ -520,8 +527,8 @@ p = "%s / (1.0 + rxd.rxdmath.exp((20.0 - (%s/vol_ratio[ecs]) * 640)/3.0))" % (
     o2switch,
     o2ecs,
 )
-pumpA = "(1.0 / (1.0 + rxd.rxdmath.exp((25.0 - na[cyt] / vol_ratio[cyt])/3.0)))"
-pumpB = "(1.0 / (1.0 + rxd.rxdmath.exp(3.5 - kk[ecs] / vol_ratio[ecs])))"
+pumpA = f"(1.0 / (1.0 + rxd.rxdmath.exp(({cfg.KNai} - na[cyt] / vol_ratio[cyt])/3.0)))"
+pumpB = f"(1.0 / (1.0 + rxd.rxdmath.exp({cfg.KKo} - kk[ecs] / vol_ratio[ecs])))"
 pump_max = "p_max * (%s) * (%s)" % (pumpA, pumpB)  # pump with unlimited oxygen
 pump = "(%s) * (%s)" % (p, pump_max)
 gliapump = (
@@ -585,6 +592,16 @@ if constants["p_max"] < pmin:
     print("Pump current is too low to balance K+ currents")
     print(f"p_max set to {pmin}")
     constants["p_max"] = pmin
+
+# rescale pmax
+"""
+pA = "(1.0 / (1.0 + rxd.rxdmath.exp((25.0 - na[cyt] / vol_ratio[cyt])/3.0)))"
+pB = "(1.0 / (1.0 + rxd.rxdmath.exp(3.5 - kk[ecs] / vol_ratio[ecs])))"
+rA = f"(1.0 / (1.0 + rxd.rxdmath.exp(({cfg.KNai} - na[cyt] / vol_ratio[cyt])/3.0)))"
+rB = f"(1.0 / (1.0 + rxd.rxdmath.exp({cfg.KKo} - kk[ecs] / vol_ratio[ecs])))"
+rescale = initEval(f"{pA} * {pB}/({rA} * {rB})")
+constants["p_max"] = constants["p_max"] * rescale
+"""
 
 clbalance = f"-((2.0 * {nkcc1} +  {kcc2}) * {volume_scale})/({ecl} - v_initial)"
 kbalance = f"-(({nkcc1} + {kcc2} - 2 * {pump_max}) * {volume_scale} + ({gk} * (v_initial - {ek})))/(v_initial-{ek})"

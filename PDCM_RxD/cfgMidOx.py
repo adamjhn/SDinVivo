@@ -10,7 +10,7 @@ import cv2
 
 # Run parameters
 cfg = specs.SimConfig()  # object of class cfg to store simulation configuration
-cfg.duration = 5e3  # Duration of the simulation, in ms
+cfg.duration = 100  # Duration of the simulation, in ms
 cfg.hParams["v_init"] = -70.0  # set v_init to -65 mV
 cfg.hParams["celsius"] = 37.0
 cfg.Cm = 1.0  # pF/cm**2
@@ -55,9 +55,8 @@ cfg.poissonRateFactor = 1.0
 cfg.connected = True
 cfg.o2drive = "0.13"
 
-# TODO: do these paramater do anything?
-# cfg.scaleConnWeight = 1e-6
-# cfg.scaleConnWeightNetStims = 1e-6
+#cfg.scaleConnWeight = 1e-6
+#cfg.scaleConnWeightNetStims = 1e-6
 
 # slice conditions
 cfg.ox = "perfused"
@@ -85,15 +84,55 @@ cfg.epas = -70  # False
 cfg.sa2v = 3.0  # False
 
 # Neuron parameters
-cfg.excWeight = 1e-5
-cfg.inhWeight = 13.5*cfg.excWeight
-cfg.gnabar = 0.1660655052491427
-cfg.gkbar = 0.39804677287772244
-cfg.ukcc2 = 0.16955145151172496
-cfg.unkcc1 = 0.12951879972116337
-cfg.pmax = 5.198433934212125
-cfg.gpas = 0.0009465376456796403
-cfg.gkleak_scale = 0.5 
+"""
+cfg.excWeight = 1e-6
+cfg.inhWeightScale = 13.5
+cfg.inhWeight = cfg.inhWeightScale*cfg.excWeight
+cfg.gnabar = 30 / 1000
+cfg.gkbar = 25 / 1000
+cfg.ukcc2 = 0.3
+cfg.unkcc1 = 0.1
+cfg.pmax = 3 
+cfg.gpas = 0.0001
+cfg.gkleak_scale = 1.0
+cfg.excWeight = 0.008354547285548327
+cfg.inhWeightScale = 5.799331499698029
+cfg.gnabar = 0.09018714621136505
+cfg.gkbar = 0.08616357060930685
+cfg.ukcc2 = 0.14832347247652633
+cfg.unkcc1 = 0.41410117511406297
+cfg.pmax = 29.628601823899942
+cfg.gpas = 0.0007944086444045182
+
+"""
+
+
+"""
+cfg.excWeight = 0.00038502539808378517 * 0.25
+cfg.inhWeightScale = 14 # 12.09670350162555
+cfg.gnabar = 0.011017780584676423
+cfg.gkbar = 0.027942726890048692
+cfg.ukcc2 = 0.010009940428388016
+cfg.unkcc1 = 0.7043763591503
+cfg.pmax = 2.2896135259851844
+cfg.gpas = 0.0002844471707125443
+"""
+cfg.excWeight = 0.00010494211799199032
+cfg.inhWeightScale = 11.849385401494027
+cfg.gnabar = 0.013996841763437441
+cfg.gkbar = 0.005713120530219498
+cfg.ukcc2 = 0.9441935474841756
+cfg.unkcc1 = 0.7007058562364242
+cfg.pmax = 3.3864399808956533
+cfg.gpas = 0.0005764994797376824
+
+cfg.gkleak_scale = 1
+cfg.inhWeight = cfg.inhWeightScale * cfg.excWeight
+cfg.KKo = 5.3
+cfg.KNai = 27.9
+cfg.scaleConnWeight = 1
+
+cfg.scaleConnWeightNetStims = 1.5e-3 
 
 if cfg.sa2v:
     cfg.somaR = (cfg.sa2v * cfg.rs**3 / 2.0) ** (1 / 2)
@@ -102,7 +141,7 @@ else:
 cfg.cyt_fraction = cfg.rs**3 / cfg.somaR**3
 
 # sd init params
-cfg.k0 = 3.5
+cfg.k0 = 3.5 
 cfg.r0 = 300.0
 
 ###########################################################
@@ -129,10 +168,9 @@ cfg.Balanced = False  # False #True=Balanced // False=Unbalanced
 
 cfg.ouabain = False
 
-cfg.simLabel = f"SD_{cfg.excWeight}_K{cfg.k0}_scale{cfg.ScaleFactor}_{cfg.prep}_{cfg.ox}_pois{cfg.poissonRateFactor}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}_Balanced{cfg.Balanced}_13kpmm_1mm3_dx{cfg.dx}_{cfg.duration/1000:0.2f}s"
+cfg.simLabel = f"SD_V{cfg.scaleConnWeightNetStims}_{cfg.excWeight}_K{cfg.k0}_scale{cfg.ScaleFactor}_{cfg.prep}_{cfg.ox}_pois{cfg.poissonRateFactor}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}_Balanced{cfg.Balanced}_13kpmm_1mm3_dx{cfg.dx}_{cfg.duration/1000:0.2f}s"
 cfg.saveFolder = f"/vast/palmer/scratch/mcdougal/ajn48/{cfg.simLabel}/"
-#cfg.saveFolder = f"/tera/adam/{cfg.simLabel}/"
-cfg.restoredir = None  # cfg.saveFolder
-
+# cfg.saveFolder = f"/tera/adam/{cfg.simLabel}/" # for neurosim
+cfg.restoredir = None #cfg.saveFolder
 # v0.0 - combination of cfg from ../uniformdensity and netpyne PD thalamocortical model
 # v1.0 - cfg for o2 sources based on capillaries identified from histology
