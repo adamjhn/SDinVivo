@@ -10,7 +10,7 @@ import cv2
 
 # Run parameters
 cfg = specs.SimConfig()  # object of class cfg to store simulation configuration
-cfg.duration = 100  # Duration of the simulation, in ms
+cfg.duration = 1000  # Duration of the simulation, in ms
 cfg.hParams["v_init"] = -70.0  # set v_init to -65 mV
 cfg.hParams["celsius"] = 37.0
 cfg.Cm = 1.0  # pF/cm**2
@@ -106,10 +106,8 @@ cfg.gpas = 0.0007944086444045182
 
 """
 
-
-"""
-cfg.excWeight = 0.00038502539808378517 * 0.25
-cfg.inhWeightScale = 14 # 12.09670350162555
+cfg.excWeight = 0.00038502539808378517
+cfg.inhWeightScale = 12.09670350162555
 cfg.gnabar = 0.011017780584676423
 cfg.gkbar = 0.027942726890048692
 cfg.ukcc2 = 0.010009940428388016
@@ -125,14 +123,19 @@ cfg.ukcc2 = 0.9441935474841756
 cfg.unkcc1 = 0.7007058562364242
 cfg.pmax = 3.3864399808956533
 cfg.gpas = 0.0005764994797376824
-
+"""
 cfg.gkleak_scale = 1
 cfg.inhWeight = cfg.inhWeightScale * cfg.excWeight
 cfg.KKo = 5.3
 cfg.KNai = 27.9
+# Scaled to match original 1/3 scaling at Ko=3; i.e.
+# a = 3*(1 + np.exp(3.5-3))
+# GliaKKo = np.log(a-1) + 3 
+cfg.GliaKKo= 4.938189537703508  # originally 3.5 mM
+cfg.GliaPumpScale = 1           # originally 1/3
 cfg.scaleConnWeight = 1
 
-cfg.scaleConnWeightNetStims = 1.5e-3 
+cfg.scaleConnWeightNetStims = 1.5e-3
 
 if cfg.sa2v:
     cfg.somaR = (cfg.sa2v * cfg.rs**3 / 2.0) ** (1 / 2)
@@ -168,7 +171,7 @@ cfg.Balanced = False  # False #True=Balanced // False=Unbalanced
 
 cfg.ouabain = False
 
-cfg.simLabel = f"SD_V{cfg.scaleConnWeightNetStims}_{cfg.excWeight}_K{cfg.k0}_scale{cfg.ScaleFactor}_{cfg.prep}_{cfg.ox}_pois{cfg.poissonRateFactor}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}_Balanced{cfg.Balanced}_13kpmm_1mm3_dx{cfg.dx}_{cfg.duration/1000:0.2f}s"
+cfg.simLabel = f"SD_{cfg.scaleConnWeightNetStims}_GP{cfg.GliaKKo}_{cfg.excWeight}_K{cfg.k0}_scale{cfg.ScaleFactor}_{cfg.prep}_{cfg.ox}_pois{cfg.poissonRateFactor}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}_Balanced{cfg.Balanced}_13kpmm_1mm3_dx{cfg.dx}_{cfg.duration/1000:0.2f}s"
 cfg.saveFolder = f"/vast/palmer/scratch/mcdougal/ajn48/{cfg.simLabel}/"
 # cfg.saveFolder = f"/tera/adam/{cfg.simLabel}/" # for neurosim
 cfg.restoredir = None #cfg.saveFolder

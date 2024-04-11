@@ -193,7 +193,6 @@ if cfg.Balanced == False:
     InpUnb = np.array([2000, 1850, 2000, 1850, 2000, 1850, 2000, 1850])
 
 
-
 ###########################################################
 # Reescaling calculation
 ###########################################################
@@ -244,10 +243,10 @@ popDepths = [
     [0.73, 1.0],
 ]
 
-#Scale weights
+# Scale weights
 netParams.scaleConnWeight = cfg.scaleConnWeight
-#Does not do anything directly -- insteat apply to weights 
-#netParams.scaleConnWeightNetStims = cfg.scaleConnWeightNetStims
+# Does not do anything directly -- insteat apply to weights
+# netParams.scaleConnWeightNetStims = cfg.scaleConnWeightNetStims
 
 # ------------------------------------------------------------------------------
 # create populations
@@ -531,10 +530,7 @@ pumpA = f"(1.0 / (1.0 + rxd.rxdmath.exp(({cfg.KNai} - na[cyt] / vol_ratio[cyt])/
 pumpB = f"(1.0 / (1.0 + rxd.rxdmath.exp({cfg.KKo} - kk[ecs] / vol_ratio[ecs])))"
 pump_max = "p_max * (%s) * (%s)" % (pumpA, pumpB)  # pump with unlimited oxygen
 pump = "(%s) * (%s)" % (p, pump_max)
-gliapump = (
-    "(1.0/3.0) * p_max * (%s / (1.0 + rxd.rxdmath.exp((25.0 - gnai_initial) / 3.0))) * (1.0 / (1.0 + rxd.rxdmath.exp(3.5 - kk[ecs]/vol_ratio[ecs])))"
-    % (p)
-)
+gliapump = f"{cfg.GliaPumpScale} * p_max * ({p} / (1.0 + rxd.rxdmath.exp((25.0 - gnai_initial) / 3.0))) * (1.0 / (1.0 + rxd.rxdmath.exp({cfg.GliaKKo} - kk[ecs]/vol_ratio[ecs])))"
 g_glia = (
     "g_gliamax / (1.0 + rxd.rxdmath.exp(-((%s)*alpha/vol_ratio[ecs] - 2.5)/0.2))"
     % (o2ecs)
