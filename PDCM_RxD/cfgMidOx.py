@@ -10,7 +10,7 @@ import cv2
 
 # Run parameters
 cfg = specs.SimConfig()  # object of class cfg to store simulation configuration
-cfg.duration = 1000  # Duration of the simulation, in ms
+cfg.duration = 1e3  # Duration of the simulation, in ms
 cfg.hParams["v_init"] = -70.0  # set v_init to -65 mV
 cfg.hParams["celsius"] = 37.0
 cfg.Cm = 1.0  # pF/cm**2
@@ -22,6 +22,13 @@ cfg.savePickle = True  # Save params, network and sim output to pickle file
 cfg.saveJson = False
 cfg.recordStim = False
 
+### Options to save memory in large-scale ismulations
+cfg.gatherOnlySimData = True  #Original
+
+# set the following 3 options to False when running large-scale versions of the model (>50% scale) to save memory
+cfg.saveCellSecs = False
+cfg.saveCellConns = False
+cfg.createPyStruct = False
 cfg.printPopAvgRates = True
 cfg.printRunTime = 1
 cfg.Kceil = 15.0
@@ -84,9 +91,8 @@ cfg.epas = -70  # False
 cfg.sa2v = 3.0  # False
 
 # Neuron parameters
-"""
-cfg.excWeight = 1e-6
-cfg.inhWeightScale = 13.5
+cfg.excWeight = 5e-3
+cfg.inhWeightScale = 14 
 cfg.inhWeight = cfg.inhWeightScale*cfg.excWeight
 cfg.gnabar = 30 / 1000
 cfg.gkbar = 25 / 1000
@@ -95,6 +101,8 @@ cfg.unkcc1 = 0.1
 cfg.pmax = 3 
 cfg.gpas = 0.0001
 cfg.gkleak_scale = 1.0
+
+"""
 cfg.excWeight = 0.008354547285548327
 cfg.inhWeightScale = 5.799331499698029
 cfg.gnabar = 0.09018714621136505
@@ -105,15 +113,16 @@ cfg.pmax = 29.628601823899942
 cfg.gpas = 0.0007944086444045182
 
 """
-
+"""
 cfg.excWeight = 0.00038502539808378517
 cfg.inhWeightScale = 12.09670350162555
 cfg.gnabar = 0.011017780584676423
-cfg.gkbar = 0.027942726890048692
+cfg.gkbar = 0.027942726890048692 * 0.8
 cfg.ukcc2 = 0.010009940428388016
 cfg.unkcc1 = 0.7043763591503
 cfg.pmax = 2.2896135259851844
 cfg.gpas = 0.0002844471707125443
+"""
 """
 cfg.excWeight = 0.00010494211799199032
 cfg.inhWeightScale = 11.849385401494027
@@ -124,8 +133,40 @@ cfg.unkcc1 = 0.7007058562364242
 cfg.pmax = 3.3864399808956533
 cfg.gpas = 0.0005764994797376824
 """
+
+"""
+# from optuna
+cfg.excWeight = 0.00023221135768927112 * 12
+cfg.inhWeightScale = 12.288163937519913
+cfg.gnabar = 0.09993943087539545
+cfg.gkbar = 0.0030250462863877555
+cfg.ukcc2 = 0.01488947351890433
+cfg.unkcc1 = 0.6827438083487398
+cfg.pmax = 1.3742040794796173
+cfg.gpas = 0.0009710440265276351
+
+cfg.excWeight = 0.0003607996757525843
+cfg.inhWeightScale = 10.2416856976259
+cfg.gnabar = 0.099746620475437
+cfg.gkbar = 0.010924245043318587
+cfg.ukcc2 = 0.011305434619351806
+cfg.unkcc1 = 0.04786427363424489
+cfg.pmax = 1.3234402225571111
+cfg.gpas = 0.0009698978116799372
+
+cfg.excWeight = 0.005468114518060687
+cfg.inhWeightScale = 8.058499415702913
+cfg.gnabar = 0.09794161502981583
+cfg.gkbar = 0.004906727999254224
+cfg.ukcc2 = 0.03220155161509672
+cfg.unkcc1 = 0.35941732468829013
+cfg.pmax = 0.7151845127361263
+cfg.gpas = 0.00041536957698698305
+
+
 cfg.gkleak_scale = 1
 cfg.inhWeight = cfg.inhWeightScale * cfg.excWeight
+"""
 cfg.KKo = 5.3
 cfg.KNai = 27.9
 # Scaled to match original 1/3 scaling at Ko=3; i.e.
@@ -135,7 +176,7 @@ cfg.GliaKKo= 4.938189537703508  # originally 3.5 mM
 cfg.GliaPumpScale = 1           # originally 1/3
 cfg.scaleConnWeight = 1
 
-cfg.scaleConnWeightNetStims = 1.5e-3
+cfg.scaleConnWeightNetStims = 1e-3
 
 if cfg.sa2v:
     cfg.somaR = (cfg.sa2v * cfg.rs**3 / 2.0) ** (1 / 2)
@@ -171,7 +212,7 @@ cfg.Balanced = False  # False #True=Balanced // False=Unbalanced
 
 cfg.ouabain = False
 
-cfg.simLabel = f"SD_{cfg.scaleConnWeightNetStims}_GP{cfg.GliaKKo}_{cfg.excWeight}_K{cfg.k0}_scale{cfg.ScaleFactor}_{cfg.prep}_{cfg.ox}_pois{cfg.poissonRateFactor}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}_Balanced{cfg.Balanced}_13kpmm_1mm3_dx{cfg.dx}_{cfg.duration/1000:0.2f}s"
+cfg.simLabel = f"SDA_{cfg.scaleConnWeightNetStims}_GP{cfg.GliaKKo}_{cfg.excWeight}_{cfg.inhWeightScale}_K{cfg.k0}_scale{cfg.ScaleFactor}_{cfg.prep}_{cfg.ox}_pois{cfg.poissonRateFactor}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}_Balanced{cfg.Balanced}_13kpmm_1mm3_dx{cfg.dx}_{cfg.duration/1000:0.2f}s"
 cfg.saveFolder = f"/vast/palmer/scratch/mcdougal/ajn48/{cfg.simLabel}/"
 # cfg.saveFolder = f"/tera/adam/{cfg.simLabel}/" # for neurosim
 cfg.restoredir = None #cfg.saveFolder
