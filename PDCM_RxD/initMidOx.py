@@ -9,9 +9,9 @@ import random
 from matplotlib import pyplot as plt
 from stats import networkStatsFromSim
 
-cfg, netParams = sim.readCmdLineArgs(                                           
-    simConfigDefault="cfgMidOx.py", netParamsDefault="netParamsMidOx.py"        
-)                                                                               
+cfg, netParams = sim.readCmdLineArgs(
+    simConfigDefault="cfgMidOx.py", netParamsDefault="netParamsMidOx.py"
+)
 
 # Additional sim setup
 ## parallel context
@@ -20,7 +20,7 @@ pcid = pc.id()
 nhost = pc.nhost()
 pc.timeout(0)
 pc.set_maxstep(100)  # required when using multiple processes
-random.seed(pcid + cfg.seed)
+random.seed(pcid + cfg.seeds["rec"])
 
 
 def restoreSS():
@@ -53,7 +53,6 @@ def fi(cells):
     if cfg.restoredir:
         restoredir = cfg.restoredir
         restoreSS()
-
 
 
 sim.initialize(
@@ -206,16 +205,16 @@ lastss = 0
 def runIntervalFunc(t):
     """Write the wave_progress every 1ms"""
     global lastss
-    saveint = 100
-    ssint = 500
+    saveint = 100  # save concentrations interval
+    ssint = 500  # save state interval
     lastss = 0
     if pcid == 0:
         if int(t) % saveint == 0:
             # plot extracellular concentrations averaged over depth every 100ms
             saveconc()
-        if (int(t) % ssint == 0) and (t - lastss) > 10:
-            runSS()
-            lastss = t
+    if (int(t) % ssint == 0) and (t - lastss) > 10 or (cfg.duration - t) < 1:
+        runSS()
+        lastss = t
     if pcid == 0:
         progress_bar(cfg.duration)
         dist = 0
@@ -242,7 +241,6 @@ if pcid == 0:
 sim.saveData()
 sim.analysis.plotData()
 
-
 if pcid == 0:
     progress_bar(cfg.duration)
     fout.close()
@@ -255,8 +253,6 @@ with open(
 ) as pout:
     pickle.dump([rec_cells, pos, pops], pout)
 
-pc.barrier()  # wait for all processes to save
-runSS()
 
 # v0.0 - direct copy from ../uniformdensity/init.py
 # v1.0 - added in o2 sources based on capillaries identified from histology
