@@ -118,13 +118,15 @@ if pcid == 0:
     soma_o2 = []
     rpos = []
     cell_type = []
+    cell_id = []
     for i in range(int(cfg.sizeY // 10)):
         for r, soma in zip(cell_positions, h.allsec()):
             if (10.0 * i - 2.5) < r < (10.0 * i + 2.5):
                 print(i, r)
                 # rpos.append((soma.x3d(0)-cfg.sizeX/2, soma.y3d(0)+cfg.sizeY/2, soma.z3d(0)-cfg.sizeZ/2))
                 rpos.append((soma.x3d(0), soma.y3d(0), soma.z3d(0)))
-                cell_type.append(soma.name().split(".")[1].split("s")[0])
+                cell_type.append(soma.name().split(".")[0].split("_")[1])
+                cell_id.append(int(soma.name().split(".")[0].split("_")[3]))
                 soma_v.append(h.Vector().record(soma(0.5)._ref_v))
                 soma_nai.append(h.Vector().record(soma(0.5)._ref_nai))
                 soma_ki.append(h.Vector().record(soma(0.5)._ref_ki))
@@ -154,6 +156,7 @@ if pcid == 0:
         "o2": soma_o2,
         "rad": cell_positions,
         "cell_type": cell_type,
+        "cell_id": cell_id,
     }
 
 outdir = cfg.saveFolder
@@ -195,11 +198,21 @@ def progress_bar(tstop, size=40):
 
 
 fout = None
+lastss = 0
 if pcid == 0:
     # record the wave progress
     name = ""
     fout = open(os.path.join(cfg.saveFolder, "wave_progress%s.txt" % name), "a")
-lastss = 0
+    if cfg.k0Layer is None:
+        yoff = 0
+    elif cfg.k0Layer == 2 or cfg.k0Layer == 3:
+        yoff = sum(netParams.popParams["L2e"]["yRange"]) / 2
+    elif cfg.k0Layer == 4:
+        yoff = sum(netParams.popParams["L4e"]["yRange"]) / 2
+    elif cfg.k0Layer == 5:
+        yoff = sum(netParams.popParams["L5e"]["yRange"]) / 2
+    elif cfg.k0Layer == 6:
+        yoff = sum(netParams.popParams["L6e"]["yRange"]) / 2
 
 
 def runIntervalFunc(t):
@@ -223,7 +236,7 @@ def runIntervalFunc(t):
             if str(nd.region).split("(")[0] == "Extracellular":
                 r = (
                     (nd.x3d - cfg.sizeX / 2.0) ** 2
-                    + (nd.y3d - cfg.sizeY / 2.0) ** 2
+                    + (nd.y3d - yoff) ** 2
                     + (nd.z3d - cfg.sizeZ / 2.0) ** 2
                 ) ** 0.5
                 if nd.concentration > cfg.Kceil and r > dist:

@@ -11,8 +11,8 @@ import cv2
 # Run parameters
 cfg = specs.SimConfig()  # object of class cfg to store simulation configuration
 cfg.duration = 3e4  # Duration of the simulation, in ms
-cfg.oldDuration = 1e4  # cfg.duration
-cfg.restore = True
+cfg.oldDuration = cfg.duration
+cfg.restore = False 
 cfg.hParams["v_init"] = -70.0  # set v_init to -65 mV
 cfg.hParams["celsius"] = 37.0
 cfg.Cm = 1.0  # pF/cm**2
@@ -69,7 +69,7 @@ cfg.o2drive = "0.13"
 # cfg.scaleConnWeightNetStims = 1e-6
 
 # slice conditions
-cfg.ox = "perfused"
+cfg.ox = "hypoxic" # "perfused"
 if cfg.ox == "perfused":
     cfg.o2_bath = 0.06
     cfg.o2_init = 0.04
@@ -94,7 +94,7 @@ cfg.epas = -70  # False
 cfg.sa2v = 3.0  # False
 
 # Neuron parameters
-cfg.excWeight = 0.15e-5
+cfg.excWeight = 0.18e-5
 cfg.inhWeightScale = 14
 cfg.inhWeight = cfg.inhWeightScale * cfg.excWeight
 cfg.gnabar = 30 / 1000
@@ -186,8 +186,8 @@ cfg.GliaKKo = 4.938189537703508  # originally 3.5 mM
 cfg.GliaPumpScale = 1  # originally 1/3
 cfg.scaleConnWeight = 1
 
-cfg.scaleConnWeightNetStims = 9.5e-6
-cfg.scaleConnWeightNetStimsVar = 12e6**2
+cfg.scaleConnWeightNetStims = 7.5e-6
+cfg.scaleConnWeightNetStimsVar = 9.5e6**2
 
 if cfg.sa2v:
     cfg.somaR = (cfg.sa2v * cfg.rs**3 / 2.0) ** (1 / 2)
@@ -196,8 +196,9 @@ else:
 cfg.cyt_fraction = cfg.rs**3 / cfg.somaR**3
 
 # sd init params
-cfg.k0 = 3.5
-cfg.r0 = 150  # 300.0
+cfg.k0 = 100.0      # 3.5
+cfg.r0 = 150.0
+cfg.k0Layer = 4     # layer of elevated extracellular K+
 
 ###########################################################
 # Network Options
@@ -223,8 +224,8 @@ cfg.Balanced = False  # False #True=Balanced // False=Unbalanced
 
 cfg.ouabain = False
 
-cfg.simLabel = f"SD_inh_{cfg.scaleConnWeightNetStims}_{cfg.scaleConnWeightNetStimsVar}_GP{cfg.GliaKKo}_{cfg.excWeight}_{cfg.inhWeightScale}_K{cfg.k0}_scale{cfg.ScaleFactor}_{cfg.prep}_{cfg.ox}_pois{cfg.poissonRateFactor}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}_Balanced{cfg.Balanced}_13kpmm_1mm3_dx{cfg.dx}_{cfg.oldDuration/1000:0.2f}s"
-cfg.saveFolder = f"/vast/palmer/scratch/mcdougal/ajn48/{cfg.simLabel}/"
+cfg.simLabel = f"SD_layer{cfg.k0Layer}_{cfg.scaleConnWeightNetStims}_{cfg.scaleConnWeightNetStimsVar}_GP{cfg.GliaKKo}_{cfg.excWeight}_{cfg.inhWeightScale}_K{cfg.k0}_scale{cfg.ScaleFactor}_{cfg.prep}_{cfg.ox}_pois{cfg.poissonRateFactor}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}_Balanced{cfg.Balanced}_13kpmm_1mm3_dx{cfg.dx}_{cfg.oldDuration/1000:0.2f}s"
+cfg.saveFolder = f"/ddn/adamjhn/data/{cfg.simLabel}/"
 # cfg.saveFolder = f"/tera/adam/{cfg.simLabel}/" # for neurosim
 cfg.restoredir = cfg.saveFolder if cfg.restore else None
 # v0.0 - combination of cfg from ../uniformdensity and netpyne PD thalamocortical model

@@ -668,9 +668,21 @@ netParams.rxdParams["regions"] = regions
 ### species
 species = {}
 
+if cfg.k0Layer is None:
+    yoff = cfg.sizeY/2
+else:
+    if cfg.k0Layer == 2 or cfg.k0Layer==3:
+        pidx = 0
+    elif cfg.k0Layer == 4:
+        pidx = 2
+    elif cfg.k0Layer == 5:
+        pidx = 4
+    elif cfg.k0Layer == 6:
+        pidx = 6
+    else: raise Exception("k0Layer must either None (for the middle of the tissue or 2 to 6")
+    yoff = cfg.sizeY * (popDepths[pidx][0] + (popDepths[pidx][1] - popDepths[pidx][0])/2)
 k_init_str = (
-    "ki_initial if isinstance(node, rxd.node.Node1D) else (%f if ((node.x3d - %f/2)**2+(node.y3d + %f/2)**2+(node.z3d - %f/2)**2 <= %f**2) else ko_initial)"
-    % (cfg.k0, cfg.sizeX, cfg.sizeY, cfg.sizeZ, cfg.r0)
+    f"ki_initial if isinstance(node, rxd.node.Node1D) else ({cfg.k0} if ((node.x3d - {cfg.sizeX/2})**2+(node.y3d + {yoff})**2+(node.z3d - {cfg.sizeZ/2})**2 <= {cfg.r0}**2) else ko_initial)"
 )
 # k_init_str = 'ki_initial if isinstance(node, rxd.node.Node1D) else (%f if (((node.x3d - %f/2)**2+(node.z3d - %f/2)**2 < %f**2) and (-1100 < node.y3d < -900)) and  else ko_initial)' % (cfg.k, cfg.sizeX, cfg.sizeZ, cfg.r0)
 species["kk"] = {
