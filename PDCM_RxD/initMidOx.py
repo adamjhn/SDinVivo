@@ -98,66 +98,22 @@ if pcid == 0:
     ]
 
     ## manually record from cells according to distance from the center of the slice
-    cell_positions = [
-        (
-            (sec.x3d(0) - cfg.sizeX / 2.0) ** 2
-            + (sec.y3d(0) + cfg.sizeY / 2.0) ** 2
-            + (sec.z3d(0) - cfg.sizeZ / 2.0) ** 2
-        )
-        ** (0.5)
-        for sec in h.allsec()
-    ]
-    t = h.Vector().record(h._ref_t)
-    soma_v = []
-    soma_ki = []
-    soma_nai = []
-    soma_cli = []
-    soma_nao = []
-    soma_ko = []
-    soma_clo = []
-    soma_o2 = []
-    rpos = []
-    cell_type = []
-    cell_id = []
-    for i in range(int(cfg.sizeY // 10)):
-        for r, soma in zip(cell_positions, h.allsec()):
-            if (10.0 * i - 2.5) < r < (10.0 * i + 2.5):
-                print(i, r)
-                # rpos.append((soma.x3d(0)-cfg.sizeX/2, soma.y3d(0)+cfg.sizeY/2, soma.z3d(0)-cfg.sizeZ/2))
-                rpos.append((soma.x3d(0), soma.y3d(0), soma.z3d(0)))
-                cell_type.append(soma.name().split(".")[0].split("_")[1])
-                cell_id.append(int(soma.name().split(".")[0].split("_")[3]))
-                soma_v.append(h.Vector().record(soma(0.5)._ref_v))
-                soma_nai.append(h.Vector().record(soma(0.5)._ref_nai))
-                soma_ki.append(h.Vector().record(soma(0.5)._ref_ki))
-                soma_cli.append(h.Vector().record(soma(0.5)._ref_cli))
-                soma_nao.append(h.Vector().record(soma(0.5)._ref_nao))
-                soma_ko.append(h.Vector().record(soma(0.5)._ref_ko))
-                soma_clo.append(h.Vector().record(soma(0.5)._ref_clo))
-                soma_o2.append(
-                    h.Vector().record(
-                        o2_ecs.node_by_location(
-                            soma.x3d(0), soma.y3d(0), soma.z3d(0)
-                        )._ref_concentration
-                    )
-                )
-                break
-
-    recs = {
-        "v": soma_v,
-        "ki": soma_ki,
-        "nai": soma_nai,
-        "cli": soma_cli,
-        "t": t,
-        "ko": soma_ko,
-        "nao": soma_nao,
-        "clo": soma_clo,
-        "pos": rpos,
-        "o2": soma_o2,
-        "rad": cell_positions,
-        "cell_type": cell_type,
-        "cell_id": cell_id,
-    }
+    rng = np.random.default_rng(seed=pcid + cfg.seeds["rec"])
+    rec_cells = {}
+    for lab,pop in sim.net.pops.items():
+        if 'xRange' in pop.tags:
+            rec_cells[lab] = {'gid':rng.choice(pop.cellGids, size=cfg.nRec, replace=False) if len(pop.cellGids) > cfg.nRec else pop.cellGids}
+            rec_cells[lab]['pos'] = []
+            for k in ['v', 'ki', 'nai', 'cli', 'ko', 'nao', 'clo', 'o2o']:
+                rec_cells[lab][k] = []
+            for idx in rec_cells[lab]['gid']:
+                cell = sim.cellByGid(idx)
+                soma = cell.secs['soma']['hObj']
+                rec_cells[lab]['pos'].append(cell.getSomaPos())
+                for k in ['v', 'ki', 'nai', 'cli', 'ko', 'nao', 'clo', 'o2o']:
+                    rec_cells[lab][k].append(h.Vector().record(getattr(soma(0.5),f"_ref_{k}")))
+                
+    rec_cells['time'] = h.Vector().record(h._ref_t)
 
 outdir = cfg.saveFolder
 
@@ -258,7 +214,7 @@ if pcid == 0:
     progress_bar(cfg.duration)
     fout.close()
     with open(os.path.join(cfg.saveFolder, "recs.pkl"), "wb") as fout:
-        pickle.dump(recs, fout)
+        pickle.dump(rec_cells, fout)
     print("\nSimulation complete. Plotting membrane potentials")
 
 with open(
