@@ -10,7 +10,7 @@ import cv2
 
 # Run parameters
 cfg = specs.SimConfig()  # object of class cfg to store simulation configuration
-cfg.duration = 3e4  # Duration of the simulation, in ms
+cfg.duration = 30e3  # Duration of the simulation, in ms
 cfg.oldDuration = cfg.duration
 cfg.restore = False 
 cfg.hParams["v_init"] = -70.0  # set v_init to -65 mV
@@ -28,7 +28,7 @@ cfg.recordStim = False
 cfg.gatherOnlySimData = True  # Original
 
 # set the following 3 options to False when running large-scale versions of the model (>50% scale) to save memory
-cfg.saveCellSecs = False
+cfg.saveCellSecs = False 
 cfg.saveCellConns = False
 cfg.createPyStruct = False
 cfg.printPopAvgRates = True
@@ -69,7 +69,7 @@ cfg.o2drive = "0.13"
 # cfg.scaleConnWeightNetStims = 1e-6
 
 # slice conditions
-cfg.ox = "hypoxic" # "perfused"
+cfg.ox = "perfused"
 if cfg.ox == "perfused":
     cfg.o2_bath = 0.06
     cfg.o2_init = 0.04
@@ -94,7 +94,8 @@ cfg.epas = -70  # False
 cfg.sa2v = 3.0  # False
 
 # Neuron parameters
-cfg.excWeight = 0.18e-5
+Wscale = 2.5
+cfg.excWeight = 0.3e-5 * (Wscale)
 cfg.inhWeightScale = 14
 cfg.inhWeight = cfg.inhWeightScale * cfg.excWeight
 cfg.gnabar = 30 / 1000
@@ -186,8 +187,8 @@ cfg.GliaKKo = 4.938189537703508  # originally 3.5 mM
 cfg.GliaPumpScale = 1  # originally 1/3
 cfg.scaleConnWeight = 1
 
-cfg.scaleConnWeightNetStims = 7.5e-6
-cfg.scaleConnWeightNetStimsVar = 9.5e6**2
+cfg.scaleConnWeightNetStims = 15e-6 / Wscale
+cfg.scaleConnWeightNetStimsVar = 15e6**2 / Wscale**2
 
 if cfg.sa2v:
     cfg.somaR = (cfg.sa2v * cfg.rs**3 / 2.0) ** (1 / 2)
@@ -196,7 +197,7 @@ else:
 cfg.cyt_fraction = cfg.rs**3 / cfg.somaR**3
 
 # sd init params
-cfg.k0 = 100.0      # 3.5
+cfg.k0 = 250.0
 cfg.r0 = 150.0
 cfg.k0Layer = 4     # layer of elevated extracellular K+
 

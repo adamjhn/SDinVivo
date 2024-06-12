@@ -204,7 +204,7 @@ if pcid == 0:
     name = ""
     fout = open(os.path.join(cfg.saveFolder, "wave_progress%s.txt" % name), "a")
     if cfg.k0Layer is None:
-        yoff = 0
+        yoff = cfg.sizeY / 2.0
     elif cfg.k0Layer == 2 or cfg.k0Layer == 3:
         yoff = sum(netParams.popParams["L2e"]["yRange"]) / 2
     elif cfg.k0Layer == 4:
@@ -236,7 +236,7 @@ def runIntervalFunc(t):
             if str(nd.region).split("(")[0] == "Extracellular":
                 r = (
                     (nd.x3d - cfg.sizeX / 2.0) ** 2
-                    + (nd.y3d - yoff) ** 2
+                    + (nd.y3d + yoff) ** 2
                     + (nd.z3d - cfg.sizeZ / 2.0) ** 2
                 ) ** 0.5
                 if nd.concentration > cfg.Kceil and r > dist:
