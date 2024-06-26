@@ -100,20 +100,26 @@ if pcid == 0:
     ## manually record from cells according to distance from the center of the slice
     rng = np.random.default_rng(seed=pcid + cfg.seeds["rec"])
     rec_cells = {}
-    for lab,pop in sim.net.pops.items():
-        if 'xRange' in pop.tags:
-            rec_cells[lab] = {'gid':rng.choice(pop.cellGids, size=cfg.nRec, replace=False) if len(pop.cellGids) > cfg.nRec else pop.cellGids}
-            rec_cells[lab]['pos'] = []
-            for k in ['v', 'ki', 'nai', 'cli', 'ko', 'nao', 'clo', 'o2o']:
+    for lab, pop in sim.net.pops.items():
+        if "xRange" in pop.tags:
+            rec_cells[lab] = {
+                "gid": rng.choice(pop.cellGids, size=cfg.nRec, replace=False)
+                if len(pop.cellGids) > cfg.nRec
+                else pop.cellGids
+            }
+            rec_cells[lab]["pos"] = []
+            for k in ["v", "ki", "nai", "cli", "ko", "nao", "clo", "o2o"]:
                 rec_cells[lab][k] = []
-            for idx in rec_cells[lab]['gid']:
+            for idx in rec_cells[lab]["gid"]:
                 cell = sim.cellByGid(idx)
-                soma = cell.secs['soma']['hObj']
-                rec_cells[lab]['pos'].append(cell.getSomaPos())
-                for k in ['v', 'ki', 'nai', 'cli', 'ko', 'nao', 'clo', 'o2o']:
-                    rec_cells[lab][k].append(h.Vector().record(getattr(soma(0.5),f"_ref_{k}")))
-                
-    rec_cells['time'] = h.Vector().record(h._ref_t)
+                soma = cell.secs["soma"]["hObj"]
+                rec_cells[lab]["pos"].append(cell.getSomaPos())
+                for k in ["v", "ki", "nai", "cli", "ko", "nao", "clo", "o2o"]:
+                    rec_cells[lab][k].append(
+                        h.Vector().record(getattr(soma(0.5), f"_ref_{k}"))
+                    )
+
+    rec_cells["time"] = h.Vector().record(h._ref_t)
 
 outdir = cfg.saveFolder
 
@@ -213,8 +219,9 @@ sim.analysis.plotData()
 if pcid == 0:
     progress_bar(cfg.duration)
     fout.close()
-    with open(os.path.join(cfg.saveFolder, "recs.pkl"), "wb") as fout:
-        pickle.dump(rec_cells, fout)
+    for lab in rec_cells:
+        with open(os.path.join(cfg.saveFolder, f"recs_{lab}.pkl"), "wb") as fout:
+            pickle.dump(rec_cells[lab], fout)
     print("\nSimulation complete. Plotting membrane potentials")
 
 with open(
