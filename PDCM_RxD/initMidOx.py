@@ -68,7 +68,10 @@ sim.setupRecording()  # setup variables to record for each cell (spikes, V trace
 
 all_secs = [sec for sec in h.allsec()]
 cells_per_node = len(all_secs)
-rec_inds = random.sample(range(cells_per_node), int(cfg.nRec / nhost))
+if cfg.singleCells:
+    rec_inds = list(range(cells_per_node))
+else:
+    rec_inds = random.sample(range(cells_per_node), int(cfg.nRec / nhost))
 rec_cells = [h.Vector().record(all_secs[ind](0.5)._ref_v) for ind in rec_inds]
 pos = [
     [all_secs[ind].x3d(0), all_secs[ind].y3d(0), all_secs[ind].z3d(0)]

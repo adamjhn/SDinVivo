@@ -126,7 +126,7 @@ def Reescale(ScaleFactor, C, N_Full, w_p, f_ext, tau_syn, Inp, InpDC):
         InpDC = np.sqrt(ScaleFactor) * InpDC * w_p * f_ext * tau_syn * 0.001  # pA
         w_p = w_p / np.sqrt(ScaleFactor)  # pA
         InpDC = InpDC + I_ext
-        N_ = [int(ScaleFactor * N) for N in N_Full]
+        N_ = [max(int(ScaleFactor * N), 1) for N in N_Full]
     else:
         InpDC = InpDC * w_p * f_ext * tau_syn * 0.001
         N_ = N_Full
@@ -185,7 +185,10 @@ C = np.array(
 
 # Population size N
 L = ["L2e", "L2i", "L4e", "L4i", "L5e", "L5i", "L6e", "L6i"]
-N_Full = np.array([20683, 5834, 21915, 5479, 4850, 1065, 14395, 2948, 902])
+if cfg.singleCells:
+    N_Full = np.array([1 for _ in L])
+else:
+    N_Full = np.array([20683, 5834, 21915, 5479, 4850, 1065, 14395, 2948, 902])
 
 # Number of Input per Layer
 Inp = np.array([1600, 1500, 2100, 1900, 2000, 1900, 2900, 2100])
@@ -526,9 +529,9 @@ p = "%s / (1.0 + rxd.rxdmath.exp((20.0 - (%s/vol_ratio[ecs]) * 640)/3.0))" % (
     o2switch,
     o2ecs,
 )
-pumpA = f"(1.0 / (1.0 + rxd.rxdmath.exp(({cfg.KNai} - na[cyt] / vol_ratio[cyt])/3.0)))"
+pumpA = f"({p} / (1.0 + rxd.rxdmath.exp(({cfg.KNai} - na[cyt] / vol_ratio[cyt])/3.0)))"
 pumpB = f"(1.0 / (1.0 + rxd.rxdmath.exp({cfg.KKo} - kk[ecs] / vol_ratio[ecs])))"
-pump_max = "p_max * (%s) * (%s)" % (pumpA, pumpB)  # pump with unlimited oxygen
+pump_max = "p_max * (%s) * (%s)" % (pumpA, pumpB)
 pump = "(%s) * (%s)" % (p, pump_max)
 gliapump = f"{cfg.GliaPumpScale} * p_max * ({p} / (1.0 + rxd.rxdmath.exp((25.0 - gnai_initial) / 3.0))) * (1.0 / (1.0 + rxd.rxdmath.exp({cfg.GliaKKo} - kk[ecs]/vol_ratio[ecs])))"
 g_glia = (
@@ -669,9 +672,9 @@ netParams.rxdParams["regions"] = regions
 species = {}
 
 if cfg.k0Layer is None:
-    yoff = cfg.sizeY/2
+    yoff = cfg.sizeY / 2
 else:
-    if cfg.k0Layer == 2 or cfg.k0Layer==3:
+    if cfg.k0Layer == 2 or cfg.k0Layer == 3:
         pidx = 0
     elif cfg.k0Layer == 4:
         pidx = 2
@@ -679,11 +682,14 @@ else:
         pidx = 4
     elif cfg.k0Layer == 6:
         pidx = 6
-    else: raise Exception("k0Layer must either None (for the middle of the tissue or 2 to 6")
-    yoff = cfg.sizeY * (popDepths[pidx][0] + (popDepths[pidx][1] - popDepths[pidx][0])/2)
-k_init_str = (
-    f"ki_initial if isinstance(node, rxd.node.Node1D) else ({cfg.k0} if ((node.x3d - {cfg.sizeX/2})**2+(node.y3d + {yoff})**2+(node.z3d - {cfg.sizeZ/2})**2 <= {cfg.r0}**2) else ko_initial)"
-)
+    else:
+        raise Exception(
+            "k0Layer must either None (for the middle of the tissue or 2 to 6"
+        )
+    yoff = cfg.sizeY * (
+        popDepths[pidx][0] + (popDepths[pidx][1] - popDepths[pidx][0]) / 2
+    )
+k_init_str = f"ki_initial if isinstance(node, rxd.node.Node1D) else ({cfg.k0} if ((node.x3d - {cfg.sizeX/2})**2+(node.y3d + {yoff})**2+(node.z3d - {cfg.sizeZ/2})**2 <= {cfg.r0}**2) else ko_initial)"
 # k_init_str = 'ki_initial if isinstance(node, rxd.node.Node1D) else (%f if (((node.x3d - %f/2)**2+(node.z3d - %f/2)**2 < %f**2) and (-1100 < node.y3d < -900)) and  else ko_initial)' % (cfg.k, cfg.sizeX, cfg.sizeZ, cfg.r0)
 species["kk"] = {
     "regions": ["cyt", "mem", "ecs"],
