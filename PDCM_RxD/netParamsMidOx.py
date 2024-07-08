@@ -437,7 +437,7 @@ if cfg.connected:
 ### constants
 e_charge = 1.60217662e-19
 scale = 1e-14 / e_charge
-alpha = 5.3
+alpha = 5.3  # g/mol
 px = cfg.px
 dx = cfg.dx
 Nz = cfg.Nz
@@ -524,31 +524,39 @@ ek = "26.64 * rxd.rxdmath.log(kk[ecs]*vol_ratio[cyt]/(kk[cyt]*vol_ratio[ecs]))"
 ecl = "26.64 * rxd.rxdmath.log(cl[cyt]*vol_ratio[ecs]/(cl[ecs]*vol_ratio[cyt]))"
 
 o2ecs = "o2_extracellular[ecs_o2]"
+# Wei model has o2 baseline 32mg/L, i.e. varies between 0 and 6.0mM
+# Our model has o2 baseline of 0.06mM bath or 0.04mM initial
+# to provide a similar sigmoid curve for the range of oxygen considered
+# currents were scaled by 32/0.05 = 640 mg/L/mM
 o2switch = "(1.0 + rxd.rxdmath.tanh(1e4 * (%s - 5e-4))) / 2.0" % (o2ecs)
 p = "%s / (1.0 + rxd.rxdmath.exp((20.0 - (%s/vol_ratio[ecs]) * 640)/3.0))" % (
     o2switch,
     o2ecs,
 )
-pumpA = f"({p} / (1.0 + rxd.rxdmath.exp(({cfg.KNai} - na[cyt] / vol_ratio[cyt])/3.0)))"
+# pump relation to intracellular Na+ and extracellular K+
+pumpA = f"(1.0 / (1.0 + rxd.rxdmath.exp(({cfg.KNai} - na[cyt] / vol_ratio[cyt])/3.0)))"
 pumpB = f"(1.0 / (1.0 + rxd.rxdmath.exp({cfg.KKo} - kk[ecs] / vol_ratio[ecs])))"
-pump_max = "p_max * (%s) * (%s)" % (pumpA, pumpB)
-pump = "(%s) * (%s)" % (p, pump_max)
-gliapump = f"{cfg.GliaPumpScale} * p_max * ({p} / (1.0 + rxd.rxdmath.exp((25.0 - gnai_initial) / 3.0))) * (1.0 / (1.0 + rxd.rxdmath.exp({cfg.GliaKKo} - kk[ecs]/vol_ratio[ecs])))"
-g_glia = (
-    "g_gliamax / (1.0 + rxd.rxdmath.exp(-((%s)*alpha/vol_ratio[ecs] - 2.5)/0.2))"
-    % (o2ecs)
+pump_max = f"p_max * {pumpA} * {pumpB}"  # pump rate with unlimited o2
+pump = f"{p} * {pump_max}"  # pump rate scaled by available o2
+
+pumpAg = "(1.0 / (1.0 + rxd.rxdmath.exp((25 - gnai_initial)/3.0)))"
+pumpBg = f"(1.0 / (1.0 + rxd.rxdmath.exp({cfg.GliaKKo} - kk[ecs] / vol_ratio[ecs])))"
+gliapump = f"{cfg.GliaPumpScale} * p_max * {p} * {pumpAg} * {pumpBg}"
+g_glia = "g_gliamax / (1.0 + rxd.rxdmath.exp(-((%s)*640/vol_ratio[ecs] - 2.5)/0.2))" % (
+    o2ecs
 )
 glia12 = "(%s) / (1.0 + rxd.rxdmath.exp((18.0 - kk[ecs] / vol_ratio[ecs])/2.5))" % (
     g_glia
 )
 
-# epsilon_k = "(epsilon_k_max/(1.0 + rxd.rxdmath.exp(-(((%s)/vol_ratio[ecs]) * alpha - 2.5)/0.2))) * (1.0/(1.0 + rxd.rxdmath.exp((-20 + ((1.0+1.0/beta0 -vol_ratio[ecs])/vol_ratio[ecs]) /2.0))))" % (o2ecs)
-epsilon_kA = (
-    "(epsilon_k_max/(1.0 + rxd.rxdmath.exp(-((%s/vol_ratio[ecs]) * alpha - 2.5)/0.2)))"
-    % (o2ecs)
-)
-epsilon_kB = "(1.0/(1.0 + rxd.rxdmath.exp((-20 + ((1.0+1.0/beta0 - vol_ratio[ecs])/vol_ratio[ecs]) /2.0))))"
-epsilon_k = "%s * %s" % (epsilon_kA, epsilon_kB)
+if cfg.prep == "invitro":
+    # represents diffusion between the ECS and the bath
+    epsilon_kA = (
+        "(epsilon_k_max/(1.0 + rxd.rxdmath.exp(-((%s/vol_ratio[ecs]) * alpha - 2.5)/0.2)))"
+        % (o2ecs)
+    )
+    epsilon_kB = "(1.0/(1.0 + rxd.rxdmath.exp((-20 + ((1.0+1.0/beta0 - vol_ratio[ecs])/vol_ratio[ecs]) /2.0))))"
+    epsilon_k = "%s * %s" % (epsilon_kA, epsilon_kB)
 
 
 volume_scale = "1e-18 * avo * %f" % (1.0 / cfg.sa2v)
