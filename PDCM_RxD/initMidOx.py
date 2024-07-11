@@ -184,13 +184,13 @@ def runIntervalFunc(t):
     """Write the wave_progress every 1ms"""
     global lastss
     saveint = 100  # save concentrations interval
-    ssint = 500  # save state interval
+    ssint = 1000  # save state interval
     lastss = 0
     if pcid == 0:
         if int(t) % saveint == 0:
             # plot extracellular concentrations averaged over depth every 100ms
             saveconc()
-    if (int(t) % ssint == 0) and (t - lastss) > 10 or (cfg.duration - t) < 1:
+    if (int(t) % ssint == 0) and (t - lastss) > ssint or (cfg.duration - t) < 1:
         runSS()
         lastss = t
     if pcid == 0:
