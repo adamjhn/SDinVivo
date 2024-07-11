@@ -12,7 +12,7 @@ import cv2
 cfg = specs.SimConfig()  # object of class cfg to store simulation configuration
 cfg.duration = 30e3  # Duration of the simulation, in ms
 cfg.oldDuration = cfg.duration
-cfg.restore = False 
+cfg.restore = False
 cfg.hParams["v_init"] = -70.0  # set v_init to -65 mV
 cfg.hParams["celsius"] = 37.0
 cfg.Cm = 1.0  # pF/cm**2
@@ -35,7 +35,7 @@ cfg.printPopAvgRates = True
 cfg.singleCells = False  # create one cell in each population
 cfg.printRunTime = 1
 cfg.Kceil = 15.0
-cfg.nRec = 25 
+cfg.nRec = 25
 cfg.recordCellsSpikes = [
     "L2e",
     "L2i",
@@ -71,13 +71,13 @@ cfg.connected = True
 # slice conditions
 cfg.ox = "hypoxic"
 if cfg.ox == "perfused":
-    cfg.o2_bath = 0.06 # ~36 mmHg
-    cfg.o2_init = 0.04 # ~24 mmHg
+    cfg.o2_bath = 0.06  # ~36 mmHg
+    cfg.o2_init = 0.04  # ~24 mmHg
     cfg.alpha_ecs = 0.2
     cfg.tort_ecs = 1.6
     cfg.o2drive = 0.013
 elif cfg.ox == "hypoxic":
-    cfg.o2_bath = 0.005 # ~4 mmHg
+    cfg.o2_bath = 0.005  # ~4 mmHg
     cfg.o2_init = 0.005
     cfg.alpha_ecs = 0.07
     cfg.tort_ecs = 1.8
@@ -111,6 +111,11 @@ cfg.gpas = 0.0009680849770246202
 cfg.pmax = 3.8731513311322754
 cfg.ukcc2 = 0.01417219231784303
 cfg.unkcc1 = 0.9270812583375462
+
+cfg.Ggliamax = 1.0 #mM/sec originally 5mM/sec
+# we scaled pump by ~4.84 so apply a corresponding
+# reduction by channels (K, Kir and NKCC1) in glia.
+
 """
 cfg.excWeight = 0.008354547285548327
 cfg.inhWeightScale = 5.799331499698029
@@ -182,8 +187,8 @@ cfg.KNai = 27.9
 # Scaled to match original 1/3 scaling at Ko=3; i.e.
 # a = 3*(1 + np.exp(3.5-3))
 # GliaKKo = np.log(a-1) + 3
-cfg.GliaKKo = 3.5 #4.938189537703508  # originally 3.5 mM
-cfg.GliaPumpScale = 1/3  # originally 1/3
+cfg.GliaKKo = 4.938189537703508  # originally 3.5 mM
+cfg.GliaPumpScale = 1 #1 / 3  # originally 1/3
 cfg.scaleConnWeight = 1
 
 cfg.scaleConnWeightNetStims = 15e-6 / Wscale
@@ -196,7 +201,7 @@ else:
 cfg.cyt_fraction = cfg.rs**3 / cfg.somaR**3
 
 # sd init params
-cfg.k0 = 3.5 
+cfg.k0 = 3.5
 cfg.r0 = 150.0
 cfg.k0Layer = None  # layer of elevated extracellular K+
 
@@ -224,10 +229,10 @@ cfg.Balanced = False  # False #True=Balanced // False=Unbalanced
 
 cfg.ouabain = False
 
-cfg.simLabel = f"SD640_layer{cfg.k0Layer}_{cfg.scaleConnWeightNetStims}_{cfg.scaleConnWeightNetStimsVar}_GP{cfg.GliaKKo}_{cfg.excWeight}_{cfg.inhWeightScale}_K{cfg.k0}_scale{cfg.ScaleFactor}_{cfg.prep}_{cfg.ox}_pois{cfg.poissonRateFactor}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}_Balanced{cfg.Balanced}_13kpmm_1mm3_dx{cfg.dx}_{cfg.oldDuration/1000:0.2f}s"
+cfg.simLabel = f"SDG_layer{cfg.k0Layer}_{cfg.scaleConnWeightNetStims}_{cfg.scaleConnWeightNetStimsVar}_GP{cfg.GliaKKo}_{cfg.excWeight}_{cfg.inhWeightScale}_K{cfg.k0}_scale{cfg.ScaleFactor}_{cfg.prep}_{cfg.ox}_pois{cfg.poissonRateFactor}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}_Balanced{cfg.Balanced}_13kpmm_1mm3_dx{cfg.dx}_{cfg.oldDuration/1000:0.2f}s"
 cfg.saveFolder = f"/ddn/adamjhn/data/{cfg.simLabel}/"
-#cfg.simLabel = f"test_{cfg.ox}"
-#cfg.saveFolder = f"/tmp/{cfg.simLabel}"
+# cfg.simLabel = f"test_{cfg.ox}"
+# cfg.saveFolder = f"/tmp/{cfg.simLabel}"
 # cfg.saveFolder = f"/tera/adam/{cfg.simLabel}/" # for neurosim
 cfg.restoredir = cfg.saveFolder if cfg.restore else None
 # v0.0 - combination of cfg from ../uniformdensity and netpyne PD thalamocortical model

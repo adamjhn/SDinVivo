@@ -459,7 +459,7 @@ constants = {
     "epsilon_k_max": 0.25 / sec,
     "epsilon_o2": 0.17 / sec,
     "vtau": 1 / 250.0,
-    "g_gliamax": 5 * mM / sec,
+    "g_gliamax": cfg.Ggliamax * mM / sec,
     "beta0": 7.0,
     "avo": 6.0221409 * (10**23),
     "p_max": cfg.pmax * mM / sec,
@@ -528,7 +528,7 @@ o2ecs = "o2_extracellular[ecs_o2]"
 # Our model has o2 baseline of 0.06mM bath or 0.04mM initial
 # to provide a similar sigmoid curve for the range of oxygen considered
 # currents were scaled by 32/0.05 = 640 mg/L/mM
-rescale_o2 = 32 * 20 
+rescale_o2 = 32 * 20
 o2switch = "(1.0 + rxd.rxdmath.tanh(1e4 * (%s - 5e-4))) / 2.0" % (o2ecs)
 p = f"{o2switch} / (1.0 + rxd.rxdmath.exp((20.0 - ({o2ecs}/vol_ratio[ecs]) * {rescale_o2})/3.0))"
 # pump relation to intracellular Na+ and extracellular K+
@@ -926,7 +926,7 @@ mcReactions["pump_current_na"] = {
 mcReactions["oxygen"] = {
     "reactant": o2ecs,
     "product": "dump[cyt]",
-    "rate_f": "(1/6) * (%s) * (%s)" % (pump, volume_scale),
+    "rate_f": "(1/5) * (%s) * (%s)" % (pump, volume_scale),
     "membrane": "mem",
     "custom_dynamics": True,
 }
@@ -960,7 +960,7 @@ if cfg.o2drive:
     rates["o2source"] = {
         "species": o2ecs,
         "regions": ["ecs_o2"],
-        "rate": f"numcap * {cfg.o2drive} * (epsilon_o2 * (o2_bath - {o2ecs}))"
+        "rate": f"numcap * {cfg.o2drive} * (epsilon_o2 * (o2_bath - {o2ecs}))",
     }
 
 # rates['o2diff'] = {'species' : o2ecs, 'regions' : ['ecs_o2'],
@@ -1013,7 +1013,7 @@ rates["glia_na_current"] = {
 rates["o2_pump"] = {
     "species": o2ecs,
     "regions": ["ecs_o2"],
-    "rate": "-(1/6)*(%s)" % (gliapump),
+    "rate": "-(1/5)*(%s)" % (gliapump),
 }
 
 netParams.rxdParams["rates"] = rates
