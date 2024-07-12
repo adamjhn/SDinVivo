@@ -84,9 +84,13 @@ elif cfg.ox == "hypoxic":
     cfg.o2drive = 0.013 * (1 / 6)
 cfg.prep = "invivo"  # "invitro"
 
+# Size of Network. Adjust this constants, please!
+cfg.ScaleFactor = 0.16  # = 80.000
+
 # neuron params
-cfg.betaNrn = 0.24
-cfg.Ncell = 12767
+cfg.betaNrn = 0.29  # 0.59 intracellular volume fraction (Rice & Russi-Menna 1997) ~80% neuronal
+cfg.N_Full = [20683, 5834, 21915, 5479, 4850, 1065, 14395, 2948, 902]
+cfg.Ncell = sum([max(1,int(i*cfg.ScaleFactor)) for i in cfg.N_Full])
 cfg.rs = ((cfg.betaNrn * cfg.Vtissue) / (2 * np.pi * cfg.Ncell)) ** (1 / 3)
 
 cfg.epas = -70  # False
@@ -187,8 +191,8 @@ cfg.KNai = 27.9
 # Scaled to match original 1/3 scaling at Ko=3; i.e.
 # a = 3*(1 + np.exp(3.5-3))
 # GliaKKo = np.log(a-1) + 3
-cfg.GliaKKo = 4.938189537703508  # originally 3.5 mM
-cfg.GliaPumpScale = 1 #1 / 3  # originally 1/3
+cfg.GliaKKo = 3.5 #4.938189537703508  # originally 3.5 mM
+cfg.GliaPumpScale = 1/3 #1 / 3  # originally 1/3
 cfg.scaleConnWeight = 1
 
 cfg.scaleConnWeightNetStims = 15e-6 / Wscale
@@ -215,8 +219,7 @@ cfg.k0Layer = None  # layer of elevated extracellular K+
 # DC=False ; TH=False; Balanced=True   and run to 60 s to => Table 6
 # DC=False ; TH=True;  Balanced=True   => Figure 10A. But I want a partial reproduce so I guess Figure 10C is not necessary
 
-# Size of Network. Adjust this constants, please!
-cfg.ScaleFactor = 0.16  # = 80.000
+
 
 # External input DC or Poisson
 cfg.DC = False  # True = DC // False = Poisson

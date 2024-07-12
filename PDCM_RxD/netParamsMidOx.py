@@ -188,7 +188,7 @@ L = ["L2e", "L2i", "L4e", "L4i", "L5e", "L5i", "L6e", "L6i"]
 if cfg.singleCells:
     N_Full = np.array([1 for _ in L])
 else:
-    N_Full = np.array([20683, 5834, 21915, 5479, 4850, 1065, 14395, 2948, 902])
+    N_Full = np.array(cfg.N_Full)
 
 # Number of Input per Layer
 Inp = np.array([1600, 1500, 2100, 1900, 2000, 1900, 2900, 2100])
