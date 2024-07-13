@@ -10,7 +10,7 @@ import cv2
 
 # Run parameters
 cfg = specs.SimConfig()  # object of class cfg to store simulation configuration
-cfg.duration = 30e3  # Duration of the simulation, in ms
+cfg.duration = 20e3  # Duration of the simulation, in ms
 cfg.oldDuration = cfg.duration
 cfg.restore = False
 cfg.hParams["v_init"] = -70.0  # set v_init to -65 mV
@@ -69,7 +69,7 @@ cfg.connected = True
 # cfg.scaleConnWeightNetStims = 1e-6
 
 # slice conditions
-cfg.ox = "hypoxic"
+cfg.ox = "perfused"
 if cfg.ox == "perfused":
     cfg.o2_bath = 0.06  # ~36 mmHg
     cfg.o2_init = 0.04  # ~24 mmHg
@@ -96,7 +96,7 @@ cfg.Ncell = sum([max(1, int(i * cfg.ScaleFactor)) for i in cfg.N_Full])
 cfg.rs = ((cfg.betaNrn * cfg.Vtissue) / (2 * np.pi * cfg.Ncell)) ** (1 / 3)
 
 cfg.epas = -70  # False
-cfg.sa2v = 3.0  # False
+cfg.sa2v = 3.4  # False
 
 # Neuron parameters
 Wscale = 2.5
@@ -207,9 +207,9 @@ else:
 cfg.cyt_fraction = cfg.rs**3 / cfg.somaR**3
 
 # sd init params
-cfg.k0 = 3.5
-cfg.r0 = 150.0
-cfg.k0Layer = None  # layer of elevated extracellular K+
+cfg.k0 = 75 
+cfg.r0 = 300.0
+cfg.k0Layer = 4 #layer of elevated extracellular K+
 
 ###########################################################
 # Network Options
@@ -233,7 +233,7 @@ cfg.Balanced = False  # False #True=Balanced // False=Unbalanced
 
 cfg.ouabain = False
 
-cfg.simLabel = f"SDG_layer{cfg.k0Layer}_{cfg.scaleConnWeightNetStims}_{cfg.scaleConnWeightNetStimsVar}_GP{cfg.GliaKKo}_{cfg.excWeight}_{cfg.inhWeightScale}_K{cfg.k0}_scale{cfg.ScaleFactor}_{cfg.prep}_{cfg.ox}_pois{cfg.poissonRateFactor}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}_Balanced{cfg.Balanced}_13kpmm_1mm3_dx{cfg.dx}_{cfg.oldDuration/1000:0.2f}s"
+cfg.simLabel = f"SDJ_layer{cfg.k0Layer}_{cfg.scaleConnWeightNetStims}_{cfg.scaleConnWeightNetStimsVar}_GP{cfg.GliaKKo}_{cfg.excWeight}_{cfg.inhWeightScale}_K{cfg.k0}_scale{cfg.ScaleFactor}_{cfg.prep}_{cfg.ox}_pois{cfg.poissonRateFactor}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}_Balanced{cfg.Balanced}_13kpmm_1mm3_dx{cfg.dx}_{cfg.oldDuration/1000:0.2f}s"
 cfg.saveFolder = f"/ddn/adamjhn/data/{cfg.simLabel}/"
 # cfg.simLabel = f"test_{cfg.ox}"
 # cfg.saveFolder = f"/tmp/{cfg.simLabel}"

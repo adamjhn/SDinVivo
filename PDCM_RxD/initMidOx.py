@@ -184,7 +184,7 @@ def runIntervalFunc(t):
     """Write the wave_progress every 1ms"""
     global lastss
     saveint = 100  # save concentrations interval
-    ssint = 1000  # save state interval
+    ssint = 10000  # save state interval
     lastss = 0
     if pcid == 0:
         if int(t) % saveint == 0:
