@@ -63,7 +63,7 @@ sim.net.createCells()  # instantiate network cells based on defined populations
 sim.net.connectCells()  # create connections between cells based on params
 sim.net.addStims()  # add external stimulation to cells (IClamps etc)
 sim.net.addRxD(nthreads=6)  # add reaction-diffusion (RxD)
-fih = h.FInitializeHandler(2, lambda: fi(sim.net.cells))
+# fih = h.FInitializeHandler(2, lambda: fi(sim.net.cells))
 sim.setupRecording()  # setup variables to record for each cell (spikes, V traces, etc)
 
 all_secs = [sec for sec in h.allsec()]
