@@ -83,7 +83,6 @@ elif cfg.ox == "hypoxic":
     cfg.tort_ecs = 1.8
     cfg.o2drive = 0.013 * (1 / 6)
 cfg.prep = "invivo"  # "invitro"
-
 # Size of Network. Adjust this constants, please!
 cfg.ScaleFactor = 0.16  # = 80.000
 
@@ -103,10 +102,10 @@ Wscale = 2.5
 cfg.excWeight = 0.3e-5 * (Wscale)
 cfg.inhWeightScale = 13
 cfg.inhWeight = cfg.inhWeightScale * cfg.excWeight
-cfg.gnabar = 30 / 1000
+cfg.gnabar = 30 / 100
 cfg.gkbar = 25 / 1000
 cfg.ukcc2 = 0.3
-cfg.unkcc1 = 0.1
+cfg.unkcc1 = 0.1-
 cfg.pmax = 3
 cfg.gpas = 0.0001
 
@@ -207,8 +206,8 @@ else:
 cfg.cyt_fraction = cfg.rs**3 / cfg.somaR**3
 
 # sd init params
-cfg.k0 = 75
-cfg.r0 = 30000.0
+cfg.k0 = 3.5 
+cfg.r0 = 50.0
 cfg.k0Layer = 4  # layer of elevated extracellular K+
 
 ###########################################################
@@ -236,7 +235,7 @@ cfg.ouabain = False
 cfg.simLabel = f"SDFix_layer{cfg.k0Layer}_{cfg.scaleConnWeightNetStims}_{cfg.scaleConnWeightNetStimsVar}_GP{cfg.GliaKKo}_{cfg.excWeight}_{cfg.inhWeightScale}_K{cfg.k0}_scale{cfg.ScaleFactor}_{cfg.prep}_{cfg.ox}_pois{cfg.poissonRateFactor}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}_Balanced{cfg.Balanced}_13kpmm_1mm3_dx{cfg.dx}_{cfg.oldDuration/1000:0.2f}s"
 cfg.saveFolder = f"/ddn/adamjhn/data/{cfg.simLabel}/"
 # cfg.simLabel = f"test_{cfg.ox}"
-# cfg.saveFolder = f"/tmp/{cfg.simLabel}"
+cfg.saveFolder = f"/tmp/testSS"
 # cfg.saveFolder = f"/tera/adam/{cfg.simLabel}/" # for neurosim
 cfg.restoredir = cfg.saveFolder if cfg.restore else None
 # v0.0 - combination of cfg from ../uniformdensity and netpyne PD thalamocortical model

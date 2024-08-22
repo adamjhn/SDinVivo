@@ -515,8 +515,8 @@ gk = "gkbar*ngate**4"
 fko = "1.0 / (1.0 + rxd.rxdmath.exp(16.0 - kk[ecs] / vol_ratio[ecs]))"
 nkcc1A = "rxd.rxdmath.log((kk[cyt] * cl[cyt] / vol_ratio[cyt]**2) / (kk[ecs] * cl[ecs] / vol_ratio[ecs]**2))"
 nkcc1B = "rxd.rxdmath.log((na[cyt] * cl[cyt] / vol_ratio[cyt]**2) / (na[ecs] * cl[ecs] / vol_ratio[ecs]**2))"
-nkcc1 = "unkcc1 * (%s) * (%s+%s)" % (fko, nkcc1A, nkcc1B)
-kcc2 = "ukcc2 * rxd.rxdmath.log((kk[cyt] * cl[cyt] * vol_ratio[cyt]**2) / (kk[ecs] * cl[ecs] * vol_ratio[ecs]**2))"
+nkcc1 = f"(unkcc1 * ({fko}) * ({nkcc1A} + {nkcc1B}))" 
+kcc2 = "(ukcc2 * rxd.rxdmath.log((kk[cyt] * cl[cyt] * vol_ratio[cyt]**2) / (kk[ecs] * cl[ecs] * vol_ratio[ecs]**2)))"
 
 # Nerst equation - reversal potentials
 ena = "26.64 * rxd.rxdmath.log(na[ecs]*vol_ratio[cyt]/(na[cyt]*vol_ratio[ecs]))"
@@ -555,9 +555,10 @@ if cfg.prep == "invitro":
     epsilon_k = "%s * %s" % (epsilon_kA, epsilon_kB)
 
 
-volume_scale = "1e-18 * avo * %f" % (1.0 / cfg.sa2v)
+#volume_scale = "1e-18 * avo * %f" % (1.0 / cfg.sa2v)
 
 avo = 6.0221409 * (10**23)
+volume_scale = 1e-18 * avo / cfg.sa2v
 osm = "(1.1029 - 0.1029*rxd.rxdmath.exp( ( (na[ecs] + kk[ecs] + cl[ecs] + 18.0)/vol_ratio[ecs] - (na[cyt] + kk[cyt] + cl[cyt] + 132.0)/vol_ratio[cyt])/20.0))"
 scalei = str(avo * 1e-18)
 scaleo = str(avo * 1e-18)
@@ -568,6 +569,7 @@ evalInit = {
     "vol_ratio[ecs]": "1.0",
     "vol_ratio[cyt]": "1.0",
     "rxd.rxdmath": "math",
+    "rxd.v": constants['v_initial'],
     "kk[cyt]": constants["ki_initial"],
     "kk[ecs]": constants["ko_initial"],
     "na[cyt]": constants["nai_initial"],
@@ -605,13 +607,12 @@ rB = f"(1.0 / (1.0 + rxd.rxdmath.exp({cfg.KKo} - kk[ecs] / vol_ratio[ecs])))"
 rescale = initEval(f"{pA} * {pB}/({rA} * {rB})")
 constants["p_max"] = constants["p_max"] * rescale
 """
-
-clbalance = f"-((2.0 * {nkcc1} +  {kcc2}) * {volume_scale})/({ecl} - v_initial)"
-kbalance = f"-(({nkcc1} + {kcc2} - 2 * {pump_max}) * {volume_scale} + ({gk} * (v_initial - {ek})))/(v_initial-{ek})"
-nabalance = f"-(({nkcc1} + 3 * {pump_max}) * {volume_scale} + ({gna} * (v_initial - {ena})))/(v_initial-{ena})"
+clbalance = f"(-(2*{nkcc1} + {kcc2}) * {volume_scale})/({ecl} - v_initial)"
+kbalance = f"({gk} * (v_initial - {ek}) + {volume_scale} * ({nkcc1} + {kcc2}  -2.0 * {pump}))  / ({ek} - v_initial)"
+nabalance = f"({gna} * (v_initial - {ena}) + ({nkcc1} + 3.0 * {pump}) * {volume_scale}) / ({ena} - v_initial)"
 
 constants["gclbar_l"] = initEval(clbalance)
-constants["gkbar_l"] = cfg.gkleak_scale * initEval(kbalance)
+constants["gkbar_l"] = cfg.gkleak_scale * initEval(kbalance) 
 constants["gnabar_l"] = initEval(nabalance)
 
 
@@ -742,8 +743,6 @@ species["o2_extracellular"] = {
     "ecs_boundary_conditions": constants["o2_bath"] if cfg.prep == "invitro" else None,
     "name": "o2",
 }
-# species['o2_extracellular'] = {'regions' : ['ecs_o2'], 'd' : 3.3, 'initial' : constants['o2_bath'],
-#                 'ecs_boundary_conditions' : constants['o2_bath'], 'name' : 'o2'}
 
 netParams.rxdParams["species"] = species
 
@@ -804,13 +803,12 @@ mcReactions["vol_dyn_ecs"] = {
     "custom_dynamics": True,
     "scale_by_area": False,
 }
-
 # # CURRENTS/LEAKS ----------------------------------------------------------------
 # sodium (Na) current
 mcReactions["na_current"] = {
     "reactant": "na[cyt]",
     "product": "na[ecs]",
-    "rate_f": "%s * (rxd.v - %s )" % (gna, ena),
+    "rate_f": f"{gna} * (rxd.v - {ena})",
     "membrane": "mem",
     "custom_dynamics": True,
     "membrane_flux": True,
@@ -820,17 +818,16 @@ mcReactions["na_current"] = {
 mcReactions["k_current"] = {
     "reactant": "kk[cyt]",
     "product": "kk[ecs]",
-    "rate_f": "%s * (rxd.v - %s)" % (gk, ek),
+    "rate_f": f"{gk}* (rxd.v - {ek})",
     "membrane": "mem",
     "custom_dynamics": True,
     "membrane_flux": True,
 }
-
 # nkcc1 (Na+/K+/2Cl- cotransporter)
 mcReactions["nkcc1_current1"] = {
     "reactant": "cl[cyt]",
     "product": "cl[ecs]",
-    "rate_f": "2.0 * (%s) * (%s)" % (nkcc1, volume_scale),
+    "rate_f": f"2.0 * {nkcc1} * {volume_scale}",
     "membrane": "mem",
     "custom_dynamics": True,
     "membrane_flux": True,
@@ -839,7 +836,7 @@ mcReactions["nkcc1_current1"] = {
 mcReactions["nkcc1_current2"] = {
     "reactant": "kk[cyt]",
     "product": "kk[ecs]",
-    "rate_f": "%s * %s" % (nkcc1, volume_scale),
+    "rate_f": f"{nkcc1} * {volume_scale}",
     "membrane": "mem",
     "custom_dynamics": True,
     "membrane_flux": True,
@@ -848,26 +845,24 @@ mcReactions["nkcc1_current2"] = {
 mcReactions["nkcc1_current3"] = {
     "reactant": "na[cyt]",
     "product": "na[ecs]",
-    "rate_f": "%s * %s" % (nkcc1, volume_scale),
+    "rate_f": f"{nkcc1} * {volume_scale}",
     "membrane": "mem",
     "custom_dynamics": True,
     "membrane_flux": True,
 }
-
 # ## kcc2 (K+/Cl- cotransporter)
 mcReactions["kcc2_current1"] = {
     "reactant": "cl[cyt]",
     "product": "cl[ecs]",
-    "rate_f": "%s * %s" % (kcc2, volume_scale),
+    "rate_f": f"{kcc2} * {volume_scale}",
     "membrane": "mem",
     "custom_dynamics": True,
     "membrane_flux": True,
 }
-
 mcReactions["kcc2_current2"] = {
     "reactant": "kk[cyt]",
     "product": "kk[ecs]",
-    "rate_f": "%s * %s" % (kcc2, volume_scale),
+    "rate_f": f"{kcc2} * {volume_scale}",
     "membrane": "mem",
     "custom_dynamics": True,
     "membrane_flux": True,
@@ -877,7 +872,7 @@ mcReactions["kcc2_current2"] = {
 mcReactions["na_leak"] = {
     "reactant": "na[cyt]",
     "product": "na[ecs]",
-    "rate_f": "gnabar_l * (rxd.v - %s)" % (ena),
+    "rate_f": f"gnabar_l * (rxd.v - {ena})",
     "membrane": "mem",
     "custom_dynamics": True,
     "membrane_flux": True,
@@ -887,17 +882,16 @@ mcReactions["na_leak"] = {
 mcReactions["k_leak"] = {
     "reactant": "kk[cyt]",
     "product": "kk[ecs]",
-    "rate_f": "gkbar_l * (rxd.v - %s)" % (ek),
+    "rate_f": f"gkbar_l * (rxd.v - {ek})",
     "membrane": "mem",
     "custom_dynamics": True,
     "membrane_flux": True,
 }
-
 # ## chlorine (Cl) leak
 mcReactions["cl_current"] = {
     "reactant": "cl[cyt]",
     "product": "cl[ecs]",
-    "rate_f": "gclbar_l * (%s - rxd.v)" % (ecl),
+    "rate_f": f"gclbar_l * ({ecl} - rxd.v)",
     "membrane": "mem",
     "custom_dynamics": True,
     "membrane_flux": True,
@@ -907,7 +901,7 @@ mcReactions["cl_current"] = {
 mcReactions["pump_current"] = {
     "reactant": "kk[cyt]",
     "product": "kk[ecs]",
-    "rate_f": "(-2.0 * %s * %s)" % (pump, volume_scale),
+    "rate_f": f"(-2.0 * {pump} * {volume_scale})",
     "membrane": "mem",
     "custom_dynamics": True,
     "membrane_flux": True,
@@ -916,12 +910,11 @@ mcReactions["pump_current"] = {
 mcReactions["pump_current_na"] = {
     "reactant": "na[cyt]",
     "product": "na[ecs]",
-    "rate_f": "(3.0 * %s * %s)" % (pump, volume_scale),
+    "rate_f": f"(3.0 * {pump} * {volume_scale})",
     "membrane": "mem",
     "custom_dynamics": True,
     "membrane_flux": True,
 }
-
 # O2 depletrion from Na/K pump in neuron
 mcReactions["oxygen"] = {
     "reactant": o2ecs,
@@ -930,7 +923,6 @@ mcReactions["oxygen"] = {
     "membrane": "mem",
     "custom_dynamics": True,
 }
-
 netParams.rxdParams["multicompartmentReactions"] = mcReactions
 
 # RATES--------------------------------------------------------------------------
@@ -997,6 +989,7 @@ if cfg.prep == "invitro":
     }
 
 ## Glia K+/Na+ pump current
+"""
 rates["glia_k_current"] = {
     "species": "kk[ecs]",
     "regions": ["ecs"],
@@ -1008,14 +1001,15 @@ rates["glia_na_current"] = {
     "regions": ["ecs"],
     "rate": "(3.0 * (%s))" % (gliapump),
 }
-
+"""
 ## Glial O2 depletion
+"""
 rates["o2_pump"] = {
     "species": o2ecs,
     "regions": ["ecs_o2"],
     "rate": "-(1/5)*(%s)" % (gliapump),
 }
-
+"""
 netParams.rxdParams["rates"] = rates
 
 # # plot statistics for 10% of cells
@@ -1035,3 +1029,4 @@ netParams.rxdParams["rates"] = rates
 # v0.8 - normally distributed connection weights based on whats worked for fixed conns
 # v1.0 - added in o2 sources based on capillaries identified from histology
 # v1.1 - updated parameters to avoid SD in baseline simulations
+# v1.2 - use pump rather than pump_max to determine leak conductance (initial o2 is lower than max).
