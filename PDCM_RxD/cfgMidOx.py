@@ -98,95 +98,32 @@ cfg.epas = -70.00767248243432  # False
 cfg.sa2v = 3.4  # False
 
 # Neuron parameters
-Wscale = 2.5
-cfg.excWeight = 0.3e-5 * (Wscale)
-cfg.inhWeightScale = 13
+cfg.excWeight = 0.3e-5
+cfg.inhWeightScale = 8
 cfg.inhWeight = cfg.inhWeightScale * cfg.excWeight
 cfg.gnabar = 30 / 100
 cfg.gkbar = 25 / 1000
 cfg.ukcc2 = 0.3
-cfg.unkcc1 = 0.1-
+cfg.unkcc1 = 0.1
 cfg.pmax = 3
 cfg.gpas = 0.0001
 
-cfg.gkleak_scale = 1.0
-cfg.gkbar = 0.012846651215426686
-cfg.gnabar = 0.09995149718124381
-cfg.gpas = 0.0009680849770246202
-cfg.pmax = 3.8731513311322754
-cfg.ukcc2 = 0.01417219231784303
 cfg.unkcc1 = 0.9270812583375462
 
 cfg.Ggliamax = 1.0  # mM/sec originally 5mM/sec
 # we scaled pump by ~4.84 so apply a corresponding
 # reduction by channels (K, Kir and NKCC1) in glia.
 
-"""
-cfg.excWeight = 0.008354547285548327
-cfg.inhWeightScale = 5.799331499698029
-cfg.gnabar = 0.09018714621136505
-cfg.gkbar = 0.08616357060930685
-cfg.ukcc2 = 0.14832347247652633
-cfg.unkcc1 = 0.41410117511406297
-cfg.pmax = 29.628601823899942
-cfg.gpas = 0.0007944086444045182
-
-"""
-"""
-cfg.excWeight = 0.00038502539808378517
-cfg.inhWeightScale = 12.09670350162555
-cfg.gnabar = 0.011017780584676423
-cfg.gkbar = 0.027942726890048692 * 0.8
-cfg.ukcc2 = 0.010009940428388016
-cfg.unkcc1 = 0.7043763591503
-cfg.pmax = 2.2896135259851844
-cfg.gpas = 0.0002844471707125443
-"""
-"""
-cfg.excWeight = 0.00010494211799199032
-cfg.inhWeightScale = 11.849385401494027
-cfg.gnabar = 0.013996841763437441
-cfg.gkbar = 0.005713120530219498
-cfg.ukcc2 = 0.9441935474841756
-cfg.unkcc1 = 0.7007058562364242
-cfg.pmax = 3.3864399808956533
-cfg.gpas = 0.0005764994797376824
-"""
-
-"""
 # from optuna
-cfg.excWeight = 0.00023221135768927112 * 12
-cfg.inhWeightScale = 12.288163937519913
-cfg.gnabar = 0.09993943087539545
-cfg.gkbar = 0.0030250462863877555
-cfg.ukcc2 = 0.01488947351890433
-cfg.unkcc1 = 0.6827438083487398
-cfg.pmax = 1.3742040794796173
-cfg.gpas = 0.0009710440265276351
-
-cfg.excWeight = 0.0003607996757525843
-cfg.inhWeightScale = 10.2416856976259
-cfg.gnabar = 0.099746620475437
-cfg.gkbar = 0.010924245043318587
-cfg.ukcc2 = 0.011305434619351806
-cfg.unkcc1 = 0.04786427363424489
-cfg.pmax = 1.3234402225571111
-cfg.gpas = 0.0009698978116799372
-
-cfg.excWeight = 0.005468114518060687
-cfg.inhWeightScale = 8.058499415702913
-cfg.gnabar = 0.09794161502981583
-cfg.gkbar = 0.004906727999254224
-cfg.ukcc2 = 0.03220155161509672
-cfg.unkcc1 = 0.35941732468829013
-cfg.pmax = 0.7151845127361263
-cfg.gpas = 0.00041536957698698305
-
-
+cfg.excWeight = 1.004422607271106e-06
+cfg.gkbar = 0.027774094506433675
+cfg.gnabar = 0.09996740846941617
+cfg.gpas = 9.301731582270169e-07
+cfg.pmax = 20.344379085226635
+cfg.ukcc2 = 0.010894505022895047
+cfg.unkcc1 = 0.08314528796758339
 cfg.gkleak_scale = 1
 cfg.inhWeight = cfg.inhWeightScale * cfg.excWeight
-"""
-cfg.gkleak_scale = 1
 cfg.KKo = 5.3
 cfg.KNai = 27.9
 # Scaled to match original 1/3 scaling at Ko=3; i.e.
@@ -196,8 +133,8 @@ cfg.GliaKKo = 3.5  # 4.938189537703508  # originally 3.5 mM
 cfg.GliaPumpScale = 1 / 3  # 1 / 3  # originally 1/3
 cfg.scaleConnWeight = 1
 
-cfg.scaleConnWeightNetStims = 15e-6 / Wscale
-cfg.scaleConnWeightNetStimsVar = 15e6**2 / Wscale**2
+cfg.scaleConnWeightNetStims = 4e-6
+cfg.scaleConnWeightNetStimsVar = 4e6**2
 
 if cfg.sa2v:
     cfg.somaR = (cfg.sa2v * cfg.rs**3 / 2.0) ** (1 / 2)
@@ -206,7 +143,7 @@ else:
 cfg.cyt_fraction = cfg.rs**3 / cfg.somaR**3
 
 # sd init params
-cfg.k0 = 3.5 
+cfg.k0 = 3.5
 cfg.r0 = 50.0
 cfg.k0Layer = 4  # layer of elevated extracellular K+
 
