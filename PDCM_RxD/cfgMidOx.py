@@ -32,7 +32,7 @@ cfg.saveCellSecs = False
 cfg.saveCellConns = False
 cfg.createPyStruct = False
 cfg.printPopAvgRates = True
-cfg.singleCells = True  # False  # create one cell in each population
+cfg.singleCells = False  # create one cell in each population
 cfg.printRunTime = 1
 cfg.Kceil = 15.0
 cfg.nRec = 25
@@ -84,7 +84,7 @@ elif cfg.ox == "hypoxic":
     cfg.o2drive = 0.013 * (1 / 6)
 cfg.prep = "invivo"  # "invitro"
 # Size of Network. Adjust this constants, please!
-cfg.ScaleFactor = 0.16  # = 80.000
+cfg.ScaleFactor = 0.02  # = 80.000
 
 # neuron params
 cfg.betaNrn = (
@@ -92,7 +92,9 @@ cfg.betaNrn = (
 )
 cfg.N_Full = [20683, 5834, 21915, 5479, 4850, 1065, 14395, 2948, 902]
 cfg.Ncell = sum([max(1, int(i * cfg.ScaleFactor)) for i in cfg.N_Full])
-cfg.rs = ((cfg.betaNrn * cfg.Vtissue) / (2 * np.pi * cfg.Ncell)) ** (1 / 3)
+# Single cell parameter based on Scale 0.16
+cfg.NcellRxd = sum([max(1, int(i * 0.16)) for i in cfg.N_Full])
+cfg.rs = ((cfg.betaNrn * cfg.Vtissue) / (2 * np.pi * cfg.NcellRxD)) ** (1 / 3)
 
 cfg.epas = -70.00767248243432  # False
 cfg.sa2v = 3.4  # False
@@ -145,7 +147,7 @@ cfg.cyt_fraction = cfg.rs**3 / cfg.somaR**3
 # sd init params
 cfg.k0 = 3.5
 cfg.r0 = 50.0
-cfg.k0Layer = 4  # layer of elevated extracellular K+
+cfg.k0Layer = None  # layer of elevated extracellular K+
 
 ###########################################################
 # Network Options
@@ -172,7 +174,7 @@ cfg.ouabain = False
 cfg.simLabel = f"SDFix_layer{cfg.k0Layer}_{cfg.scaleConnWeightNetStims}_{cfg.scaleConnWeightNetStimsVar}_GP{cfg.GliaKKo}_{cfg.excWeight}_{cfg.inhWeightScale}_K{cfg.k0}_scale{cfg.ScaleFactor}_{cfg.prep}_{cfg.ox}_pois{cfg.poissonRateFactor}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}_Balanced{cfg.Balanced}_13kpmm_1mm3_dx{cfg.dx}_{cfg.oldDuration/1000:0.2f}s"
 cfg.saveFolder = f"/ddn/adamjhn/data/{cfg.simLabel}/"
 # cfg.simLabel = f"test_{cfg.ox}"
-cfg.saveFolder = f"/tmp/testSS"
+cfg.saveFolder = f"/tmp/testSS2"
 # cfg.saveFolder = f"/tera/adam/{cfg.simLabel}/" # for neurosim
 cfg.restoredir = cfg.saveFolder if cfg.restore else None
 # v0.0 - combination of cfg from ../uniformdensity and netpyne PD thalamocortical model

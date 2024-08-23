@@ -44,22 +44,24 @@ def dict_to_latex_table(keys, values):
     return latex_table
 
 
-def networkStatsFromData(dat, filename, N=1000):
+def networkStatsFromData(dat, filename=None, N=1000):
     spkt = np.array(dat["simData"]["spkt"])
     spkid = np.array(dat["simData"]["spkid"])
     pops = dat["net"]["pops"][pop]["cellGids"]
     duration = dat["simConfig"]["duration"]
     stats = networkStats(spkt, spkid, pops, duration, N)
-    json.dump(stats, open(filename, "w"))
+    if filename:
+        json.dump(stats, open(filename, "w"))
 
 
-def networkStatsFromSim(sim, filename, N=1000):
+def networkStatsFromSim(sim, filename=None, N=1000):
     pops = {k: {"cellGids": v.cellGids} for k, v in sim.net.pops.items()}
     spkt = sim.simData["spkt"].as_numpy()
     spkid = sim.simData["spkid"].as_numpy()
     duration = sim.cfg.duration
     stats = networkStats(spkt, spkid, pops, duration, N)
-    json.dump(stats, open(filename, "w"))
+    if filename:
+        json.dump(stats, open(filename, "w"))
 
 
 def networkStats(spkt, spkid, pops, duration, Nsample=1000):
@@ -68,7 +70,9 @@ def networkStats(spkt, spkid, pops, duration, Nsample=1000):
     smpmap = {pop: np.random.choice(spkmap[pop], size=Nsample) for pop in L}
     maxid = spkmap[L[-1]][-1]
     spktimes = {pop: spkt[[i in spkmap[pop] for i in spkid]] for pop in L}
-    rates = {pop: 1e3 * len(v) / duration / len(spkmap[pop]) for pop, v in spktimes.items()}
+    rates = {
+        pop: 1e3 * len(v) / duration / len(spkmap[pop]) for pop, v in spktimes.items()
+    }
 
     bins = np.array(range(0, int(duration), 3))
     sample_hist = [np.histogram(st, bins=bins)[0] for st in spktimes.values()]
