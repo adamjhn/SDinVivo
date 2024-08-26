@@ -84,7 +84,7 @@ elif cfg.ox == "hypoxic":
     cfg.o2drive = 0.013 * (1 / 6)
 cfg.prep = "invivo"  # "invitro"
 # Size of Network. Adjust this constants, please!
-cfg.ScaleFactor = 0.02  # = 80.000
+cfg.ScaleFactor = 0.16  # 0.02 used for batch param search  # = 80.000
 
 # neuron params
 cfg.betaNrn = (
@@ -100,8 +100,12 @@ cfg.epas = -70.00767248243432  # False
 cfg.sa2v = 3.4  # False
 
 # Neuron parameters
-cfg.excWeight = 0.3e-5
-cfg.inhWeightScale = 8
+
+cfg.excWeight = 9.245731437784903e-06
+cfg.inhWeightScale = 3.173098525055722
+cfg.scaleConnWeightNetStims = 9.464421928790615e-06
+cfg.scaleConnWeightNetStimsVar = 4e6**2
+
 cfg.gnabar = 30 / 100
 cfg.gkbar = 25 / 1000
 cfg.ukcc2 = 0.3
@@ -116,7 +120,6 @@ cfg.Ggliamax = 1.0  # mM/sec originally 5mM/sec
 # reduction by channels (K, Kir and NKCC1) in glia.
 
 # from optuna
-cfg.excWeight = 1.004422607271106e-06
 cfg.gkbar = 0.027774094506433675
 cfg.gnabar = 0.09996740846941617
 cfg.gpas = 9.301731582270169e-07
@@ -132,9 +135,6 @@ cfg.KNai = 27.9
 cfg.GliaKKo = 3.5  # 4.938189537703508  # originally 3.5 mM
 cfg.GliaPumpScale = 1 / 3  # 1 / 3  # originally 1/3
 cfg.scaleConnWeight = 1
-
-cfg.scaleConnWeightNetStims = 4e-6
-cfg.scaleConnWeightNetStimsVar = 4e6**2
 
 if cfg.sa2v:
     cfg.somaR = (cfg.sa2v * cfg.rs**3 / 2.0) ** (1 / 2)
