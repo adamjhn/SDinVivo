@@ -1,9 +1,16 @@
 from netpyne import specs
 import numpy as np
-from cfgMidOx import cfg
 from neuron.units import sec, mM
 import math
 import cv2
+
+
+try:
+    from __main__ import cfg  # import SimConfig object with params from parent module
+except:
+    from cfgMidOx import (
+        cfg,
+    )  # if no simConfig in parent module, import directly from cfg.py:cfg
 
 
 ############################################################
@@ -378,7 +385,7 @@ if cfg.connected:
                 weightScale = cfg.excWeight
             else:
                 syn = "inh"
-                weightScale = cfg.inhWeight
+                weightScale = cfg.inhWeightScale * cfg.excWeight
             if (c % 2) == 0:
                 if c == 2 and r == 0:
                     netParams.connParams[str(L[c]) + "->" + str(L[r])] = {
@@ -515,7 +522,7 @@ gk = "gkbar*ngate**4"
 fko = "1.0 / (1.0 + rxd.rxdmath.exp(16.0 - kk[ecs] / vol_ratio[ecs]))"
 nkcc1A = "rxd.rxdmath.log((kk[cyt] * cl[cyt] / vol_ratio[cyt]**2) / (kk[ecs] * cl[ecs] / vol_ratio[ecs]**2))"
 nkcc1B = "rxd.rxdmath.log((na[cyt] * cl[cyt] / vol_ratio[cyt]**2) / (na[ecs] * cl[ecs] / vol_ratio[ecs]**2))"
-nkcc1 = f"(unkcc1 * ({fko}) * ({nkcc1A} + {nkcc1B}))" 
+nkcc1 = f"(unkcc1 * ({fko}) * ({nkcc1A} + {nkcc1B}))"
 kcc2 = "(ukcc2 * rxd.rxdmath.log((kk[cyt] * cl[cyt] * vol_ratio[cyt]**2) / (kk[ecs] * cl[ecs] * vol_ratio[ecs]**2)))"
 
 # Nerst equation - reversal potentials
@@ -540,7 +547,9 @@ pump = f"{p} * {pump_max}"  # pump rate scaled by available o2
 pumpAg = "(1.0 / (1.0 + rxd.rxdmath.exp((25 - gnai_initial)/3.0)))"
 pumpBg = f"(1.0 / (1.0 + rxd.rxdmath.exp({cfg.GliaKKo} - kk[ecs] / vol_ratio[ecs])))"
 gliapump = f"{cfg.GliaPumpScale} * p_max * {p} * {pumpAg} * {pumpBg}"
-g_glia = f"g_gliamax / (1.0 + rxd.rxdmath.exp(-(({o2ecs})*32/vol_ratio[ecs] - 2.5)/0.2))"
+g_glia = (
+    f"g_gliamax / (1.0 + rxd.rxdmath.exp(-(({o2ecs})*32/vol_ratio[ecs] - 2.5)/0.2))"
+)
 glia12 = "(%s) / (1.0 + rxd.rxdmath.exp((18.0 - kk[ecs] / vol_ratio[ecs])/2.5))" % (
     g_glia
 )
@@ -555,7 +564,7 @@ if cfg.prep == "invitro":
     epsilon_k = "%s * %s" % (epsilon_kA, epsilon_kB)
 
 
-#volume_scale = "1e-18 * avo * %f" % (1.0 / cfg.sa2v)
+# volume_scale = "1e-18 * avo * %f" % (1.0 / cfg.sa2v)
 
 avo = 6.0221409 * (10**23)
 volume_scale = 1e-18 * avo / cfg.sa2v
@@ -569,7 +578,7 @@ evalInit = {
     "vol_ratio[ecs]": "1.0",
     "vol_ratio[cyt]": "1.0",
     "rxd.rxdmath": "math",
-    "rxd.v": constants['v_initial'],
+    "rxd.v": constants["v_initial"],
     "kk[cyt]": constants["ki_initial"],
     "kk[ecs]": constants["ko_initial"],
     "na[cyt]": constants["nai_initial"],
@@ -612,7 +621,7 @@ kbalance = f"({gk} * (v_initial - {ek}) + {volume_scale} * ({nkcc1} + {kcc2}  -2
 nabalance = f"({gna} * (v_initial - {ena}) + ({nkcc1} + 3.0 * {pump}) * {volume_scale}) / ({ena} - v_initial)"
 
 constants["gclbar_l"] = initEval(clbalance)
-constants["gkbar_l"] = cfg.gkleak_scale * initEval(kbalance) 
+constants["gkbar_l"] = cfg.gkleak_scale * initEval(kbalance)
 constants["gnabar_l"] = initEval(nabalance)
 
 

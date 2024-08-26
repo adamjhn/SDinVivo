@@ -44,6 +44,15 @@ def dict_to_latex_table(keys, values):
     return latex_table
 
 
+def networkStatsFromSimData(sd, pops, duration, filename=None, N=1000):
+    spkt = np.array(sd["spkt"])
+    spkid = np.array(sd["spkid"])
+    stats = networkStats(spkt, spkid, pops, duration, N)
+    if filename:
+        json.dump(stats, open(filename, "w"))
+    return stats
+
+
 def networkStatsFromData(dat, filename=None, N=1000):
     spkt = np.array(dat["simData"]["spkt"])
     spkid = np.array(dat["simData"]["spkid"])

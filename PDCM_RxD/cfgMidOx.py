@@ -10,7 +10,7 @@ import cv2
 
 # Run parameters
 cfg = specs.SimConfig()  # object of class cfg to store simulation configuration
-cfg.duration = 1e2  # Duration of the simulation, in ms
+cfg.duration = 500  # Duration of the simulation, in ms
 cfg.oldDuration = cfg.duration
 cfg.restore = False
 cfg.hParams["v_init"] = -70.0  # set v_init to -65 mV
@@ -93,7 +93,7 @@ cfg.betaNrn = (
 cfg.N_Full = [20683, 5834, 21915, 5479, 4850, 1065, 14395, 2948, 902]
 cfg.Ncell = sum([max(1, int(i * cfg.ScaleFactor)) for i in cfg.N_Full])
 # Single cell parameter based on Scale 0.16
-cfg.NcellRxd = sum([max(1, int(i * 0.16)) for i in cfg.N_Full])
+cfg.NcellRxD = sum([max(1, int(i * 0.16)) for i in cfg.N_Full])
 cfg.rs = ((cfg.betaNrn * cfg.Vtissue) / (2 * np.pi * cfg.NcellRxD)) ** (1 / 3)
 
 cfg.epas = -70.00767248243432  # False
@@ -102,7 +102,6 @@ cfg.sa2v = 3.4  # False
 # Neuron parameters
 cfg.excWeight = 0.3e-5
 cfg.inhWeightScale = 8
-cfg.inhWeight = cfg.inhWeightScale * cfg.excWeight
 cfg.gnabar = 30 / 100
 cfg.gkbar = 25 / 1000
 cfg.ukcc2 = 0.3
@@ -125,7 +124,6 @@ cfg.pmax = 20.344379085226635
 cfg.ukcc2 = 0.010894505022895047
 cfg.unkcc1 = 0.08314528796758339
 cfg.gkleak_scale = 1
-cfg.inhWeight = cfg.inhWeightScale * cfg.excWeight
 cfg.KKo = 5.3
 cfg.KNai = 27.9
 # Scaled to match original 1/3 scaling at Ko=3; i.e.
