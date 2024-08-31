@@ -998,7 +998,6 @@ if cfg.prep == "invitro":
     }
 
 ## Glia K+/Na+ pump current
-"""
 rates["glia_k_current"] = {
     "species": "kk[ecs]",
     "regions": ["ecs"],
@@ -1010,15 +1009,12 @@ rates["glia_na_current"] = {
     "regions": ["ecs"],
     "rate": "(3.0 * (%s))" % (gliapump),
 }
-"""
 ## Glial O2 depletion
-"""
 rates["o2_pump"] = {
     "species": o2ecs,
     "regions": ["ecs_o2"],
     "rate": "-(1/5)*(%s)" % (gliapump),
 }
-"""
 netParams.rxdParams["rates"] = rates
 
 # # plot statistics for 10% of cells
