@@ -255,7 +255,7 @@ popDepths = [
 
 # Scale weights
 netParams.scaleConnWeight = cfg.scaleConnWeight
-# Does not do anything directly -- insteat apply to weights
+# Does not do anything directly -- instead apply to weights
 # netParams.scaleConnWeightNetStims = cfg.scaleConnWeightNetStims
 
 # ------------------------------------------------------------------------------
@@ -341,7 +341,7 @@ if cfg.DC == False:  # External Input as Poisson
             "preConds": {"pop": "poiss" + str(L[r])},
             "postConds": {"pop": L[r]},
             "connList": auxConn.T,
-            "weight": f"max(0, {cfg.excWeight*cfg.scaleConnWeightNetStims} * (weightMin+normal(0,dweight*weightMin*{cfg.scaleConnWeightNetStimsVar})))",
+            "weight": f"max(0, {cfg.excWeight*cfg.scaleConnWeightNetStims} * (weightMin+normal(0,dweight*weightMin*{cfg.scaleConnWeightNetStimStd**2})))",
             "delay": 0.5,
             "synMech": "exc",
         }  # 1 delay
@@ -368,7 +368,7 @@ if cfg.TH == True:
             "preConds": {"pop": "bkg_TH" + str(L[r])},
             "postConds": {"pop": L[r]},
             "connList": auxConn.T,
-            "weight": f"max(0, {cfg.excWeight * cfg.scaleConnWeightNetStims} * (weightMin +normal(0,dweight*weightMin*{cfg.scaleConnWeightNetStimsVar})))",
+            "weight": f"max(0, {cfg.excWeight * cfg.scaleConnWeightNetStims} * (weightMin +normal(0,dweight*weightMin*{cfg.scaleConnWeightNetStimStd**2})))",
             "delay": 0.5,
             "synMech": "exc",
         }  # 1 delay
