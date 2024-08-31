@@ -46,7 +46,13 @@ cfg.recordCellsSpikes = [
     "L6e",
     "L6i",
 ]  # record only spikes of cells (not ext stims)
-
+cfg.recordCells = [
+    f"L{i}{ei}_{idx}" for i in [2, 4, 5, 6] for ei in ["e", "i"] for idx in range(10)
+]
+cfg.recordTraces = {
+    f"{var}_soma": {"sec": "soma", "loc": 0.5, "var": var}
+    for var in ["v", "nai", "ki", "cli", "dumpi"]
+}
 cfg.seeds = {"conn": 1, "stim": 1, "loc": 1, "cell": 1, "rec": 1}
 
 # Network dimensions

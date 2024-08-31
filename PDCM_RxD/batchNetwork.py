@@ -79,9 +79,48 @@ def batch():
                         scale[k]
                         * ((stats[k][pop] - kwargs[k][pop][0]) / kwargs[k][pop][1]) ** 2
                     )
+
+        # check rxd variables
+        score, rate, vscore, rxdscore, o2score, kscore = 0, 0, 0, 0, 0, 0
+        for gid, cell in enumerate(
+            [
+                f"L{i}{ei}_{idx}"
+                for i in [2, 4, 5, 6]
+                for ei in ["e", "i"]
+                for idx in range(10)
+            ]
+        ):
+            pop, idx = cell.split("_")
+            idx = int(idx)
+            for ion in ["k", "na", "cl"]:
+                trace = sd[f"{ion}i_soma"][f"cell_{gid}"]
+                rxdscore += abs(trace[0] - trace[-1]) / trace[0]
+                if ion == "k":
+                    rxdscore += (
+                        5 * abs(trace[0] - trace[-1]) / trace[0]
+                        if trace[-1] > trace[0]
+                        else 0
+                    )
+            kscore += (
+                abs(
+                    sd[f"ki_soma"][f"cell_{gid}"][-2]
+                    - sd[f"ki_soma"][f"cell_{gid}"][-1]
+                )
+                / 100
+            )
+            o2score += sd["dumpi_soma"][f"cell_{gid}"][-1]  # amount of oxygen consumed
+            vscore += abs(np.mean(sd["v_soma"][f"cell_{gid}"]) + 70)
+            vscore += (
+                100
+                if (
+                    (min(sd["v_soma"][f"cell_{gid}"]) < -90)
+                    or (max(sd["v_soma"][f"cell_{gid}"]) > 50)
+                )
+                else 0
+            )
         return min(
             kwargs["maxFitness"],
-            score,
+            10 * score + rxdscore + kscore + o2score + vscore,
         )
 
     # create Batch object with paramaters to modify, and specifying files to use
