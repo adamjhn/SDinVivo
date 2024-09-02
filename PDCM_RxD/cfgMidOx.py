@@ -106,10 +106,14 @@ cfg.epas = -70.00000000000013 # False
 cfg.sa2v = 3.4  # False
 
 # Neuron parameters
-cfg.excWeight = 3.1550848672146216e-06
-cfg.inhWeightScale = 9.394873323899024
-cfg.scaleConnWeightNetStims = 0.897833228307525
-cfg.scaleConnWeightNetStimStd = 0.45310736528072515
+#cfg.excWeight = 3.5472779489790976e-06
+#cfg.inhWeightScale = 5.603334528668638
+#cfg.scaleConnWeightNetStims = 0.513905416594529
+#cfg.scaleConnWeightNetStimStd = 0.9355311387530357
+cfg.excWeight = 1.0974084295155178e-05
+cfg.inhWeightScale = 1.0050051831946134
+cfg.scaleConnWeightNetStims = 5.260251723238228e-06,
+cfg.scaleConnWeightNetStimStd = 2.8118679638940484e-06
 
 cfg.gnabar = 30 / 100
 cfg.gkbar = 25 / 1000
