@@ -9,10 +9,10 @@ from stats import networkStatsFromSimData
 def batch():
     # parameters space to explore
     params = specs.ODict()
-    params["excWeight"] = [5e-8, 5e-6]
+    params["excWeight"] = [5e-8, 5e-5]
     params["inhWeightScale"] = [1, 12]
-    params["scaleConnWeightNetStims"] = [1e-9, 1]
-    params["scaleConnWeightNetStimStd"] = [1e-9, 1]
+    params["scaleConnWeightNetStims"] = [1e-9, 1e-5]
+    params["scaleConnWeightNetStimStd"] = [1e-9, 1e-5]
     pops = {}
     count = 0
     L = ["L2e", "L2i", "L4e", "L4i", "L5e", "L5i", "L6e", "L6i"]
@@ -81,19 +81,9 @@ def batch():
                     )
 
         # check rxd variables
-        score, rate, vscore, rxdscore, o2score, kscore = 0, 0, 0, 0, 0, 0
-        for gid, cell in enumerate(
-            [
-                f"L{i}{ei}_{idx}"
-                for i in [2, 4, 5, 6]
-                for ei in ["e", "i"]
-                for idx in range(10)
-            ]
-        ):
-            pop, idx = cell.split("_")
-            idx = int(idx)
-            for ion in ["k", "na", "cl"]:
-                trace = sd[f"{ion}i_soma"][f"cell_{gid}"]
+        rate, vscore, rxdscore, o2score, kscore = 0, 0, 0, 0, 0
+        for ion in ["k", "na", "cl"]:
+            for trace in sd[f"{ion}i_soma"].values():
                 rxdscore += abs(trace[0] - trace[-1]) / trace[0]
                 if ion == "k":
                     rxdscore += (
@@ -101,23 +91,17 @@ def batch():
                         if trace[-1] > trace[0]
                         else 0
                     )
-            kscore += (
-                abs(
-                    sd[f"ki_soma"][f"cell_{gid}"][-2]
-                    - sd[f"ki_soma"][f"cell_{gid}"][-1]
-                )
-                / 100
-            )
-            o2score += sd["dumpi_soma"][f"cell_{gid}"][-1]  # amount of oxygen consumed
-            vscore += abs(np.mean(sd["v_soma"][f"cell_{gid}"]) + 70)
-            vscore += (
-                100
-                if (
-                    (min(sd["v_soma"][f"cell_{gid}"]) < -90)
-                    or (max(sd["v_soma"][f"cell_{gid}"]) > 50)
-                )
-                else 0
-            )
+                    kscore += (
+                        abs(
+                            trace[-2]
+                            - trace[-1]
+                        )
+                        / 100
+                    )
+            for trace in sd["dumpi_soma"].values():
+                o2score += trace[-1]  # amount of oxygen consumed
+            for trace in sd["v_soma"].values():
+                vscore += abs(np.mean(trace) + 70)
         return min(
             kwargs["maxFitness"],
             10 * score + rxdscore + kscore + o2score + vscore,
@@ -150,7 +134,7 @@ def batch():
 """
         #'custom': 'export LD_LIBRARY_PATH="$HOME/.openmpi/lib"' # only for conda users
     }
-    b.batchLabel = "paramsRateFull"
+    b.batchLabel = "paramsRateWeak"
     print(f"/vast/palmer/scratch/mcdougal/ajn48/{b.batchLabel}")
     b.saveFolder = "/vast/palmer/scratch/mcdougal/ajn48/" + b.batchLabel
 
