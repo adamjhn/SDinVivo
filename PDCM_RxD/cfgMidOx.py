@@ -10,7 +10,7 @@ import cv2
 
 # Run parameters
 cfg = specs.SimConfig()  # object of class cfg to store simulation configuration
-cfg.duration = 10e3  # Duration of the simulation, in ms
+cfg.duration = 100  # Duration of the simulation, in ms
 cfg.oldDuration = cfg.duration
 cfg.restore = False
 cfg.hParams["v_init"] = -70.0  # set v_init to -65 mV
@@ -22,7 +22,7 @@ cfg.verbose = False  # Show detailed messages
 cfg.recordStep = 1  # Step size in ms to save data (eg. V traces, LFP, etc)
 cfg.savePickle = True  # Save params, network and sim output to pickle file
 cfg.saveJson = False
-cfg.recordStim = False
+cfg.recordStim = True
 
 ### Options to save memory in large-scale ismulations
 cfg.gatherOnlySimData = True  # Original
@@ -47,7 +47,7 @@ cfg.recordCellsSpikes = [
     "L6i",
 ]  # record only spikes of cells (not ext stims)
 cfg.recordCells = [
-    f"L{i}{ei}_{idx}" for i in [2, 4, 5, 6] for ei in ["e", "i"] for idx in range(10)
+        (f"L{i}{ei}",{idx}) for i in [2, 4, 5, 6] for ei in ["e", "i"] for idx in range(10)
 ]
 cfg.recordTraces = {
     f"{var}_soma": {"sec": "soma", "loc": 0.5, "var": var}
@@ -75,7 +75,7 @@ cfg.connected = True
 # cfg.scaleConnWeightNetStims = 1e-6
 
 # slice conditions
-cfg.ox = "perfused"
+cfg.ox = "hypoxic"
 if cfg.ox == "perfused":
     cfg.o2_bath = 0.06  # ~36 mmHg
     cfg.o2_init = 0.04  # ~24 mmHg
@@ -110,21 +110,29 @@ cfg.sa2v = 3.4  # False
 #cfg.inhWeightScale = 5.603334528668638
 #cfg.scaleConnWeightNetStims = 0.513905416594529
 #cfg.scaleConnWeightNetStimStd = 0.9355311387530357
-cfg.excWeight = 1.0974084295155178e-05
-cfg.inhWeightScale = 1.0050051831946134
-cfg.scaleConnWeightNetStims = 5.260251723238228e-06,
-cfg.scaleConnWeightNetStimStd = 2.8118679638940484e-06
+cfg.excWeight = 4.95893e-6#7.270833e-7#2.4436e-6#1.11818e-6#2.35667e-7 #2.696e-6 #1.0974084295155178e-05
+cfg.inhWeightScale = 5.06875#1.495457#8.80234#5.33374#1.2611 #9.75 #1.0050051831946134
+cfg.scaleConnWeightNetStims = 0.34544#0.3164673#0.30577#0.34982#4.3904e-6 #0.01239 #5.260251723238228e-06
+cfg.scaleConnWeightNetStimStd = 0.30401#0.8725078#0.181515#0.65593#5.39272e-6 #0.43407 #2.8118679638940484e-06
 
+cfg.excWeight = 2.4436e-6#1.11818e-6#2.35667e-7 #2.696e-6 #1.0974084295155178e-05
+cfg.inhWeightScale = 8.80234#5.33374#1.2611 #9.75 #1.0050051831946134
+cfg.scaleConnWeightNetStims = 0.30577#0.34982#4.3904e-6 #0.01239 #5.260251723238228e-06
+cfg.scaleConnWeightNetStimStd = 0.181515#0.65593#5.39272e-6 #0.43407 #2.8118679638940484e-06
+
+
+
+"""
+# original model
 cfg.gnabar = 30 / 100
 cfg.gkbar = 25 / 1000
 cfg.ukcc2 = 0.3
 cfg.unkcc1 = 0.1
 cfg.pmax = 3
 cfg.gpas = 0.0001
+"""
 
-cfg.unkcc1 = 0.9270812583375462
-
-cfg.Ggliamax = 1.0  # mM/sec originally 5mM/sec
+cfg.Ggliamax = 5.0  # mM/sec originally 5mM/sec
 # we scaled pump by ~4.84 so apply a corresponding
 # reduction by channels (K, Kir and NKCC1) in glia.
 
@@ -141,8 +149,8 @@ cfg.KNai = 27.9
 # Scaled to match original 1/3 scaling at Ko=3; i.e.
 # a = 3*(1 + np.exp(3.5-3))
 # GliaKKo = np.log(a-1) + 3
-cfg.GliaKKo = 3.5  # 4.938189537703508  # originally 3.5 mM
-cfg.GliaPumpScale = 1 / 3  # 1 / 3  # originally 1/3
+cfg.GliaKKo = 4.938189537703508  # originally 3.5 mM
+cfg.GliaPumpScale = 1 #1 / 3  # 1 / 3  # originally 1/3
 cfg.scaleConnWeight = 1
 
 if cfg.sa2v:
@@ -152,7 +160,7 @@ else:
 cfg.cyt_fraction = cfg.rs**3 / cfg.somaR**3
 
 # sd init params
-cfg.k0 = 3.5
+cfg.k0 = 3.5 
 cfg.r0 = 150.0
 cfg.k0Layer = None  # layer of elevated extracellular K+
 
@@ -178,7 +186,8 @@ cfg.Balanced = False  # False #True=Balanced // False=Unbalanced
 
 cfg.ouabain = False
 
-cfg.simLabel = f"SDOpt_layer{cfg.k0Layer}_{cfg.scaleConnWeightNetStims}_{cfg.scaleConnWeightNetStimStd}_GP{cfg.GliaKKo}_{cfg.excWeight}_{cfg.inhWeightScale}_K{cfg.k0}_scale{cfg.ScaleFactor}_{cfg.prep}_{cfg.ox}_pois{cfg.poissonRateFactor}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}_Balanced{cfg.Balanced}_13kpmm_1mm3_dx{cfg.dx}_{cfg.oldDuration/1000:0.2f}s"
+cfg.simLabel = f"SDStim_layer{cfg.k0Layer}_{cfg.scaleConnWeightNetStims}_{cfg.scaleConnWeightNetStimStd}_GP{cfg.GliaKKo}_{cfg.excWeight}_{cfg.inhWeightScale}_K{cfg.k0}_scale{cfg.ScaleFactor}_{cfg.prep}_{cfg.ox}_pois{cfg.poissonRateFactor}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}_Balanced{cfg.Balanced}_13kpmm_1mm3_dx{cfg.dx}_{cfg.oldDuration/1000:0.2f}s"
+cfg.simLabel = "SDTest"
 cfg.saveFolder = f"/ddn/adamjhn/data/{cfg.simLabel}/"
 # cfg.simLabel = f"test_{cfg.ox}"
 #cfg.saveFolder = f"/tmp/testSS2"
