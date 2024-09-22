@@ -46,8 +46,13 @@ cfg.recordCellsSpikes = [
     "L6e",
     "L6i",
 ]  # record only spikes of cells (not ext stims)
+
+if cfg.recordStim:
+    cfg.recordCellsSpikes += [f"poissL{i}{ei}" for i in [2, 4, 5, 6] for ei in ["e", "i"]]
+    cfg.recordCellsSpikes += [f"bkg_THL{i}{ei}" for i in [4, 6] for ei in ["e", "i"]]
+
 cfg.recordCells = [
-        (f"L{i}{ei}",{idx}) for i in [2, 4, 5, 6] for ei in ["e", "i"] for idx in range(10)
+    (f"L{i}{ei}", idx) for i in [2, 4, 5, 6] for ei in ["e", "i"] for idx in range(10)
 ]
 cfg.recordTraces = {
     f"{var}_soma": {"sec": "soma", "loc": 0.5, "var": var}
@@ -102,24 +107,33 @@ cfg.Ncell = sum([max(1, int(i * cfg.ScaleFactor)) for i in cfg.N_Full])
 cfg.NcellRxD = sum([max(1, int(i * 0.16)) for i in cfg.N_Full])
 cfg.rs = ((cfg.betaNrn * cfg.Vtissue) / (2 * np.pi * cfg.NcellRxD)) ** (1 / 3)
 
-cfg.epas = -70.00000000000013 # False
+cfg.epas = -70.00000000000013  # False
 cfg.sa2v = 3.4  # False
 
 # Neuron parameters
-#cfg.excWeight = 3.5472779489790976e-06
-#cfg.inhWeightScale = 5.603334528668638
-#cfg.scaleConnWeightNetStims = 0.513905416594529
-#cfg.scaleConnWeightNetStimStd = 0.9355311387530357
-cfg.excWeight = 4.95893e-6#7.270833e-7#2.4436e-6#1.11818e-6#2.35667e-7 #2.696e-6 #1.0974084295155178e-05
-cfg.inhWeightScale = 5.06875#1.495457#8.80234#5.33374#1.2611 #9.75 #1.0050051831946134
-cfg.scaleConnWeightNetStims = 0.34544#0.3164673#0.30577#0.34982#4.3904e-6 #0.01239 #5.260251723238228e-06
-cfg.scaleConnWeightNetStimStd = 0.30401#0.8725078#0.181515#0.65593#5.39272e-6 #0.43407 #2.8118679638940484e-06
+# cfg.excWeight = 3.5472779489790976e-06
+# cfg.inhWeightScale = 5.603334528668638
+# cfg.scaleConnWeightNetStims = 0.513905416594529
+# cfg.scaleConnWeightNetStimStd = 0.9355311387530357
+cfg.excWeight = 4.95893e-6  # 7.270833e-7#2.4436e-6#1.11818e-6#2.35667e-7 #2.696e-6 #1.0974084295155178e-05
+cfg.inhWeightScale = (
+    5.06875  # 1.495457#8.80234#5.33374#1.2611 #9.75 #1.0050051831946134
+)
+cfg.scaleConnWeightNetStims = (
+    0.34544  # 0.3164673#0.30577#0.34982#4.3904e-6 #0.01239 #5.260251723238228e-06
+)
+cfg.scaleConnWeightNetStimStd = (
+    0.30401  # 0.8725078#0.181515#0.65593#5.39272e-6 #0.43407 #2.8118679638940484e-06
+)
 
-cfg.excWeight = 2.4436e-6#1.11818e-6#2.35667e-7 #2.696e-6 #1.0974084295155178e-05
-cfg.inhWeightScale = 8.80234#5.33374#1.2611 #9.75 #1.0050051831946134
-cfg.scaleConnWeightNetStims = 0.30577#0.34982#4.3904e-6 #0.01239 #5.260251723238228e-06
-cfg.scaleConnWeightNetStimStd = 0.181515#0.65593#5.39272e-6 #0.43407 #2.8118679638940484e-06
-
+cfg.excWeight = 2.4436e-6  # 1.11818e-6#2.35667e-7 #2.696e-6 #1.0974084295155178e-05
+cfg.inhWeightScale = 8.80234  # 5.33374#1.2611 #9.75 #1.0050051831946134
+cfg.scaleConnWeightNetStims = (
+    0.30577  # 0.34982#4.3904e-6 #0.01239 #5.260251723238228e-06
+)
+cfg.scaleConnWeightNetStimStd = (
+    0.181515  # 0.65593#5.39272e-6 #0.43407 #2.8118679638940484e-06
+)
 
 
 """
@@ -150,7 +164,7 @@ cfg.KNai = 27.9
 # a = 3*(1 + np.exp(3.5-3))
 # GliaKKo = np.log(a-1) + 3
 cfg.GliaKKo = 4.938189537703508  # originally 3.5 mM
-cfg.GliaPumpScale = 1 #1 / 3  # 1 / 3  # originally 1/3
+cfg.GliaPumpScale = 1  # 1 / 3  # 1 / 3  # originally 1/3
 cfg.scaleConnWeight = 1
 
 if cfg.sa2v:
@@ -160,7 +174,7 @@ else:
 cfg.cyt_fraction = cfg.rs**3 / cfg.somaR**3
 
 # sd init params
-cfg.k0 = 3.5 
+cfg.k0 = 3.5
 cfg.r0 = 150.0
 cfg.k0Layer = None  # layer of elevated extracellular K+
 
@@ -190,7 +204,7 @@ cfg.simLabel = f"SDStim_layer{cfg.k0Layer}_{cfg.scaleConnWeightNetStims}_{cfg.sc
 cfg.simLabel = "SDTest"
 cfg.saveFolder = f"/ddn/adamjhn/data/{cfg.simLabel}/"
 # cfg.simLabel = f"test_{cfg.ox}"
-#cfg.saveFolder = f"/tmp/testSS2"
+# cfg.saveFolder = f"/tmp/testSS2"
 # cfg.saveFolder = f"/tera/adam/{cfg.simLabel}/" # for neurosim
 cfg.restoredir = cfg.saveFolder if cfg.restore else None
 # v0.0 - combination of cfg from ../uniformdensity and netpyne PD thalamocortical model
