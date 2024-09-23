@@ -12,6 +12,8 @@ from stats import networkStatsFromSim
 cfg, netParams = sim.readCmdLineArgs(
     simConfigDefault="cfgMidOx.py", netParamsDefault="netParamsMidOx.py"
 )
+subdir =  f"{cfg.ox}_{cfg.k0Layer}"
+outdir = cfg.saveFolder + os.path.sep + subdir
 
 # Additional sim setup
 ## parallel context
@@ -83,13 +85,13 @@ pops = [str(all_secs[ind]).split(".")[1].split("s")[0] for ind in rec_inds]
 ## only single core stuff
 if pcid == 0:
     ## create output dir
-    if not os.path.exists(cfg.saveFolder):
+    if not os.path.exists(outdir):
         try:
-            os.makedirs(cfg.saveFolder)
+            os.makedirs(outdir)
         except:
             print(
                 "Unable to create the directory %r for the data and figures"
-                % cfg.saveFolder
+                % outdir 
             )
             os._exit(1)
 
@@ -125,7 +127,6 @@ if pcid == 0:
 
     rec_cells["time"] = h.Vector().record(h._ref_t)
 
-outdir = cfg.saveFolder
 
 
 def saveRxd():
@@ -167,8 +168,7 @@ fout = None
 lastss = 0
 if pcid == 0:
     # record the wave progress
-    name = ""
-    fout = open(os.path.join(cfg.saveFolder, "wave_progress%s.txt" % name), "a")
+    fout = open(os.path.join(outdir, "wave_progress.txt"), "a")
     if cfg.k0Layer is None:
         yoff = cfg.sizeY / 2.0
     elif cfg.k0Layer == 2 or cfg.k0Layer == 3:
@@ -216,7 +216,7 @@ def runIntervalFunc(t):
 sim.runSimWithIntervalFunc(1, runIntervalFunc)
 sim.gatherData()
 if pcid == 0:
-    networkStatsFromSim(sim, filename=os.path.join(cfg.saveFolder, "netstats.json"))
+    networkStatsFromSim(sim, filename=os.path.join(outdir, "netstats.json"))
 sim.saveData()
 sim.analysis.plotData()
 
@@ -224,12 +224,12 @@ if pcid == 0:
     progress_bar(cfg.duration)
     fout.close()
     for lab in rec_cells:
-        with open(os.path.join(cfg.saveFolder, f"recs_{lab}.pkl"), "wb") as fout:
+        with open(os.path.join(outdir, f"recs_{lab}.pkl"), "wb") as fout:
             pickle.dump(rec_cells[lab], fout)
     print("\nSimulation complete. Plotting membrane potentials")
 
 with open(
-    os.path.join(cfg.saveFolder, "centermembrane_potential_%i.pkl" % pcid), "wb"
+    os.path.join(outdir, "centermembrane_potential_%i.pkl" % pcid), "wb"
 ) as pout:
     pickle.dump([rec_cells, pos, pops], pout)
 

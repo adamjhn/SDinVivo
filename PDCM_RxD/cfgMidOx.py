@@ -10,7 +10,7 @@ import cv2
 
 # Run parameters
 cfg = specs.SimConfig()  # object of class cfg to store simulation configuration
-cfg.duration = 100  # Duration of the simulation, in ms
+cfg.duration = 15e3  # Duration of the simulation, in ms
 cfg.oldDuration = cfg.duration
 cfg.restore = False
 cfg.hParams["v_init"] = -70.0  # set v_init to -65 mV
@@ -22,7 +22,7 @@ cfg.verbose = False  # Show detailed messages
 cfg.recordStep = 1  # Step size in ms to save data (eg. V traces, LFP, etc)
 cfg.savePickle = True  # Save params, network and sim output to pickle file
 cfg.saveJson = False
-cfg.recordStim = True
+cfg.recordStim = False
 
 ### Options to save memory in large-scale ismulations
 cfg.gatherOnlySimData = True  # Original
@@ -32,7 +32,7 @@ cfg.saveCellSecs = False
 cfg.saveCellConns = False
 cfg.createPyStruct = False
 cfg.printPopAvgRates = True
-cfg.singleCells = False  # create one cell in each population
+cfg.singleCells = True  # create one cell in each population
 cfg.printRunTime = 1
 cfg.Kceil = 15.0
 cfg.nRec = 25
@@ -58,8 +58,7 @@ cfg.recordTraces = {
     f"{var}_soma": {"sec": "soma", "loc": 0.5, "var": var}
     for var in ["v", "nai", "ki", "cli", "dumpi"]
 }
-cfg.seeds = {"conn": 1, "stim": 1, "loc": 1, "cell": 1, "rec": 1}
-
+cfg.seeds = {"conn": 2, "stim": 3, "loc": 4, "cell": 5, "rec": 1}
 # Network dimensions
 cfg.fig_file = "../test_mask.tif"
 img = cv2.imread(cfg.fig_file, cv2.IMREAD_GRAYSCALE)  # image used for capillaries
