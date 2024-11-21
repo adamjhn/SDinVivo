@@ -788,6 +788,7 @@ netParams.rxdParams["states"] = {
     "mgate": {"regions": ["cyt", "mem"], "initial": m_initial, "name": "mgate"},
     "hgate": {"regions": ["cyt", "mem"], "initial": h_initial, "name": "hgate"},
     "ngate": {"regions": ["cyt", "mem"], "initial": n_initial, "name": "ngate"},
+    "o2con": {"regions": ["ecs_o2"], "initial": 0, "name": "o2con"},
 }
 
 
@@ -927,8 +928,16 @@ mcReactions["pump_current_na"] = {
 # O2 depletrion from Na/K pump in neuron
 mcReactions["oxygen"] = {
     "reactant": o2ecs,
-    "product": "dump[cyt]",
+    "product": "o2con[o2_ecs]",
     "rate_f": "(1/5) * (%s) * (%s)" % (pump, volume_scale),
+    "membrane": "mem",
+    "custom_dynamics": True,
+}
+## Glial O2 depletion
+mcReaction["glia_oxygen"] = {
+    "reactant": o2ecs,
+    "product": "o2con[o2_ecs]",
+    "rate_f": "(1/5) * (%s) * (%s)" % (gliapump, volume_scale),
     "membrane": "mem",
     "custom_dynamics": True,
 }
@@ -1009,12 +1018,7 @@ rates["glia_na_current"] = {
     "regions": ["ecs"],
     "rate": "(3.0 * (%s))" % (gliapump),
 }
-## Glial O2 depletion
-rates["o2_pump"] = {
-    "species": o2ecs,
-    "regions": ["ecs_o2"],
-    "rate": "-(1/5)*(%s)" % (gliapump),
-}
+
 netParams.rxdParams["rates"] = rates
 
 # # plot statistics for 10% of cells

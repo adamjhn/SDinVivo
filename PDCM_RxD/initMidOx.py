@@ -12,7 +12,7 @@ from stats import networkStatsFromSim
 cfg, netParams = sim.readCmdLineArgs(
     simConfigDefault="cfgMidOx.py", netParamsDefault="netParamsMidOx.py"
 )
-subdir =  f"{cfg.ox}_{cfg.k0Layer}_{cfg.o2drive}"
+subdir = f"{cfg.ox}_{cfg.k0Layer}_{cfg.o2drive}"
 outdir = cfg.saveFolder + os.path.sep + subdir
 
 # Additional sim setup
@@ -66,7 +66,7 @@ sim.net.createCells()  # instantiate network cells based on defined populations
 sim.net.connectCells()  # create connections between cells based on params
 sim.net.addStims()  # add external stimulation to cells (IClamps etc)
 sim.net.addRxD(nthreads=6)  # add reaction-diffusion (RxD)
-#fih = h.FInitializeHandler(2, lambda: fi(sim.net.cells))
+# fih = h.FInitializeHandler(2, lambda: fi(sim.net.cells))
 sim.setupRecording()  # setup variables to record for each cell (spikes, V traces, etc)
 
 all_secs = [sec for sec in h.allsec()]
@@ -89,10 +89,7 @@ if pcid == 0:
         try:
             os.makedirs(outdir)
         except:
-            print(
-                "Unable to create the directory %r for the data and figures"
-                % outdir 
-            )
+            print("Unable to create the directory %r for the data and figures" % outdir)
             os._exit(1)
 
     ## set variables for ecs concentrations
@@ -101,6 +98,9 @@ if pcid == 0:
     cl_ecs = sim.net.rxd["species"]["cl"]["hObj"][sim.net.rxd["regions"]["ecs"]["hObj"]]
     o2_ecs = sim.net.rxd["species"]["o2_extracellular"]["hObj"][
         sim.net.rxd["regions"]["ecs_o2"]["hObj"]
+    ]
+    o2con = sim.net.rxd["species"]["o2_extracellular"]["hObj"][
+        sim.net.rxd["regions"]["o2con"]["hObj"]
     ]
 
     ## manually record from cells according to distance from the center of the slice
@@ -128,7 +128,6 @@ if pcid == 0:
     rec_cells["time"] = h.Vector().record(h._ref_t)
 
 
-
 def saveRxd():
     for sp in rxd.species._all_species:
         s = sp()
@@ -150,6 +149,7 @@ def saveconc():
     np.save(os.path.join(outdir, "na_%i.npy" % int(h.t)), na_ecs.states3d)
     np.save(os.path.join(outdir, "cl_%i.npy" % int(h.t)), cl_ecs.states3d)
     np.save(os.path.join(outdir, "o2_%i.npy" % int(h.t)), o2_ecs.states3d)
+    np.save(os.path.join(outdir, "o2con_%i.npy" % int(h.t)), o2com.states3d)
 
 
 def progress_bar(tstop, size=40):
@@ -228,9 +228,7 @@ if pcid == 0:
             pickle.dump(rec_cells[lab], fout)
     print("\nSimulation complete. Plotting membrane potentials")
 
-with open(
-    os.path.join(outdir, "centermembrane_potential_%i.pkl" % pcid), "wb"
-) as pout:
+with open(os.path.join(outdir, "centermembrane_potential_%i.pkl" % pcid), "wb") as pout:
     pickle.dump([rec_cells, pos, pops], pout)
 
 
