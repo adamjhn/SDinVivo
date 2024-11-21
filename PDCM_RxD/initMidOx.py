@@ -12,7 +12,7 @@ from stats import networkStatsFromSim
 cfg, netParams = sim.readCmdLineArgs(
     simConfigDefault="cfgMidOx.py", netParamsDefault="netParamsMidOx.py"
 )
-subdir =  f"{cfg.ox}_{cfg.k0Layer}"
+subdir =  f"{cfg.ox}_{cfg.k0Layer}_{cfg.o2drive}"
 outdir = cfg.saveFolder + os.path.sep + subdir
 
 # Additional sim setup
@@ -146,10 +146,10 @@ def runSS():
 
 
 def saveconc():
-    np.save(os.path.join(cfg.saveFolder, "k_%i.npy" % int(h.t)), k_ecs.states3d)
-    np.save(os.path.join(cfg.saveFolder, "na_%i.npy" % int(h.t)), na_ecs.states3d)
-    np.save(os.path.join(cfg.saveFolder, "cl_%i.npy" % int(h.t)), cl_ecs.states3d)
-    np.save(os.path.join(cfg.saveFolder, "o2_%i.npy" % int(h.t)), o2_ecs.states3d)
+    np.save(os.path.join(outdir, "k_%i.npy" % int(h.t)), k_ecs.states3d)
+    np.save(os.path.join(outdir, "na_%i.npy" % int(h.t)), na_ecs.states3d)
+    np.save(os.path.join(outdir, "cl_%i.npy" % int(h.t)), cl_ecs.states3d)
+    np.save(os.path.join(outdir, "o2_%i.npy" % int(h.t)), o2_ecs.states3d)
 
 
 def progress_bar(tstop, size=40):

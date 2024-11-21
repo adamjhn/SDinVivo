@@ -10,7 +10,7 @@ import cv2
 
 # Run parameters
 cfg = specs.SimConfig()  # object of class cfg to store simulation configuration
-cfg.duration = 15e3  # Duration of the simulation, in ms
+cfg.duration =  60e3 # Duration of the simulation, in ms
 cfg.oldDuration = cfg.duration
 cfg.restore = False
 cfg.hParams["v_init"] = -70.0  # set v_init to -65 mV
@@ -32,7 +32,7 @@ cfg.saveCellSecs = False
 cfg.saveCellConns = False
 cfg.createPyStruct = False
 cfg.printPopAvgRates = True
-cfg.singleCells = True  # create one cell in each population
+cfg.singleCells = False  # create one cell in each population
 cfg.printRunTime = 1
 cfg.Kceil = 15.0
 cfg.nRec = 25
@@ -79,19 +79,19 @@ cfg.connected = True
 # cfg.scaleConnWeightNetStims = 1e-6
 
 # slice conditions
-cfg.ox = "hypoxic"
+cfg.ox = "perfused"
 if cfg.ox == "perfused":
     cfg.o2_bath = 0.06  # ~36 mmHg
     cfg.o2_init = 0.04  # ~24 mmHg
     cfg.alpha_ecs = 0.2
     cfg.tort_ecs = 1.6
-    cfg.o2drive = 0.013
+    cfg.o2drive = 23.8 #0.013
 elif cfg.ox == "hypoxic":
-    cfg.o2_bath = 0.005  # ~4 mmHg
+    cfg.o2_bath = 0.06  # ~4 mmHg
     cfg.o2_init = 0.005
     cfg.alpha_ecs = 0.07
     cfg.tort_ecs = 1.8
-    cfg.o2drive = 0.013 * (1 / 6)
+    cfg.o2drive = 0.1 # 0.013 * (1 / 6)
 cfg.prep = "invivo"  # "invitro"
 # Size of Network. Adjust this constants, please!
 cfg.ScaleFactor = 0.16  # 0.02 used for batch param search  # = 80.000
@@ -173,9 +173,9 @@ else:
 cfg.cyt_fraction = cfg.rs**3 / cfg.somaR**3
 
 # sd init params
-cfg.k0 = 3.5
+cfg.k0 = 100 
 cfg.r0 = 150.0
-cfg.k0Layer = None  # layer of elevated extracellular K+
+cfg.k0Layer = 4  # layer of elevated extracellular K+
 
 ###########################################################
 # Network Options
@@ -200,7 +200,6 @@ cfg.Balanced = False  # False #True=Balanced // False=Unbalanced
 cfg.ouabain = False
 
 cfg.simLabel = f"SDStim_layer{cfg.k0Layer}_{cfg.scaleConnWeightNetStims}_{cfg.scaleConnWeightNetStimStd}_GP{cfg.GliaKKo}_{cfg.excWeight}_{cfg.inhWeightScale}_K{cfg.k0}_scale{cfg.ScaleFactor}_{cfg.prep}_{cfg.ox}_pois{cfg.poissonRateFactor}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}_Balanced{cfg.Balanced}_13kpmm_1mm3_dx{cfg.dx}_{cfg.oldDuration/1000:0.2f}s"
-cfg.simLabel = "SDTest"
 cfg.saveFolder = f"/ddn/adamjhn/data/{cfg.simLabel}/"
 # cfg.simLabel = f"test_{cfg.ox}"
 # cfg.saveFolder = f"/tmp/testSS2"

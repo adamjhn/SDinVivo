@@ -8,7 +8,7 @@ from netpyne.batch import Batch
 
 
 def batchSD():
-    k0Layer = [None, 2,4,5,6]
+    k0Layer = [None, 3, 4, 5, 6]
     ox = ["perfused", "hypoxic"]
     o2_bath = [0.06,0.005]  # ~36 mmHg
     o2_init = [0.04,0.005]
@@ -27,20 +27,19 @@ def batchSD():
 
     b = Batch(cfgFile='cfgMidOx.py', netParamsFile='netParamsMidOx.py', params=params, groupedParams=grouped)
     
-    b.batchLabel = 'batchSD'
-    b.saveFolder = '/tmp/'+b.batchLabel
+    b.batchLabel = 'batchSDK'
+
+    b.saveFolder = '/ddn/adamjhn/data/'+b.batchLabel
     b.method = 'grid'
 
     b.runCfg = {'type': 'hpc_sge',
                 'script': 'initMidOx.py',
-                'cores': 32, 
+                'cores': 16, 
                 'walltime':'24:00:00',
-            'vmem': '64G',
+                'mpiCommand': 'mpiexec -np 16',
+            'vmem': '32G',
             'queueName': 'cpu.q',
             'pre': """
-#$ -N SDsim
-#$ -cwd
-
 source ~/.bashrc
 conda activate py311
 """
