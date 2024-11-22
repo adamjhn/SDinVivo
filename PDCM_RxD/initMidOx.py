@@ -99,7 +99,7 @@ if pcid == 0:
     o2_ecs = sim.net.rxd["species"]["o2_extracellular"]["hObj"][
         sim.net.rxd["regions"]["ecs_o2"]["hObj"]
     ]
-    o2con = sim.net.rxd["species"]["o2con"]["hObj"][
+    o2con = sim.net.rxd["states"]["o2_consumed"]["hObj"][
         sim.net.rxd["regions"]["ecs_o2"]["hObj"]
     ]
 
@@ -151,7 +151,7 @@ def saveconc():
     np.save(os.path.join(outdir, "na_%i.npy" % int(h.t)), na_ecs.states3d)
     np.save(os.path.join(outdir, "cl_%i.npy" % int(h.t)), cl_ecs.states3d)
     np.save(os.path.join(outdir, "o2_%i.npy" % int(h.t)), o2_ecs.states3d)
-    np.save(os.path.join(outdir, "o2con_%i.npy" % int(h.t)), o2com.states3d)
+    np.save(os.path.join(outdir, "o2con_%i.npy" % int(h.t)), o2con.states3d)
 
 
 def progress_bar(tstop, size=40):

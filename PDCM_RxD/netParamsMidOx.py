@@ -928,7 +928,7 @@ mcReactions["pump_current_na"] = {
 # O2 depletrion from Na/K pump in neuron
 mcReactions["oxygen"] = {
     "reactant": o2ecs,
-    "product": "o2_consumed[o2_ecs]",
+    "product": "o2_consumed[ecs_o2]",
     "rate_f": "(1/5) * (%s) * (%s)" % (pump, volume_scale),
     "membrane": "mem",
     "custom_dynamics": True,
@@ -942,7 +942,6 @@ reactions["glia_oxygen"] = {
     "reactant": "o2_extracellular",
     "product": "o2_consumed",
     "rate_f": "(1/5) * (%s)" % (gliapump),
-    "rate_b": "0",
     "custom_dynamics": True,
 }
 netParams.rxdParams["reactions"] = reactions
