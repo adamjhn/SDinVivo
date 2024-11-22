@@ -99,8 +99,8 @@ if pcid == 0:
     o2_ecs = sim.net.rxd["species"]["o2_extracellular"]["hObj"][
         sim.net.rxd["regions"]["ecs_o2"]["hObj"]
     ]
-    o2con = sim.net.rxd["species"]["o2_extracellular"]["hObj"][
-        sim.net.rxd["regions"]["o2con"]["hObj"]
+    o2con = sim.net.rxd["species"]["o2con"]["hObj"][
+        sim.net.rxd["regions"]["ecs_o2"]["hObj"]
     ]
 
     ## manually record from cells according to distance from the center of the slice
@@ -109,9 +109,11 @@ if pcid == 0:
     for lab, pop in sim.net.pops.items():
         if "xRange" in pop.tags:
             rec_cells[lab] = {
-                "gid": rng.choice(pop.cellGids, size=cfg.nRec, replace=False)
-                if len(pop.cellGids) > cfg.nRec
-                else pop.cellGids
+                "gid": (
+                    rng.choice(pop.cellGids, size=cfg.nRec, replace=False)
+                    if len(pop.cellGids) > cfg.nRec
+                    else pop.cellGids
+                )
             }
             rec_cells[lab]["pos"] = []
             for k in ["v", "ki", "nai", "cli", "ko", "nao", "clo", "o2o"]:

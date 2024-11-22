@@ -710,9 +710,9 @@ species["kk"] = {
     "d": 2.62,
     "charge": 1,
     "initial": k_init_str,
-    "ecs_boundary_conditions": constants["ko_initial"]
-    if cfg.prep == "invitro"
-    else None,
+    "ecs_boundary_conditions": (
+        constants["ko_initial"] if cfg.prep == "invitro" else None
+    ),
     "name": "k",
 }
 
@@ -721,9 +721,9 @@ species["na"] = {
     "d": 1.78,
     "charge": 1,
     "initial": "nai_initial if isinstance(node, rxd.node.Node1D) else nao_initial",
-    "ecs_boundary_conditions": constants["nao_initial"]
-    if cfg.prep == "invitro"
-    else None,
+    "ecs_boundary_conditions": (
+        constants["nao_initial"] if cfg.prep == "invitro" else None
+    ),
     "name": "na",
 }
 
@@ -732,9 +732,9 @@ species["cl"] = {
     "d": 2.1,
     "charge": -1,
     "initial": "cli_initial if isinstance(node, rxd.node.Node1D) else clo_initial",
-    "ecs_boundary_conditions": constants["clo_initial"]
-    if cfg.prep == "invitro"
-    else None,
+    "ecs_boundary_conditions": (
+        constants["clo_initial"] if cfg.prep == "invitro" else None
+    ),
     "name": "cl",
 }
 
@@ -788,7 +788,7 @@ netParams.rxdParams["states"] = {
     "mgate": {"regions": ["cyt", "mem"], "initial": m_initial, "name": "mgate"},
     "hgate": {"regions": ["cyt", "mem"], "initial": h_initial, "name": "hgate"},
     "ngate": {"regions": ["cyt", "mem"], "initial": n_initial, "name": "ngate"},
-    "o2con": {"regions": ["ecs_o2"], "initial": 0, "name": "o2con"},
+    "o2_consumed": {"regions": ["ecs_o2"], "initial": 0, "name": "o2_consumed"},
 }
 
 
@@ -928,20 +928,24 @@ mcReactions["pump_current_na"] = {
 # O2 depletrion from Na/K pump in neuron
 mcReactions["oxygen"] = {
     "reactant": o2ecs,
-    "product": "o2con[o2_ecs]",
+    "product": "o2_consumed[o2_ecs]",
     "rate_f": "(1/5) * (%s) * (%s)" % (pump, volume_scale),
     "membrane": "mem",
     "custom_dynamics": True,
 }
+
+netParams.rxdParams["multicompartmentReactions"] = mcReactions
+
+reactions = {}
 ## Glial O2 depletion
-mcReaction["glia_oxygen"] = {
-    "reactant": o2ecs,
-    "product": "o2con[o2_ecs]",
-    "rate_f": "(1/5) * (%s) * (%s)" % (gliapump, volume_scale),
-    "membrane": "mem",
+reactions["glia_oxygen"] = {
+    "reactant": "o2_extracellular",
+    "product": "o2_consumed",
+    "rate_f": "(1/5) * (%s)" % (gliapump),
+    "rate_b": "0",
     "custom_dynamics": True,
 }
-netParams.rxdParams["multicompartmentReactions"] = mcReactions
+netParams.rxdParams["reactions"] = reactions
 
 # RATES--------------------------------------------------------------------------
 rates = {}

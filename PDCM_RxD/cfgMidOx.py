@@ -10,7 +10,7 @@ import cv2
 
 # Run parameters
 cfg = specs.SimConfig()  # object of class cfg to store simulation configuration
-cfg.duration =  60e3 # Duration of the simulation, in ms
+cfg.duration = 1e3  # Duration of the simulation, in ms
 cfg.oldDuration = cfg.duration
 cfg.restore = False
 cfg.hParams["v_init"] = -70.0  # set v_init to -65 mV
@@ -48,7 +48,9 @@ cfg.recordCellsSpikes = [
 ]  # record only spikes of cells (not ext stims)
 
 if cfg.recordStim:
-    cfg.recordCellsSpikes += [f"poissL{i}{ei}" for i in [2, 4, 5, 6] for ei in ["e", "i"]]
+    cfg.recordCellsSpikes += [
+        f"poissL{i}{ei}" for i in [2, 4, 5, 6] for ei in ["e", "i"]
+    ]
     cfg.recordCellsSpikes += [f"bkg_THL{i}{ei}" for i in [4, 6] for ei in ["e", "i"]]
 
 cfg.recordCells = [
@@ -85,13 +87,13 @@ if cfg.ox == "perfused":
     cfg.o2_init = 0.04  # ~24 mmHg
     cfg.alpha_ecs = 0.2
     cfg.tort_ecs = 1.6
-    cfg.o2drive = 23.8 #0.013
+    cfg.o2drive = 23.8  # 0.013
 elif cfg.ox == "hypoxic":
     cfg.o2_bath = 0.06  # ~4 mmHg
     cfg.o2_init = 0.005
     cfg.alpha_ecs = 0.07
     cfg.tort_ecs = 1.8
-    cfg.o2drive = 0.1 # 0.013 * (1 / 6)
+    cfg.o2drive = 0.1  # 0.013 * (1 / 6)
 cfg.prep = "invivo"  # "invitro"
 # Size of Network. Adjust this constants, please!
 cfg.ScaleFactor = 0.16  # 0.02 used for batch param search  # = 80.000
@@ -173,9 +175,9 @@ else:
 cfg.cyt_fraction = cfg.rs**3 / cfg.somaR**3
 
 # sd init params
-cfg.k0 = 100 
-cfg.r0 = 150.0
-cfg.k0Layer = 4  # layer of elevated extracellular K+
+cfg.k0 = 3.5
+cfg.r0 = 150
+cfg.k0Layer = None  # layer of elevated extracellular K+
 
 ###########################################################
 # Network Options
