@@ -39,6 +39,8 @@ def restoreSS():
     print("read file", svst)
     svst.restore()
     print("restored")
+    rvSeq = pickle.load(open(os.path.join(outdir, "save_randvar_" + str(pcid) + ".pkl"),'rb'))
+    setRandSeq(rvSeq)
 
 
 def fi(cells):
@@ -128,11 +130,41 @@ if pcid == 0:
     rec_cells["time"] = h.Vector().record(h._ref_t)
 
 
+def getRandSeq():
+    """ Return a dict of gid->rv.get_seq for all cells with cellModel=='NetStim'
+        In this model the NetStim are cells so are not listed in netParams.stimSourceParams, so cannot access them with include=['allNetStims'].
+    """
+    saveSeq = {'seq':{}, 'ids':{}}
+    for cell in sim.getCellsList(include=['all']):
+        if cell.tags['cellModel'] == 'NetStim':
+            saveSeq['seq'][cell.gid] = cell.hPointp.ranvar.get_seq()
+            saveSeq['ids'][cell.gid] = list(cell.hPointp.ranvar.get_ids().as_numpy())
+    return saveSeq
+
+def setRandSeq(seqDict):
+    """ Take a dict of gid->seq and apply it to all cells """
+    done = []
+    for cell in sim.getCellsList(include=['all']):
+        if cell.tags['cellModel'] == 'NetStim':
+            if cell.gid in seqDict['seq']:
+                cell.hPointp.ranvar.set_seq(seqDict['seq'][cell.gid])
+                #cell.hPointp.ranvar.set_ids(*seqDict['ids'][cell.gid])
+                done.append(cell.gid)
+            else:
+                raise Exception(f"Failed to set randvar for cell {cell} gid {cell.gid} -- missing value")
+    for gid in seqDict['seq']:
+        if gid not in done:
+            raise Exception(f"Failed to set randvar for cell gid {gid}")
+
+
 def runSS():
     svst = h.SaveState()
     svst.save()
     f = h.File(os.path.join(outdir, "save_test_" + str(pcid) + ".dat"))
     svst.fwrite(f)
+    rvSeq = getRandSeq()
+    pickle.dump(rvSeq,open(os.path.join(outdir, "save_randvar_" + str(pcid) + ".pkl"),'wb'))
+
 
 
 def saveconc():
@@ -202,8 +234,6 @@ def runIntervalFunc(t):
                     dist1 = r
         fout.write("%g\t%g\t%g\n" % (h.t, dist, dist1))
         fout.flush()
-
-
 sim.runSimWithIntervalFunc(1, runIntervalFunc)
 sim.gatherData()
 if pcid == 0:
@@ -247,3 +277,4 @@ if pcid == 0:
 # v1.0 - added in o2 sources based on capillaries identified from histology
 # v1.1 - set pas.e to maintain RMP and move restore state function
 # v1.2 - replace centermembrane_potential with layer specific recordings
+# v1.3 - fix save state (in NEURON 9) by restoring seq in NMODLRandom
