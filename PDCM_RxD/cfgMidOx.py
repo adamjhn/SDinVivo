@@ -1,6 +1,6 @@
 from netpyne import specs
 import numpy as np
-import cv2
+#import cv2
 
 # ------------------------------------------------------------------------------
 #
@@ -10,9 +10,9 @@ import cv2
 
 # Run parameters
 cfg = specs.SimConfig()  # object of class cfg to store simulation configuration
-cfg.duration = 1e3  # Duration of the simulation, in ms
-cfg.oldDuration = cfg.duration
-cfg.restore = False
+cfg.duration = 100  # Duration of the simulation, in ms
+cfg.oldDuration = 100
+cfg.restore = False 
 cfg.hParams["v_init"] = -70.0  # set v_init to -65 mV
 cfg.hParams["celsius"] = 37.0
 cfg.Cm = 1.0  # pF/cm**2
@@ -26,13 +26,13 @@ cfg.recordStim = False
 
 ### Options to save memory in large-scale ismulations
 cfg.gatherOnlySimData = True  # Original
-
+cfg.random123 = True
 # set the following 3 options to False when running large-scale versions of the model (>50% scale) to save memory
 cfg.saveCellSecs = False
 cfg.saveCellConns = False
 cfg.createPyStruct = False
 cfg.printPopAvgRates = True
-cfg.singleCells = False  # create one cell in each population
+cfg.singleCells = True  # create one cell in each population
 cfg.printRunTime = 1
 cfg.Kceil = 15.0
 cfg.nRec = 25
@@ -62,9 +62,10 @@ cfg.recordTraces = {
 }
 cfg.seeds = {"conn": 2, "stim": 3, "loc": 4, "cell": 5, "rec": 1}
 # Network dimensions
-cfg.fig_file = "../test_mask.tif"
-img = cv2.imread(cfg.fig_file, cv2.IMREAD_GRAYSCALE)  # image used for capillaries
-img = np.rot90(img, k=-1)
+cfg.fig_file = "../test_mask.npy"
+#img = cv2.imread(cfg.fig_file, cv2.IMREAD_GRAYSCALE)  # image used for capillaries
+#img = np.rot90(img, k=3)
+img = np.load(cfg.fig_file)
 cfg.px = 0.2627  # side of image pixel (microns)
 cfg.dx = 50  # side of ECS voxel (microns)
 cfg.sizeX = 700  # img.shape[1] * cfg.px#250.0 #1000
@@ -175,9 +176,9 @@ else:
 cfg.cyt_fraction = cfg.rs**3 / cfg.somaR**3
 
 # sd init params
-cfg.k0 = 3.5
+cfg.k0 = 100
 cfg.r0 = 150
-cfg.k0Layer = None  # layer of elevated extracellular K+
+cfg.k0Layer = 4 # layer of elevated extracellular K+
 
 ###########################################################
 # Network Options
@@ -201,7 +202,7 @@ cfg.Balanced = False  # False #True=Balanced // False=Unbalanced
 
 cfg.ouabain = False
 
-cfg.simLabel = f"SDStim_layer{cfg.k0Layer}_{cfg.scaleConnWeightNetStims}_{cfg.scaleConnWeightNetStimStd}_GP{cfg.GliaKKo}_{cfg.excWeight}_{cfg.inhWeightScale}_K{cfg.k0}_scale{cfg.ScaleFactor}_{cfg.prep}_{cfg.ox}_pois{cfg.poissonRateFactor}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}_Balanced{cfg.Balanced}_13kpmm_1mm3_dx{cfg.dx}_{cfg.oldDuration/1000:0.2f}s"
+cfg.simLabel = "savetest2" #f"SDStim_layer{cfg.k0Layer}_{cfg.scaleConnWeightNetStims}_{cfg.scaleConnWeightNetStimStd}_GP{cfg.GliaKKo}_{cfg.excWeight}_{cfg.inhWeightScale}_K{cfg.k0}_scale{cfg.ScaleFactor}_{cfg.prep}_{cfg.ox}_pois{cfg.poissonRateFactor}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}_Balanced{cfg.Balanced}_13kpmm_1mm3_dx{cfg.dx}_{cfg.oldDuration/1000:0.2f}s"
 cfg.saveFolder = f"/ddn/adamjhn/data/{cfg.simLabel}/"
 # cfg.simLabel = f"test_{cfg.ox}"
 # cfg.saveFolder = f"/tmp/testSS2"

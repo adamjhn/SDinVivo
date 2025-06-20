@@ -27,15 +27,25 @@ random.seed(pcid + cfg.seeds["rec"])
 
 def restoreSS():
     """restore sim state from saved files"""
-    restoredir = cfg.restoredir
+    print(f"restore Save State from {cfg.restoredir}")
     svst = h.SaveState()
-    f = h.File(os.path.join(restoredir, "save_test_" + str(pcid) + ".dat"))
+    f = h.File(
+        os.path.join(
+            os.path.join(cfg.restoredir, subdir), "save_test_" + str(pcid) + ".dat"
+        )
+    )
+    print("loaded file", f)
     svst.fread(f)
+    print("read file", svst)
     svst.restore()
+    print("restored")
 
 
 def fi(cells):
     """set steady state RMP each cell -- when not restoring from a previous simulation"""
+
+    # Don't run this -- it does not account for elevated K+
+    """
     cfg.e_pas = {}
     for c in cells:
         # skip artificial cells
@@ -50,11 +60,9 @@ def fi(cells):
             + (seg.iother if h.ismembrane("other_ion") else 0)
         )
         seg.e_pas = cfg.hParams["v_init"] + isum / seg.g_pas
-        print(seg, seg.e_pas)
-
+    """
     ## restore from previous sim
-    if cfg.restoredir:
-        restoredir = cfg.restoredir
+    if cfg.restore:
         restoreSS()
 
 
@@ -66,21 +74,9 @@ sim.net.createCells()  # instantiate network cells based on defined populations
 sim.net.connectCells()  # create connections between cells based on params
 sim.net.addStims()  # add external stimulation to cells (IClamps etc)
 sim.net.addRxD(nthreads=6)  # add reaction-diffusion (RxD)
-# fih = h.FInitializeHandler(2, lambda: fi(sim.net.cells))
 sim.setupRecording()  # setup variables to record for each cell (spikes, V traces, etc)
+fih = h.FInitializeHandler(1, lambda: fi(sim.net.cells))
 
-all_secs = [sec for sec in h.allsec()]
-cells_per_node = len(all_secs)
-if cfg.singleCells:
-    rec_inds = list(range(cells_per_node))
-else:
-    rec_inds = random.sample(range(cells_per_node), int(cfg.nRec / nhost))
-rec_cells = [h.Vector().record(all_secs[ind](0.5)._ref_v) for ind in rec_inds]
-pos = [
-    [all_secs[ind].x3d(0), all_secs[ind].y3d(0), all_secs[ind].z3d(0)]
-    for ind in rec_inds
-]
-pops = [str(all_secs[ind]).split(".")[1].split("s")[0] for ind in rec_inds]
 
 ## only single core stuff
 if pcid == 0:
@@ -103,40 +99,33 @@ if pcid == 0:
         sim.net.rxd["regions"]["ecs_o2"]["hObj"]
     ]
 
-    ## manually record from cells according to distance from the center of the slice
-    rng = np.random.default_rng(seed=pcid + cfg.seeds["rec"])
-    rec_cells = {}
-    for lab, pop in sim.net.pops.items():
-        if "xRange" in pop.tags:
-            rec_cells[lab] = {
-                "gid": (
-                    rng.choice(pop.cellGids, size=cfg.nRec, replace=False)
-                    if len(pop.cellGids) > cfg.nRec
-                    else pop.cellGids
+## manually record from cells from each layer
+rng = np.random.default_rng(seed=pcid + cfg.seeds["rec"])
+rec_cells = {}
+for lab, pop in sim.net.pops.items():
+    if "xRange" in pop.tags:
+        rec_cells[lab] = {
+            "gid": (
+                rng.choice(
+                    pop.cellGids, size=int(min(1, cfg.nRec / nhost)), replace=False
                 )
-            }
-            rec_cells[lab]["pos"] = []
+                if len(pop.cellGids) > min(1, cfg.nRec / nhost)
+                else pop.cellGids
+            )
+        }
+        rec_cells[lab]["pos"] = []
+        for k in ["v", "ki", "nai", "cli", "ko", "nao", "clo", "o2o"]:
+            rec_cells[lab][k] = []
+        for idx in rec_cells[lab]["gid"]:
+            cell = sim.cellByGid(idx)
+            soma = cell.secs["soma"]["hObj"]
+            rec_cells[lab]["pos"].append(cell.getSomaPos())
             for k in ["v", "ki", "nai", "cli", "ko", "nao", "clo", "o2o"]:
-                rec_cells[lab][k] = []
-            for idx in rec_cells[lab]["gid"]:
-                cell = sim.cellByGid(idx)
-                soma = cell.secs["soma"]["hObj"]
-                rec_cells[lab]["pos"].append(cell.getSomaPos())
-                for k in ["v", "ki", "nai", "cli", "ko", "nao", "clo", "o2o"]:
-                    rec_cells[lab][k].append(
-                        h.Vector().record(getattr(soma(0.5), f"_ref_{k}"))
-                    )
-
+                rec_cells[lab][k].append(
+                    h.Vector().record(getattr(soma(0.5), f"_ref_{k}"))
+                )
+if pcid == 0:
     rec_cells["time"] = h.Vector().record(h._ref_t)
-
-
-def saveRxd():
-    for sp in rxd.species._all_species:
-        s = sp()
-        np.save(
-            os.path.join(outdir, s.name + "_concentrations_" + str(pcid) + ".npy"),
-            s.nodes.concentration,
-        )
 
 
 def runSS():
@@ -193,7 +182,7 @@ def runIntervalFunc(t):
         if int(t) % saveint == 0:
             # plot extracellular concentrations averaged over depth every 100ms
             saveconc()
-    if (int(t) % ssint == 0) and (t - lastss) > ssint or (cfg.duration - t) < 1:
+    if ((int(t) % ssint == 0) and (t - lastss) > ssint) or (cfg.duration - t) < 1:
         runSS()
         lastss = t
     if pcid == 0:
@@ -222,18 +211,39 @@ if pcid == 0:
 sim.saveData()
 sim.analysis.plotData()
 
+# merge rec_cells
+rec_all = {}
+for lab in rec_cells:
+    # time only on pcid==0 - don't gather
+    if lab == "time":
+        rec_all["time"] = rec_cells["time"]
+    else:
+        rec_all[lab] = {}
+        for k in rec_cells[lab]:
+            # merge lists
+            rec_all[lab][k] = pc.py_gather(rec_cells[lab][k], 0)
+
 if pcid == 0:
     progress_bar(cfg.duration)
     fout.close()
     for lab in rec_cells:
-        with open(os.path.join(outdir, f"recs_{lab}.pkl"), "wb") as fout:
-            pickle.dump(rec_cells[lab], fout)
+        if cfg.restore:
+            rec_old = pickle.load(open(os.path.join(outdir, f"recs_{lab}.pkl"), "rb"))
+            if lab == "time":
+                rec_old.append(rec_all["time"])
+            else:
+                for k in rec_all[lab]:
+                    if k != "pos" and k != "pop":
+                        rec_old[k].append(rec_all[lab][k])
+            pickle.dump(rec_old, open(os.path.join(outdir, f"recs_{lab}.pkl"), "wb"))
+        else:
+            pickle.dump(
+                rec_all[lab], open(os.path.join(outdir, f"recs_{lab}.pkl"), "wb")
+            )
     print("\nSimulation complete. Plotting membrane potentials")
-
-with open(os.path.join(outdir, "centermembrane_potential_%i.pkl" % pcid), "wb") as pout:
-    pickle.dump([rec_cells, pos, pops], pout)
 
 
 # v0.0 - direct copy from ../uniformdensity/init.py
 # v1.0 - added in o2 sources based on capillaries identified from histology
 # v1.1 - set pas.e to maintain RMP and move restore state function
+# v1.2 - replace centermembrane_potential with layer specific recordings

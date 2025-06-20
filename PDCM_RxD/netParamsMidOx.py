@@ -85,8 +85,9 @@ def mask3D(capillaries, xsz, ysz, px, dx):
 
 
 def generateO2sources(fig_file, Nz, px, dx, x=None, y=None, z=None):
-    img = cv2.imread(fig_file, cv2.IMREAD_GRAYSCALE)
-    img = np.rot90(img, k=-1)
+    img = np.load(fig_file)
+    #img = cv2.imread(fig_file, cv2.IMREAD_GRAYSCALE)
+    #img = np.rot90(img, k=-1)
     img = img[1000:, : round(cfg.sizeX / px)]
     centers = findCapillaries(img)
     capillaries = extrudeCapillaries(
@@ -939,8 +940,8 @@ netParams.rxdParams["multicompartmentReactions"] = mcReactions
 reactions = {}
 ## Glial O2 depletion
 reactions["glia_oxygen"] = {
-    "reactant": "o2_extracellular",
-    "product": "o2_consumed",
+    "reactant": o2ecs,
+    "product": "o2_consumed[ecs_o2]",
     "rate_f": "(1/5) * (%s)" % (gliapump),
     "custom_dynamics": True,
 }

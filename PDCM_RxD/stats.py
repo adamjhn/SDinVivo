@@ -76,11 +76,23 @@ def networkStatsFromSim(sim, filename=None, N=1000):
 def networkStats(spkt, spkid, pops, duration, Nsample=1000):
     L = list(pops.keys())
     spkmap = {pop: pops[pop]["cellGids"] for pop in L}
-    smpmap = {pop: np.random.choice(spkmap[pop], size=Nsample) for pop in L}
-    maxid = spkmap[L[-1]][-1]
+    smpmap = {
+        pop: (
+            [] if len(spkmap[pop]) == 0 else np.random.choice(spkmap[pop], size=Nsample)
+        )
+        for pop in L
+    }
+    for pop in reversed(L):
+        if len(spkmap[pop]) > 0:
+            maxid = spkmap[pop][-1]
+            break
+    else:
+        maxid = 0
+
     spktimes = {pop: spkt[[i in spkmap[pop] for i in spkid]] for pop in L}
     rates = {
-        pop: 1e3 * len(v) / duration / len(spkmap[pop]) for pop, v in spktimes.items()
+        pop: 0 if len(spkmap[pop]) == 0 else 1e3 * len(v) / duration / len(spkmap[pop])
+        for pop, v in spktimes.items()
     }
 
     bins = np.array(range(0, int(duration), 3))
@@ -91,9 +103,16 @@ def networkStats(spkt, spkid, pops, duration, Nsample=1000):
         sync[pop] = k.var() / k.mean()
 
     isis = [np.diff(spkt[spkid == i]) for i in range(maxid + 1)]
+    sample_isi = {
+        pop: (
+            []
+            if len(smpmap[pop]) == 0
+            else np.concatenate([isis[i] for i in smpmap[pop]])
+        )
+        for pop in L
+    }
 
-    sample_isi = {pop: np.concatenate([isis[i] for i in smpmap[pop]]) for pop in L}
     irr = {}
     for pop, k in sample_isi.items():
-        irr[pop] = k.std() / k.mean()
+        irr[pop] = k.std() / k.mean() if len(k) > 0 else 0
     return {"rates": rates, "synchrony": sync, "irregularity": irr}
