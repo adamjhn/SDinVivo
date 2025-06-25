@@ -1,6 +1,7 @@
 from netpyne import specs
 import numpy as np
-#import cv2
+
+# import cv2
 
 # ------------------------------------------------------------------------------
 #
@@ -10,10 +11,9 @@ import numpy as np
 
 # Run parameters
 cfg = specs.SimConfig()  # object of class cfg to store simulation configuration
-cfg.duration = 10000  # Duration of the simulation, in ms
-cfg.oldDuration = 10000
-cfg.restore = False 
-cfg.hParams["v_init"] = -70.0  # set v_init to -65 mV
+cfg.duration = 100  # Duration of the simulation, in ms
+cfg.oldDuration = 100
+cfg.restore = False
 cfg.hParams["celsius"] = 37.0
 cfg.Cm = 1.0  # pF/cm**2
 cfg.Ra = 100
@@ -22,7 +22,7 @@ cfg.verbose = False  # Show detailed messages
 cfg.recordStep = 1  # Step size in ms to save data (eg. V traces, LFP, etc)
 cfg.savePickle = True  # Save params, network and sim output to pickle file
 cfg.saveJson = False
-cfg.recordStim = False 
+cfg.recordStim = False
 
 ### Options to save memory in large-scale ismulations
 cfg.gatherOnlySimData = True  # Original
@@ -36,7 +36,7 @@ cfg.singleCells = False  # create one cell in each population
 cfg.printRunTime = 1
 cfg.Kceil = 15.0
 cfg.nRec = 25
-cfg.recordCellsSpikes = [
+cfg.cellPops = [
     "L2e",
     "L2i",
     "L4e",
@@ -46,7 +46,8 @@ cfg.recordCellsSpikes = [
     "L6e",
     "L6i",
 ]  # record only spikes of cells (not ext stims)
-
+cfg.cellPopsInit = (-85, -60)
+cfg.recordCellsSpikes = cfg.cellPops
 if cfg.recordStim:
     cfg.recordCellsSpikes += [
         f"poissL{i}{ei}" for i in [2, 4, 5, 6] for ei in ["e", "i"]
@@ -58,14 +59,20 @@ cfg.recordCells = [
 ]
 cfg.recordTraces = {
     f"{var}_soma": {"sec": "soma", "loc": 0.5, "var": var}
-    for var in ["v", "nai", "ki", "cli", "dumpi"]
+    for var in ["v", "nai", "ki", "cli", "dumpi", "o2o"]
 }
-cfg.seed = 2
-cfg.seeds = {"conn": 2 + cfg.seed, "stim": 3 +cfg.seed, "loc": 4 + cfg.seed, "cell": 5 + cfg.seed, "rec": 1 + cfg.seed}
+cfg.seed = 0
+cfg.seeds = {
+    "conn": 2 + cfg.seed,
+    "stim": 3 + cfg.seed,
+    "loc": 4 + cfg.seed,
+    "cell": 5 + cfg.seed,
+    "rec": 1 + cfg.seed,
+}
 # Network dimensions
 cfg.fig_file = "../test_mask.npy"
-#img = cv2.imread(cfg.fig_file, cv2.IMREAD_GRAYSCALE)  # image used for capillaries
-#img = np.rot90(img, k=3)
+# img = cv2.imread(cfg.fig_file, cv2.IMREAD_GRAYSCALE)  # image used for capillaries
+# img = np.rot90(img, k=3)
 img = np.load(cfg.fig_file)
 cfg.px = 0.2627  # side of image pixel (microns)
 cfg.dx = 50  # side of ECS voxel (microns)
@@ -89,7 +96,7 @@ if cfg.ox == "perfused":
     cfg.o2_init = 0.04  # ~24 mmHg
     cfg.alpha_ecs = 0.2
     cfg.tort_ecs = 1.6
-    cfg.o2drive = 23.8  # 0.013
+    cfg.o2drive = 15.0  # 0.013
 elif cfg.ox == "hypoxic":
     cfg.o2_bath = 0.06  # ~4 mmHg
     cfg.o2_init = 0.005
@@ -98,7 +105,7 @@ elif cfg.ox == "hypoxic":
     cfg.o2drive = 0.1  # 0.013 * (1 / 6)
 cfg.prep = "invivo"  # "invitro"
 # Size of Network. Adjust this constants, please!
-cfg.ScaleFactor = 0.16  # 0.02 used for batch param search  # = 80.000
+cfg.ScaleFactor = 0.02  # used for batch param search  # = 80.000
 
 # neuron params
 cfg.betaNrn = (
@@ -167,19 +174,19 @@ cfg.KNai = 27.9
 # a = 3*(1 + np.exp(3.5-3))
 # GliaKKo = np.log(a-1) + 3
 cfg.GliaKKo = 4.938189537703508  # originally 3.5 mM
-cfg.GliaPumpScale =  1 / 3  # 1 / 3  # originally 1/3
+cfg.GliaPumpScale = 1 / 3  # 1 / 3  # originally 1/3
 cfg.scaleConnWeight = 1
 
 if cfg.sa2v:
-    cfg.somaR = (cfg.sa2v * cfg.rs**3 / 2.0) ** (1 / 2)
+    cfg.somaR = (cfg.sa2v * cfg.rs ** 3 / 2.0) ** (1 / 2)
 else:
     cfg.somaR = cfg.rs
-cfg.cyt_fraction = cfg.rs**3 / cfg.somaR**3
+cfg.cyt_fraction = cfg.rs ** 3 / cfg.somaR ** 3
 
 # sd init params
-cfg.k0 = 1000 
+cfg.k0 = 1000
 cfg.r0 = 100
-cfg.k0Layer = 4 # layer of elevated extracellular K+
+cfg.k0Layer = 4  # layer of elevated extracellular K+
 
 ###########################################################
 # Network Options
@@ -205,9 +212,9 @@ cfg.ouabain = False
 
 simLabel = f"SDStim{cfg.seed}_layer{cfg.k0Layer}_{cfg.scaleConnWeightNetStims}_{cfg.scaleConnWeightNetStimStd}_GP{cfg.GliaKKo}_{cfg.excWeight}_{cfg.inhWeightScale}_K{cfg.k0}_scale{cfg.ScaleFactor}_{cfg.prep}_{cfg.ox}_pois{cfg.poissonRateFactor}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}_Balanced{cfg.Balanced}_13kpmm_1mm3_dx{cfg.dx}"
 cfg.simLabel = f"{simLabel}_{cfg.duration/1000:0.2f}s"
-cfg.saveFolder = f"/ddn/adamjhn/data/{simLabel}_{cfg.oldDuration/1000:0.2f}s"
+# cfg.saveFolder = f"/ddn/adamjhn/data/{simLabel}_{cfg.oldDuration/1000:0.2f}s"
 # cfg.simLabel = f"test_{cfg.ox}"
-# cfg.saveFolder = f"/tmp/testSS2"
+cfg.saveFolder = f"/tmp/test"
 # cfg.saveFolder = f"/tera/adam/{cfg.simLabel}/" # for neurosim
 cfg.restoredir = cfg.saveFolder if cfg.restore else None
 # v0.0 - combination of cfg from ../uniformdensity and netpyne PD thalamocortical model
