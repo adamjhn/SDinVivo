@@ -256,15 +256,17 @@ for lab in rec_cells:
 if pcid == 0:
     progress_bar(cfg.duration)
     fout.close()
-    for lab in rec_cells:
+    for lab in rec_all:
         if cfg.restore:
             rec_old = pickle.load(open(os.path.join(outdir, f"recs_{lab}.pkl"), "rb"))
             if lab == "time":
                 rec_old.append(rec_all["time"])
             else:
                 for k in rec_all[lab]:
-                    if k != "pos" and k != "pop":
-                        rec_old[k].append(rec_all[lab][k])
+                    if k != "pos" and k != "pop" and k != "gid":
+                        for u,v in zip(rec_all[lab][k], rec_old[k]):
+                            for x,y in zip(u,v):
+                                y.append(x)
             pickle.dump(rec_old, open(os.path.join(outdir, f"recs_{lab}.pkl"), "wb"))
         else:
             pickle.dump(
