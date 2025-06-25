@@ -10,8 +10,8 @@ import numpy as np
 
 # Run parameters
 cfg = specs.SimConfig()  # object of class cfg to store simulation configuration
-cfg.duration = 30000  # Duration of the simulation, in ms
-cfg.oldDuration = 30000
+cfg.duration = 10000  # Duration of the simulation, in ms
+cfg.oldDuration = 10000
 cfg.restore = False 
 cfg.hParams["v_init"] = -70.0  # set v_init to -65 mV
 cfg.hParams["celsius"] = 37.0
@@ -22,7 +22,7 @@ cfg.verbose = False  # Show detailed messages
 cfg.recordStep = 1  # Step size in ms to save data (eg. V traces, LFP, etc)
 cfg.savePickle = True  # Save params, network and sim output to pickle file
 cfg.saveJson = False
-cfg.recordStim = True
+cfg.recordStim = False 
 
 ### Options to save memory in large-scale ismulations
 cfg.gatherOnlySimData = True  # Original
@@ -60,7 +60,8 @@ cfg.recordTraces = {
     f"{var}_soma": {"sec": "soma", "loc": 0.5, "var": var}
     for var in ["v", "nai", "ki", "cli", "dumpi"]
 }
-cfg.seeds = {"conn": 2, "stim": 3, "loc": 4, "cell": 5, "rec": 1}
+cfg.seed = 2
+cfg.seeds = {"conn": 2 + cfg.seed, "stim": 3 +cfg.seed, "loc": 4 + cfg.seed, "cell": 5 + cfg.seed, "rec": 1 + cfg.seed}
 # Network dimensions
 cfg.fig_file = "../test_mask.npy"
 #img = cv2.imread(cfg.fig_file, cv2.IMREAD_GRAYSCALE)  # image used for capillaries
@@ -166,7 +167,7 @@ cfg.KNai = 27.9
 # a = 3*(1 + np.exp(3.5-3))
 # GliaKKo = np.log(a-1) + 3
 cfg.GliaKKo = 4.938189537703508  # originally 3.5 mM
-cfg.GliaPumpScale = 1  # 1 / 3  # 1 / 3  # originally 1/3
+cfg.GliaPumpScale =  1 / 3  # 1 / 3  # originally 1/3
 cfg.scaleConnWeight = 1
 
 if cfg.sa2v:
@@ -176,7 +177,7 @@ else:
 cfg.cyt_fraction = cfg.rs**3 / cfg.somaR**3
 
 # sd init params
-cfg.k0 = 500
+cfg.k0 = 1000 
 cfg.r0 = 100
 cfg.k0Layer = 4 # layer of elevated extracellular K+
 
@@ -202,8 +203,9 @@ cfg.Balanced = False  # False #True=Balanced // False=Unbalanced
 
 cfg.ouabain = False
 
-cfg.simLabel = f"SDStim_layer{cfg.k0Layer}_{cfg.scaleConnWeightNetStims}_{cfg.scaleConnWeightNetStimStd}_GP{cfg.GliaKKo}_{cfg.excWeight}_{cfg.inhWeightScale}_K{cfg.k0}_scale{cfg.ScaleFactor}_{cfg.prep}_{cfg.ox}_pois{cfg.poissonRateFactor}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}_Balanced{cfg.Balanced}_13kpmm_1mm3_dx{cfg.dx}_{cfg.oldDuration/1000:0.2f}s"
-cfg.saveFolder = f"/ddn/adamjhn/data/{cfg.simLabel}/"
+simLabel = f"SDStim{cfg.seed}_layer{cfg.k0Layer}_{cfg.scaleConnWeightNetStims}_{cfg.scaleConnWeightNetStimStd}_GP{cfg.GliaKKo}_{cfg.excWeight}_{cfg.inhWeightScale}_K{cfg.k0}_scale{cfg.ScaleFactor}_{cfg.prep}_{cfg.ox}_pois{cfg.poissonRateFactor}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}_Balanced{cfg.Balanced}_13kpmm_1mm3_dx{cfg.dx}"
+cfg.simLabel = f"{simLabel}_{cfg.duration/1000:0.2f}s"
+cfg.saveFolder = f"/ddn/adamjhn/data/{simLabel}_{cfg.oldDuration/1000:0.2f}s"
 # cfg.simLabel = f"test_{cfg.ox}"
 # cfg.saveFolder = f"/tmp/testSS2"
 # cfg.saveFolder = f"/tera/adam/{cfg.simLabel}/" # for neurosim

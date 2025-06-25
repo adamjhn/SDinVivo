@@ -26,6 +26,7 @@ random.seed(pcid + cfg.seeds["rec"])
 
 
 def restoreSS():
+    global lastss
     """restore sim state from saved files"""
     print(f"restore Save State from {cfg.restoredir}")
     svst = h.SaveState()
@@ -38,9 +39,10 @@ def restoreSS():
     svst.fread(f)
     print("read file", svst)
     svst.restore()
-    print("restored")
+    print("restored", h.t)
     rvSeq = pickle.load(open(os.path.join(outdir, "save_randvar_" + str(pcid) + ".pkl"),'rb'))
     setRandSeq(rvSeq)
+    lastss = h.t
 
 
 def fi(cells):
@@ -234,10 +236,11 @@ def runIntervalFunc(t):
                     dist1 = r
         fout.write("%g\t%g\t%g\n" % (h.t, dist, dist1))
         fout.flush()
+pc.barrier()
 sim.runSimWithIntervalFunc(1, runIntervalFunc)
 sim.gatherData()
 if pcid == 0:
-    networkStatsFromSim(sim, filename=os.path.join(outdir, "netstats.json"))
+    networkStatsFromSim(sim, filename=os.path.join(outdir, f"netstats_{cfg.duration/1000:0.2f}s.json"))
 sim.saveData()
 sim.analysis.plotData()
 
