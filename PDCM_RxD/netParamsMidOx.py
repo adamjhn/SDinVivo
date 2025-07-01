@@ -556,7 +556,7 @@ pumpAg = "(1.0 / (1.0 + rxd.rxdmath.exp((25 - gnai_initial)/3.0)))"
 pumpBg = f"(1.0 / (1.0 + rxd.rxdmath.exp({cfg.GliaKKo} - kk[ecs] / vol_ratio[ecs])))"
 gliapump = f"{cfg.GliaPumpScale} * p_max * {p} * {pumpAg} * {pumpBg}"
 g_glia = (
-    f"g_gliamax / (1.0 + rxd.rxdmath.exp(-(({o2ecs})*32/vol_ratio[ecs] - 2.5)/0.2))"
+    f"g_gliamax / (1.0 + rxd.rxdmath.exp(-(({o2ecs})*({rescale_o2})/vol_ratio[ecs] - 2.5)/0.2))"
 )
 glia12 = "(%s) / (1.0 + rxd.rxdmath.exp((18.0 - kk[ecs] / vol_ratio[ecs])/2.5))" % (
     g_glia

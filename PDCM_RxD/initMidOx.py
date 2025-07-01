@@ -257,7 +257,7 @@ def runIntervalFunc(t):
 
                 # if the cell was only depolarized for a single interval
                 # it was probably just an AP -- remove it
-                if abs(a-h.t) <= 1:
+                if abs(a-h.t) <= 1.5:
                     if len(cellSD[cell.gid]) > 1:
                         cellSD[cell.gid] = cellSD[cell.gid][:-1]
                     else:
