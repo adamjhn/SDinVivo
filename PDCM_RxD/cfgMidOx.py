@@ -121,32 +121,8 @@ cfg.rs = ((cfg.betaNrn * cfg.Vtissue) / (2 * np.pi * cfg.NcellRxD)) ** (1 / 3)
 cfg.epas = -70.00000000000013  # False
 cfg.sa2v = 3.4  # False
 
+
 # Neuron parameters
-# cfg.excWeight = 3.5472779489790976e-06
-# cfg.inhWeightScale = 5.603334528668638
-# cfg.scaleConnWeightNetStims = 0.513905416594529
-# cfg.scaleConnWeightNetStimStd = 0.9355311387530357
-cfg.excWeight = 4.95893e-6  # 7.270833e-7#2.4436e-6#1.11818e-6#2.35667e-7 #2.696e-6 #1.0974084295155178e-05
-cfg.inhWeightScale = (
-    5.06875  # 1.495457#8.80234#5.33374#1.2611 #9.75 #1.0050051831946134
-)
-cfg.scaleConnWeightNetStims = (
-    0.34544  # 0.3164673#0.30577#0.34982#4.3904e-6 #0.01239 #5.260251723238228e-06
-)
-cfg.scaleConnWeightNetStimStd = (
-    0.30401  # 0.8725078#0.181515#0.65593#5.39272e-6 #0.43407 #2.8118679638940484e-06
-)
-
-cfg.excWeight = 2.4436e-6  # 1.11818e-6#2.35667e-7 #2.696e-6 #1.0974084295155178e-05
-cfg.inhWeightScale = 8.80234  # 5.33374#1.2611 #9.75 #1.0050051831946134
-cfg.scaleConnWeightNetStims = (
-    0.30577  # 0.34982#4.3904e-6 #0.01239 #5.260251723238228e-06
-)
-cfg.scaleConnWeightNetStimStd = (
-    0.181515  # 0.65593#5.39272e-6 #0.43407 #2.8118679638940484e-06
-)
-
-
 """
 # original model
 cfg.gnabar = 30 / 100
@@ -162,12 +138,21 @@ cfg.Ggliamax = 5.0  # mM/sec originally 5mM/sec
 # reduction by channels (K, Kir and NKCC1) in glia.
 
 # from optuna
-cfg.gkbar = 0.027774094506433675
-cfg.gnabar = 0.09996740846941617
-cfg.gpas = 9.301731582270169e-07
-cfg.pmax = 20.344379085226635
-cfg.ukcc2 = 0.010894505022895047
-cfg.unkcc1 = 0.08314528796758339
+
+cfg.gnabar = 0.04382313373168493
+cfg.gkbar = 0.001637203254114645
+cfg.ukcc2 = 0.0711022860197119
+cfg.unkcc1 = 0.7005226526671068
+cfg.pmax = 85.87926123795012
+cfg.gpas = 0.00011081427663137358
+
+cfg.excWeight = 21.615893235790903
+cfg.inhWeightScale = 9.994149488669795
+cfg.scaleConnWeightNetStims = 1
+cfg.scaleConnWeightNetStimStd = 1
+
+
+
 cfg.gkleak_scale = 1
 cfg.KKo = 5.3
 cfg.KNai = 27.9
