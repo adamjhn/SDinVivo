@@ -1,13 +1,20 @@
 from netpyne import sim
-from netParamsMidOx import netParams
 import numpy as np
 import os
 import sys
 import pickle
-from neuron import h, rxd
+from neuron import h
 import random
-from matplotlib import pyplot as plt
 from stats import networkStatsFromSim
+import json
+
+
+def rand_uniform(gid, lb=0, ub=1):
+
+    r = h.Random()
+    r.Random123(gid, 1, 1)
+    return r.uniform(lb, ub)
+
 
 cfg, netParams = sim.readCmdLineArgs(
     simConfigDefault="cfgMidOx.py", netParamsDefault="netParamsMidOx.py"
@@ -16,7 +23,7 @@ subdir = f"{cfg.ox}_{cfg.k0Layer}_{cfg.o2drive}"
 outdir = cfg.saveFolder + os.path.sep + subdir
 
 # Additional sim setup
-## parallel context
+# parallel context
 pc = h.ParallelContext()
 pcid = pc.id()
 nhost = pc.nhost()
@@ -26,6 +33,7 @@ random.seed(pcid + cfg.seeds["rec"])
 
 
 def restoreSS():
+    global lastss
     """restore sim state from saved files"""
     print(f"restore Save State from {cfg.restoredir}")
     svst = h.SaveState()
@@ -38,13 +46,17 @@ def restoreSS():
     svst.fread(f)
     print("read file", svst)
     svst.restore()
-    print("restored")
-    rvSeq = pickle.load(open(os.path.join(outdir, "save_randvar_" + str(pcid) + ".pkl"),'rb'))
+    print("restored", h.t)
+    rvSeq = pickle.load(
+        open(os.path.join(outdir, "save_randvar_" + str(pcid) + ".pkl"), "rb")
+    )
     setRandSeq(rvSeq)
+    lastss = h.t
 
 
 def fi(cells):
-    """set steady state RMP each cell -- when not restoring from a previous simulation"""
+    """set steady state RMP each cell
+    when not restoring from a previous simulation"""
 
     # Don't run this -- it does not account for elevated K+
     """
@@ -63,9 +75,17 @@ def fi(cells):
         )
         seg.e_pas = cfg.hParams["v_init"] + isum / seg.g_pas
     """
-    ## restore from previous sim
+    # restore from previous sim
     if cfg.restore:
         restoreSS()
+
+
+def fi0(cells):
+    for cell in cells:
+        v = rand_uniform(cell.gid, cfg.cellPopsInit[0], cfg.cellPopsInit[1])
+        for sec in cell.secs.values():
+            if "hObj" in sec:
+                sec["hObj"].v = v
 
 
 sim.initialize(
@@ -73,16 +93,18 @@ sim.initialize(
 )  # create network object and set cfg and net params
 sim.net.createPops()  # instantiate network populations
 sim.net.createCells()  # instantiate network cells based on defined populations
+
 sim.net.connectCells()  # create connections between cells based on params
 sim.net.addStims()  # add external stimulation to cells (IClamps etc)
 sim.net.addRxD(nthreads=6)  # add reaction-diffusion (RxD)
-sim.setupRecording()  # setup variables to record for each cell (spikes, V traces, etc)
+sim.setupRecording()  # setup variables to record for each cell 
 fih = h.FInitializeHandler(1, lambda: fi(sim.net.cells))
+if not cfg.restore:
+    fih0 = h.FInitializeHandler(0, lambda: fi0(sim.getCellsList(include=cfg.cellPops)))
 
-
-## only single core stuff
+# only single core stuff
 if pcid == 0:
-    ## create output dir
+    # create output dir
     if not os.path.exists(outdir):
         try:
             os.makedirs(outdir)
@@ -90,7 +112,7 @@ if pcid == 0:
             print("Unable to create the directory %r for the data and figures" % outdir)
             os._exit(1)
 
-    ## set variables for ecs concentrations
+    # set variables for ecs concentrations
     k_ecs = sim.net.rxd["species"]["kk"]["hObj"][sim.net.rxd["regions"]["ecs"]["hObj"]]
     na_ecs = sim.net.rxd["species"]["na"]["hObj"][sim.net.rxd["regions"]["ecs"]["hObj"]]
     cl_ecs = sim.net.rxd["species"]["cl"]["hObj"][sim.net.rxd["regions"]["ecs"]["hObj"]]
@@ -101,7 +123,7 @@ if pcid == 0:
         sim.net.rxd["regions"]["ecs_o2"]["hObj"]
     ]
 
-## manually record from cells from each layer
+# manually record from cells from each layer
 rng = np.random.default_rng(seed=pcid + cfg.seeds["rec"])
 rec_cells = {}
 for lab, pop in sim.net.pops.items():
@@ -131,28 +153,34 @@ if pcid == 0:
 
 
 def getRandSeq():
-    """ Return a dict of gid->rv.get_seq for all cells with cellModel=='NetStim'
-        In this model the NetStim are cells so are not listed in netParams.stimSourceParams, so cannot access them with include=['allNetStims'].
+    """Return a dict of gid->rv.get_seq for all cells with
+    cellModel=='NetStim'
+    In this model the NetStim are cells so are not listed in
+    netParams.stimSourceParams, so cannot access them with
+    include=['allNetStims'].
     """
-    saveSeq = {'seq':{}, 'ids':{}}
-    for cell in sim.getCellsList(include=['all']):
-        if cell.tags['cellModel'] == 'NetStim':
-            saveSeq['seq'][cell.gid] = cell.hPointp.ranvar.get_seq()
-            saveSeq['ids'][cell.gid] = list(cell.hPointp.ranvar.get_ids().as_numpy())
+    saveSeq = {"seq": {}, "ids": {}}
+    for cell in sim.getCellsList(include=["all"]):
+        if cell.tags["cellModel"] == "NetStim":
+            saveSeq["seq"][cell.gid] = cell.hPointp.ranvar.get_seq()
+            saveSeq["ids"][cell.gid] = list(cell.hPointp.ranvar.get_ids().as_numpy())
     return saveSeq
+
 
 def setRandSeq(seqDict):
     """ Take a dict of gid->seq and apply it to all cells """
     done = []
-    for cell in sim.getCellsList(include=['all']):
-        if cell.tags['cellModel'] == 'NetStim':
-            if cell.gid in seqDict['seq']:
-                cell.hPointp.ranvar.set_seq(seqDict['seq'][cell.gid])
-                #cell.hPointp.ranvar.set_ids(*seqDict['ids'][cell.gid])
+    for cell in sim.getCellsList(include=["all"]):
+        if cell.tags["cellModel"] == "NetStim":
+            if cell.gid in seqDict["seq"]:
+                cell.hPointp.ranvar.set_seq(seqDict["seq"][cell.gid])
+                # cell.hPointp.ranvar.set_ids(*seqDict['ids'][cell.gid])
                 done.append(cell.gid)
             else:
-                raise Exception(f"Failed to set randvar for cell {cell} gid {cell.gid} -- missing value")
-    for gid in seqDict['seq']:
+                raise Exception(
+                    f"Failed to set randvar for cell {cell} gid {cell.gid} -- missing value"
+                )
+    for gid in seqDict["seq"]:
         if gid not in done:
             raise Exception(f"Failed to set randvar for cell gid {gid}")
 
@@ -163,8 +191,9 @@ def runSS():
     f = h.File(os.path.join(outdir, "save_test_" + str(pcid) + ".dat"))
     svst.fwrite(f)
     rvSeq = getRandSeq()
-    pickle.dump(rvSeq,open(os.path.join(outdir, "save_randvar_" + str(pcid) + ".pkl"),'wb'))
-
+    pickle.dump(
+        rvSeq, open(os.path.join(outdir, "save_randvar_" + str(pcid) + ".pkl"), "wb")
+    )
 
 
 def saveconc():
@@ -203,10 +232,10 @@ if pcid == 0:
     elif cfg.k0Layer == 6:
         yoff = sum(netParams.popParams["L6e"]["yRange"]) / 2
 
-
+cellSD = {}
 def runIntervalFunc(t):
     """Write the wave_progress every 1ms"""
-    global lastss
+    global lastss, cellSD
     saveint = 100  # save concentrations interval
     ssint = 10000  # save state interval
     lastss = 0
@@ -217,6 +246,29 @@ def runIntervalFunc(t):
     if ((int(t) % ssint == 0) and (t - lastss) > ssint) or (cfg.duration - t) < 1:
         runSS()
         lastss = t
+        json.dump(cellSD, open(os.path.join(outdir,f'cellsSD_{pcid}.json'),'w'))
+    for cell in sim.getCellsList(include=cfg.cellPops):
+        v = cell.secs['soma']['hObj'].v
+
+        # check previously depolarized cells 
+        if cell.gid in cellSD:
+            if v <= cfg.SDThreshold:
+                a, b = cellSD[cell.gid][-1]
+
+                # if the cell was only depolarized for a single interval
+                # it was probably just an AP -- remove it
+                if abs(a-h.t) <= 1.5:
+                    if len(cellSD[cell.gid]) > 1:
+                        cellSD[cell.gid] = cellSD[cell.gid][:-1]
+                    else:
+                        del cellSD[cell.gid]
+
+                # otherwise assume the cell recovered at time h.t
+                else:
+                    cellSD[cell.gid][-1] = (a, h.t)
+        else:
+            if v > cfg.SDThreshold:
+                cellSD[cell.gid] = [(h.t,None)]
     if pcid == 0:
         progress_bar(cfg.duration)
         dist = 0
@@ -234,13 +286,16 @@ def runIntervalFunc(t):
                     dist1 = r
         fout.write("%g\t%g\t%g\n" % (h.t, dist, dist1))
         fout.flush()
+
 sim.runSimWithIntervalFunc(1, runIntervalFunc)
 sim.gatherData()
 if pcid == 0:
-    networkStatsFromSim(sim, filename=os.path.join(outdir, "netstats.json"))
+    networkStatsFromSim(
+        sim, filename=os.path.join(outdir, f"netstats_{cfg.duration/1000:0.2f}s.json")
+    )
+
 sim.saveData()
 sim.analysis.plotData()
-
 # merge rec_cells
 rec_all = {}
 for lab in rec_cells:
@@ -264,8 +319,8 @@ if pcid == 0:
             else:
                 for k in rec_all[lab]:
                     if k != "pos" and k != "pop" and k != "gid":
-                        for u,v in zip(rec_all[lab][k], rec_old[k]):
-                            for x,y in zip(u,v):
+                        for u, v in zip(rec_all[lab][k], rec_old[k]):
+                            for x, y in zip(u, v):
                                 y.append(x)
             pickle.dump(rec_old, open(os.path.join(outdir, f"recs_{lab}.pkl"), "wb"))
         else:
@@ -273,7 +328,6 @@ if pcid == 0:
                 rec_all[lab], open(os.path.join(outdir, f"recs_{lab}.pkl"), "wb")
             )
     print("\nSimulation complete. Plotting membrane potentials")
-
 
 # v0.0 - direct copy from ../uniformdensity/init.py
 # v1.0 - added in o2 sources based on capillaries identified from histology

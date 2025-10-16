@@ -3,6 +3,13 @@ import numpy as np
 from neuron.units import sec, mM
 import math
 import cv2
+from neuron import h
+
+
+def rand_uniform(gid=0):
+    r = h.Random()
+    r.Random123(gid, 1, 1)
+    return r.uniform(-75, -60)
 
 
 try:
@@ -35,7 +42,7 @@ def findCapillaries(img):
 
 
 def takeStep(pos, xmax, ymax, dz=5, px=0.2627):
-    samp = np.random.rand()
+    samp = rand_uniform()
     if samp < 0.44:
         newpos = [pos[0], pos[1]]
     elif samp < 0.51:
@@ -86,8 +93,8 @@ def mask3D(capillaries, xsz, ysz, px, dx):
 
 def generateO2sources(fig_file, Nz, px, dx, x=None, y=None, z=None):
     img = np.load(fig_file)
-    #img = cv2.imread(fig_file, cv2.IMREAD_GRAYSCALE)
-    #img = np.rot90(img, k=-1)
+    # img = cv2.imread(fig_file, cv2.IMREAD_GRAYSCALE)
+    # img = np.rot90(img, k=-1)
     img = img[1000:, : round(cfg.sizeX / px)]
     centers = findCapillaries(img)
     capillaries = extrudeCapillaries(
@@ -161,7 +168,7 @@ Vreset = -65 (mV) : -49 (mV) :
 #Fixed firing threshold
 Vteta  = -50 (mV)"""
 # Membrane capacity
-C_m = cfg.Cm / (2e-8 * np.pi * cfg.somaR**2)  # pF
+C_m = cfg.Cm / (2e-8 * np.pi * cfg.somaR ** 2)  # pF
 # Mean amplitude of the postsynaptic potential (in mV).
 w_v = 0.15
 # Mean amplitude of the postsynaptic potential (in pA).
@@ -469,7 +476,7 @@ constants = {
     "vtau": 1 / 250.0,
     "g_gliamax": cfg.Ggliamax * mM / sec,
     "beta0": 7.0,
-    "avo": 6.0221409 * (10**23),
+    "avo": 6.0221409 * (10 ** 23),
     "p_max": cfg.pmax * mM / sec,
     "nao_initial": 144.0,
     "nai_initial": 18.0,
@@ -549,7 +556,7 @@ pumpAg = "(1.0 / (1.0 + rxd.rxdmath.exp((25 - gnai_initial)/3.0)))"
 pumpBg = f"(1.0 / (1.0 + rxd.rxdmath.exp({cfg.GliaKKo} - kk[ecs] / vol_ratio[ecs])))"
 gliapump = f"{cfg.GliaPumpScale} * p_max * {p} * {pumpAg} * {pumpBg}"
 g_glia = (
-    f"g_gliamax / (1.0 + rxd.rxdmath.exp(-(({o2ecs})*32/vol_ratio[ecs] - 2.5)/0.2))"
+    f"g_gliamax / (1.0 + rxd.rxdmath.exp(-(({o2ecs})*({rescale_o2})/vol_ratio[ecs] - 2.5)/0.2))"
 )
 glia12 = "(%s) / (1.0 + rxd.rxdmath.exp((18.0 - kk[ecs] / vol_ratio[ecs])/2.5))" % (
     g_glia
@@ -567,7 +574,7 @@ if cfg.prep == "invitro":
 
 # volume_scale = "1e-18 * avo * %f" % (1.0 / cfg.sa2v)
 
-avo = 6.0221409 * (10**23)
+avo = 6.0221409 * (10 ** 23)
 volume_scale = 1e-18 * avo / cfg.sa2v
 osm = "(1.1029 - 0.1029*rxd.rxdmath.exp( ( (na[ecs] + kk[ecs] + cl[ecs] + 18.0)/vol_ratio[ecs] - (na[cyt] + kk[cyt] + cl[cyt] + 132.0)/vol_ratio[cyt])/20.0))"
 scalei = str(avo * 1e-18)
