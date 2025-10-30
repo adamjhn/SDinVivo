@@ -15,6 +15,7 @@ cfg.duration = 10000  # Duration of the simulation, in ms
 cfg.oldDuration = 10000
 cfg.restore = False
 cfg.hParams["celsius"] = 37.0
+cfg.hParams["v_init"] = -70
 cfg.Cm = 1.0  # pF/cm**2
 cfg.Ra = 100
 cfg.dt = 0.025  # Internal integration timestep to use
@@ -124,8 +125,8 @@ cfg.sa2v = 3.4  # False
 
 # Neuron parameters
 # Scale synapses weights -- optimized
-cfg.excWeight = 0.005992667194054918
-cfg.inhWeightScale = 5.305726090190602
+cfg.excWeight = 0.0019509207030515314
+cfg.inhWeightScale = 4.7186416928467985
 cfg.weightMin = 0.1
 cfg.dWeight = 0.1
 
@@ -161,7 +162,7 @@ cfg.KNai = 27.9
 # Scaled to match original 1/3 scaling at Ko=3; i.e.
 # a = 3*(1 + np.exp(3.5-3))
 # GliaKKo = np.log(a-1) + 3
-cfg.GliaKKo = 4.938189537703508  # originally 3.5 mM
+cfg.GliaKKo = 3.5 #4.938189537703508  # originally 3.5 mM
 cfg.GliaPumpScale = 1 / 3  # 1 / 3  # originally 1/3
 cfg.scaleConnWeight = 1
 
@@ -172,9 +173,9 @@ else:
 cfg.cyt_fraction = cfg.rs ** 3 / cfg.somaR ** 3
 
 # sd init params
-cfg.k0 = 500 
-cfg.r0 = 200
-cfg.k0Layer = 2 # layer of elevated extracellular K+
+cfg.k0 = 3.5 
+cfg.r0 = 100
+cfg.k0Layer = None # layer of elevated extracellular K+
 
 ###########################################################
 # Network Options
@@ -194,7 +195,7 @@ cfg.DC = False  # True = DC // False = Poisson
 cfg.TH = True  # True = on // False = off
 
 # Balanced and Unbalanced external input as PD article
-cfg.Balanced = False  # False #True=Balanced // False=Unbalanced
+cfg.Balanced = True  # False #True=Balanced // False=Unbalanced
 
 cfg.ouabain = False
 

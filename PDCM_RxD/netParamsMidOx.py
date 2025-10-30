@@ -237,8 +237,8 @@ netParams = (
 netParams.delayMin_e = 1.5
 netParams.ddelay = 0.5
 netParams.delayMin_i = 0.75
-netParams.weightMin = w_p
-netParams.dweight = 0.1
+netParams.weightMin = cfg.weightMin 
+netParams.dweight = cfg.dweight
 
 netParams.sizeX = (
     cfg.sizeX
