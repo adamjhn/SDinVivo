@@ -19,7 +19,7 @@ def rand_uniform(gid, lb=0, ub=1):
 cfg, netParams = sim.readCmdLineArgs(
     simConfigDefault="cfgMidOx.py", netParamsDefault="netParamsMidOx.py"
 )
-subdir = f"{cfg.ox}_{cfg.k0Layer}_{cfg.o2drive}"
+subdir = f"{cfg.ox}_{cfg.k0Layer}_{cfg.k0}_{cfg.o2drive}"
 outdir = cfg.saveFolder + os.path.sep + subdir
 
 # Additional sim setup

@@ -11,8 +11,8 @@ import numpy as np
 
 # Run parameters
 cfg = specs.SimConfig()  # object of class cfg to store simulation configuration
-cfg.duration = 10000  # Duration of the simulation, in ms
-cfg.oldDuration = 10000
+cfg.duration = 30000  # Duration of the simulation, in ms
+cfg.oldDuration = 30000
 cfg.restore = False
 cfg.hParams["celsius"] = 37.0
 cfg.hParams["v_init"] = -70
@@ -35,7 +35,7 @@ cfg.saveCellConns = False
 cfg.createPyStruct = False
 cfg.printPopAvgRates = True
 cfg.singleCells = False  # create one cell in each population
-cfg.printRunTime = 1
+cfg.printRunTime = False # will break save/restore via CVode events if True 
 cfg.Kceil = 15.0
 cfg.nRec = 25
 cfg.cellPops = [
@@ -88,8 +88,6 @@ cfg.Vtissue = cfg.sizeX * cfg.sizeY * cfg.sizeZ
 cfg.poissonRateFactor = 1.0
 cfg.connected = True
 
-# cfg.scaleConnWeight = 1e-6
-# cfg.scaleConnWeightNetStims = 1e-6
 
 # slice conditions
 cfg.ox = "perfused"
@@ -107,7 +105,7 @@ elif cfg.ox == "hypoxic":
     cfg.o2drive = 0.2  # 0.013 * (1 / 6)
 cfg.prep = "invivo"  # "invitro"
 # Size of Network. Adjust this constants, please!
-cfg.ScaleFactor = 0.16  # used for batch param search  # = 80.000
+cfg.ScaleFactor = 0.0016  # used for batch param search  # = 80.000
 
 # neuron params
 cfg.betaNrn = (
@@ -125,11 +123,18 @@ cfg.sa2v = 3.4  # False
 
 # Neuron parameters
 # Scale synapses weights -- optimized
-cfg.excWeight = 0.0019509207030515314
-cfg.inhWeightScale = 4.7186416928467985
-cfg.weightMin = 0.1
-cfg.dWeight = 0.1
+cfg.excWeight = 0.0020201355494910223
+cfg.inhWeightScale = 4.739283913127959
+cfg.gnabar = 0.013861404927426421
+cfg.gkbar = 0.04231045683454869
+cfg.ukcc2 = 0.003703689363918263
+cfg.unkcc1 = 2.7069025060127925
+cfg.pmax = 3.1123191848721445
+cfg.gpas = 3.4047883064725105e-07
 
+# default values
+cfg.weightMin = 0.1
+cfg.dweight = 0.1
 cfg.scaleConnWeightNetStims = 1
 cfg.scaleConnWeightNetStimStd = 1
 
@@ -146,15 +151,6 @@ cfg.gpas = 0.0001
 cfg.Ggliamax = 5.0  # mM/sec originally 5mM/sec
 # we scaled pump by ~4.84 so apply a corresponding
 # reduction by channels (K, Kir and NKCC1) in glia.
-
-# optimized single cell parameters
-cfg.gnabar = 0.014082188864974863
-cfg.gkbar = 0.04388527317642928
-cfg.ukcc2 = 0.004736215246958123
-cfg.unkcc1 = 3.5023769046490805
-cfg.pmax = 3.062009769812637
-cfg.gpas = 3.569925879901752e-07
-
 
 cfg.gkleak_scale = 1
 cfg.KKo = 5.3
@@ -201,7 +197,7 @@ cfg.ouabain = False
 
 simLabel = f"SDLarge{cfg.seed}_layer{cfg.k0Layer}_{cfg.scaleConnWeightNetStims}_{cfg.scaleConnWeightNetStimStd}_GP{cfg.GliaKKo}_{cfg.excWeight}_{cfg.inhWeightScale}_K{cfg.k0}_scale{cfg.ScaleFactor}_{cfg.prep}_{cfg.ox}_pois{cfg.poissonRateFactor}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}_Balanced{cfg.Balanced}_13kpmm_1mm3_dx{cfg.dx}"
 cfg.simLabel = f"{simLabel}_{cfg.duration/1000:0.2f}s"
-cfg.saveFolder = f"/ddn/adamjhn/data/{simLabel}_{cfg.oldDuration/1000:0.2f}s"
+cfg.saveFolder = f"./data/{simLabel}_{cfg.oldDuration/1000:0.2f}s"
 # cfg.simLabel = f"test_{cfg.ox}"
 #cfg.saveFolder = f"/tmp/test"
 # cfg.saveFolder = f"/tera/adam/{cfg.simLabel}/" # for neurosim
