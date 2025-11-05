@@ -11,9 +11,9 @@ import numpy as np
 
 # Run parameters
 cfg = specs.SimConfig()  # object of class cfg to store simulation configuration
-cfg.duration = 30000  # Duration of the simulation, in ms
-cfg.oldDuration = 30000
-cfg.restore = False
+cfg.duration = 10000  # Duration of the simulation, in ms
+cfg.oldDuration = 10000
+cfg.restore = False 
 cfg.hParams["celsius"] = 37.0
 cfg.hParams["v_init"] = -70
 cfg.Cm = 1.0  # pF/cm**2
@@ -96,16 +96,16 @@ if cfg.ox == "perfused":
     cfg.o2_init = 0.04  # ~24 mmHg
     cfg.alpha_ecs = 0.2
     cfg.tort_ecs = 1.6
-    cfg.o2drive = 1.0  # 0.013
+    cfg.o2drive = 2.5  # 0.013
 elif cfg.ox == "hypoxic":
     cfg.o2_bath = 0.06  # ~4 mmHg
     cfg.o2_init = 0.005
     cfg.alpha_ecs = 0.07
     cfg.tort_ecs = 1.8
-    cfg.o2drive = 0.2  # 0.013 * (1 / 6)
+    cfg.o2drive = 2.5 / 6  # 0.013 * (1 / 6)
 cfg.prep = "invivo"  # "invitro"
 # Size of Network. Adjust this constants, please!
-cfg.ScaleFactor = 0.0016  # used for batch param search  # = 80.000
+cfg.ScaleFactor = 0.16  # used for batch param search  # = 80.000
 
 # neuron params
 cfg.betaNrn = (
