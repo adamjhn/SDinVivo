@@ -1,0 +1,116 @@
+from netpyne import sim
+import numpy as np
+import os
+import sys
+import pickle
+from neuron import h
+import random
+from stats import networkStatsFromSim
+import json
+
+
+def rand_uniform(gid, lb=0, ub=1):
+
+    r = h.Random()
+    r.Random123(gid, 1, 1)
+    return r.uniform(lb, ub)
+
+
+cfg, netParams = sim.readCmdLineArgs(
+    simConfigDefault="cfgMidOx.py", netParamsDefault="netParamsMidOx.py"
+)
+subdir = f"{cfg.ox}_{cfg.k0Layer}_{cfg.k0}_{cfg.o2drive}"
+outdir = cfg.saveFolder + os.path.sep + subdir
+
+# Additional sim setup
+# parallel context
+pc = h.ParallelContext()
+pcid = pc.id()
+nhost = pc.nhost()
+pc.timeout(0)
+pc.set_maxstep(100)  # required when using multiple processes
+random.seed(pcid + cfg.seeds["rec"])
+
+
+def restoreSS():
+    global lastss
+    """restore sim state from saved files"""
+    print(f"restore Save State from {cfg.restoredir}")
+    svst = h.SaveState()
+    f = h.File(
+        os.path.join(
+            os.path.join(cfg.restoredir, subdir), "save_test_" + str(pcid) + ".dat"
+        )
+    )
+    print("loaded file", f)
+    svst.fread(f)
+    print("read file", svst)
+    svst.restore()
+    print("restored", h.t)
+    rvSeq = pickle.load(
+        open(os.path.join(outdir, "save_randvar_" + str(pcid) + ".pkl"), "rb")
+    )
+    setRandSeq(rvSeq)
+    lastss = h.t
+
+
+def fi(cells):
+    """set steady state RMP each cell
+    when not restoring from a previous simulation"""
+
+    # Don't run this -- it does not account for elevated K+
+    """
+    cfg.e_pas = {}
+    for c in cells:
+        # skip artificial cells
+        if not hasattr(c.secs, "soma"):
+            continue
+        seg = c.secs.soma.hObj(0.5)
+        isum = 0
+        isum = (
+            (seg.ina if h.ismembrane("na_ion") else 0)
+            + (seg.ik if h.ismembrane("k_ion") else 0)
+            + (seg.ica if h.ismembrane("ca_ion") else 0)
+            + (seg.iother if h.ismembrane("other_ion") else 0)
+        )
+        seg.e_pas = cfg.hParams["v_init"] + isum / seg.g_pas
+    """
+    # restore from previous sim
+    if cfg.restore:
+        restoreSS()
+
+
+def fi0(cells):
+    for cell in cells:
+        v = rand_uniform(cell.gid, cfg.cellPopsInit[0], cfg.cellPopsInit[1])
+        for sec in cell.secs.values():
+            if "hObj" in sec:
+                sec["hObj"].v = v
+
+
+sim.initialize(
+    simConfig=cfg, netParams=netParams
+)  # create network object and set cfg and net params
+sim.net.createPops()  # instantiate network populations
+sim.net.createCells()  # instantiate network cells based on defined populations
+
+sim.net.connectCells()  # create connections between cells based on params
+sim.net.addStims()  # add external stimulation to cells (IClamps etc)
+
+N = len(sim.net.cells)*nhost
+
+Wexc = np.zeros((N,N))
+Winh = np.zeros((N,N))
+for gid in range(N):
+    cell = sim.cellByGid(gid)
+    if hasattr(cell,'conns'):
+        for conn in cell.conns:
+            pid = int(conn['preGid'])
+            if conn['synMech'] == 'exc':
+                Wexc[pid][gid] += conn['weight']
+            else:
+                Winh[pid][gid] += conn['weight']
+
+np.save(f"Wexc{pcid}.npy",Wexc)
+np.save(f"Winh{pcid}.npy",Winh)
+
