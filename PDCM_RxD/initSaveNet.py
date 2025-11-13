@@ -91,26 +91,95 @@ def fi0(cells):
 sim.initialize(
     simConfig=cfg, netParams=netParams
 )  # create network object and set cfg and net params
+sim.cfg.saveCellConns = True
+sim.cfg.createPyStruct = True
 sim.net.createPops()  # instantiate network populations
 sim.net.createCells()  # instantiate network cells based on defined populations
 
 sim.net.connectCells()  # create connections between cells based on params
 sim.net.addStims()  # add external stimulation to cells (IClamps etc)
 
-N = len(sim.net.cells)*nhost
+myN = len(sim.net.cells)
+allN = pc.py_allgather(myN)
+N = sum(allN)
 
-Wexc = np.zeros((N,N))
-Winh = np.zeros((N,N))
+Wexc = np.zeros((N, N))
+Winh = np.zeros((N, N))
 for gid in range(N):
     cell = sim.cellByGid(gid)
-    if hasattr(cell,'conns'):
+    if hasattr(cell, "conns"):
         for conn in cell.conns:
-            pid = int(conn['preGid'])
-            if conn['synMech'] == 'exc':
-                Wexc[pid][gid] += conn['weight']
+            if "preGid" in conn:
+                pid = int(conn["preGid"])
+                if conn["synMech"] == "exc":
+                    Wexc[pid][gid] += conn["weight"]
+                else:
+                    Winh[pid][gid] += conn["weight"]
+
+if pcid != 0:
+    np.save(f"tmp_Wexc{pcid}.npy", Wexc)
+    np.save(f"tmp_Winh{pcid}.npy", Winh)
+    del Wexc
+    del Winh
+
+
+pops = {}
+cells = {}
+for cell in sim.net.cells:
+    pop = cell.tags["pop"]
+    x, y, z = cell.tags["x"], cell.tags["y"], cell.tags["z"]
+    cells[cell.gid] = [x, y, z]
+    if pop in pops:
+        pops[pop].append(cell.gid)
+    else:
+        pops[pop] = [cell.gid]
+
+
+if (nhost > 0 and pcid != 1) or (pcid != 0):
+    pickle.dump(pops, open(f'tmp{pcid}_populationsSeed_{cfg.seeds["loc"]}.pkl', "wb"))
+    pickle.dump(cells, open(f'tmp{pcid}_positionsSeed_{cfg.seeds["loc"]}.pkl', "wb"))
+
+pc.barrier()
+if pcid == 0:
+    print("merge connections")
+    # merge connections
+    for i in range(1, nhost):
+        Wexc += np.load(f"tmp_Wexc{i}.npy")
+        Winh += np.load(f"tmp_Winh{i}.npy")
+        os.remove(f"tmp_Wexc{i}.npy")
+        os.remove(f"tmp_Winh{i}.npy")
+    np.save("Wexc.npy", Wexc)
+    np.save("Winh.npy", Winh)
+    print("saved connections")
+
+if (nhost > 0 and pcid == 1):
+    print("merge positions")
+    # merge positions
+    for i in range(nhost):
+        if nhost > 0 and i == 1:
+            continue
+        newPops = pickle.load(
+            open(f"tmp{i}_populationsSeed_{cfg.seeds['loc']}.pkl", "rb")
+        )
+        newCells = pickle.load(
+            open(f'tmp{i}_positionsSeed_{cfg.seeds["loc"]}.pkl', "rb")
+        )
+        for k, v in newPops.items():
+            if k in pops:
+                pops[k] = pops[k] + v
             else:
-                Winh[pid][gid] += conn['weight']
+                pops[k] = v
+        cells.update(newCells)
+        os.remove(f"tmp{i}_populationsSeed_{cfg.seeds['loc']}.pkl")
+        os.remove(f'tmp{i}_positionsSeed_{cfg.seeds["loc"]}.pkl')
 
-np.save(f"Wexc{pcid}.npy",Wexc)
-np.save(f"Winh{pcid}.npy",Winh)
+    for pop in pops:
+        pops[pop].sort()
 
+    pickle.dump(pops, open(f"populationsSeed_{cfg.seeds['loc']}.pkl", "wb"))
+    cells = [cells[x] for x in range(max(list(cells.keys())))]
+    np.save(f'positionsSeed_{cfg.seeds["loc"]}.npy', cells)
+    print("saved positions")
+
+pc.barrier()
+print("done")
