@@ -11,8 +11,8 @@ import numpy as np
 
 # Run parameters
 cfg = specs.SimConfig()  # object of class cfg to store simulation configuration
-cfg.duration = 10000  # Duration of the simulation, in ms
-cfg.oldDuration = 10000
+cfg.duration = 30000  # Duration of the simulation, in ms
+cfg.oldDuration = 30000
 cfg.restore = False 
 cfg.hParams["celsius"] = 37.0
 cfg.hParams["v_init"] = -70
@@ -96,13 +96,13 @@ if cfg.ox == "perfused":
     cfg.o2_init = 0.04  # ~24 mmHg
     cfg.alpha_ecs = 0.2
     cfg.tort_ecs = 1.6
-    cfg.o2drive = 2.5  # 0.013
+    cfg.o2drive = 5.0  # 0.013
 elif cfg.ox == "hypoxic":
     cfg.o2_bath = 0.06  # ~4 mmHg
     cfg.o2_init = 0.005
     cfg.alpha_ecs = 0.07
     cfg.tort_ecs = 1.8
-    cfg.o2drive = 2.5 / 6  # 0.013 * (1 / 6)
+    cfg.o2drive = 1.0 / 6  # 0.013 * (1 / 6)
 cfg.prep = "invivo"  # "invitro"
 # Size of Network. Adjust this constants, please!
 cfg.ScaleFactor = 0.16  # used for batch param search  # = 80.000
@@ -170,8 +170,8 @@ cfg.cyt_fraction = cfg.rs ** 3 / cfg.somaR ** 3
 
 # sd init params
 cfg.k0 = 3.5 
-cfg.r0 = 100
-cfg.k0Layer = None # layer of elevated extracellular K+
+cfg.r0 = 2500
+cfg.k0Layer = 2 # layer of elevated extracellular K+
 
 ###########################################################
 # Network Options
@@ -195,7 +195,7 @@ cfg.Balanced = True  # False #True=Balanced // False=Unbalanced
 
 cfg.ouabain = False
 
-simLabel = f"SDLarge{cfg.seed}_layer{cfg.k0Layer}_{cfg.scaleConnWeightNetStims}_{cfg.scaleConnWeightNetStimStd}_GP{cfg.GliaKKo}_{cfg.excWeight}_{cfg.inhWeightScale}_K{cfg.k0}_scale{cfg.ScaleFactor}_{cfg.prep}_{cfg.ox}_pois{cfg.poissonRateFactor}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}_Balanced{cfg.Balanced}_13kpmm_1mm3_dx{cfg.dx}"
+simLabel = f"SDG_{cfg.seed}_layer{cfg.k0Layer}_{cfg.scaleConnWeightNetStims}_{cfg.scaleConnWeightNetStimStd}_GP{cfg.GliaKKo}_{cfg.excWeight}_{cfg.inhWeightScale}_K{cfg.k0}_scale{cfg.ScaleFactor}_{cfg.prep}_{cfg.ox}_pois{cfg.poissonRateFactor}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}_Balanced{cfg.Balanced}_13kpmm_1mm3_dx{cfg.dx}"
 cfg.simLabel = f"{simLabel}_{cfg.duration/1000:0.2f}s"
 cfg.saveFolder = f"./data/{simLabel}_{cfg.oldDuration/1000:0.2f}s"
 # cfg.simLabel = f"test_{cfg.ox}"
