@@ -608,7 +608,7 @@ def initEval(ratestr):
     return eval(ratestr)
 
 
-min_pmax = f"p_max * ({nkcc1} + {kcc2} + {gk} * (v_initial - {ek})/({volume_scale}))/(2*{pump_max})"
+min_pmax = f"p_max * ({nkcc1} + {kcc2} + {gk} * (v_initial - {ek})/({volume_scale}))/(2*{pump})"
 pmin = initEval(min_pmax)
 if constants["p_max"] < pmin:
     print("Pump current is too low to balance K+ currents")

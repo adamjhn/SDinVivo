@@ -123,14 +123,14 @@ cfg.sa2v = 3.4  # False
 
 # Neuron parameters
 # Scale synapses weights -- optimized
-cfg.excWeight = 0.14376649904407726
-cfg.inhWeightScale = 3.3297743459801987
-cfg.gnabar = 0.02480716659928048
-cfg.gkbar = 0.003045373815052921
-cfg.ukcc2 = 0.3346012597431861
-cfg.unkcc1 = 4.899481671772671
-cfg.pmax = 12.639480329923114
-cfg.gpas = 1.549147226145847e-05
+cfg.excWeight = 0.10663906008456522
+cfg.inhWeightScale = 3.180383953783202
+cfg.gnabar = 0.024293069845424283
+cfg.gkbar = 0.003141838251381206
+cfg.ukcc2 = 0.3776746704212989
+cfg.unkcc1 = 4.150285352617539
+cfg.pmax = 19.202806147844576
+cfg.gpas = 2.484551367577307e-05
 
 # default values
 cfg.weightMin = 0.1
