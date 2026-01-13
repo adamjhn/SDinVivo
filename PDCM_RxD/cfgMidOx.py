@@ -11,8 +11,8 @@ import numpy as np
 
 # Run parameters
 cfg = specs.SimConfig()  # object of class cfg to store simulation configuration
-cfg.duration = 30000  # Duration of the simulation, in ms
-cfg.oldDuration = 30000
+cfg.duration = 1000  # Duration of the simulation, in ms
+cfg.oldDuration = 1000
 cfg.restore = False 
 cfg.hParams["celsius"] = 37.0
 cfg.hParams["v_init"] = -70
@@ -123,14 +123,14 @@ cfg.sa2v = 3.4  # False
 
 # Neuron parameters
 # Scale synapses weights -- optimized
-cfg.excWeight = 0.10663906008456522
-cfg.inhWeightScale = 3.180383953783202
-cfg.gnabar = 0.024293069845424283
-cfg.gkbar = 0.003141838251381206
-cfg.ukcc2 = 0.3776746704212989
-cfg.unkcc1 = 4.150285352617539
-cfg.pmax = 19.202806147844576
-cfg.gpas = 2.484551367577307e-05
+cfg.excWeight = 0.13600651865684632
+cfg.inhWeightScale = 3.000056396999064
+cfg.gnabar = 0.024257626522362886
+cfg.gkbar = 0.003202291115119891
+cfg.ukcc2 = 0.2787358441664468
+cfg.unkcc1 = 4.226684605489808
+cfg.pmax = 10.381491180768244
+cfg.gpas = 1.6894591609685748e-05
 
 # default values
 cfg.weightMin = 0.1
@@ -170,8 +170,8 @@ cfg.cyt_fraction = cfg.rs ** 3 / cfg.somaR ** 3
 
 # sd init params
 cfg.k0 = 3.5 
-cfg.r0 = 2500
-cfg.k0Layer = 2 # layer of elevated extracellular K+
+cfg.r0 = 100
+cfg.k0Layer = None # layer of elevated extracellular K+
 
 ###########################################################
 # Network Options
