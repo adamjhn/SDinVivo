@@ -11,8 +11,8 @@ import numpy as np
 
 # Run parameters
 cfg = specs.SimConfig()  # object of class cfg to store simulation configuration
-cfg.duration = 1000  # Duration of the simulation, in ms
-cfg.oldDuration = 1000
+cfg.duration = 5000  # Duration of the simulation, in ms
+cfg.oldDuration = 5000
 cfg.restore = False 
 cfg.hParams["celsius"] = 37.0
 cfg.hParams["v_init"] = -70
@@ -123,6 +123,15 @@ cfg.sa2v = 3.4  # False
 
 # Neuron parameters
 # Scale synapses weights -- optimized with min K-leak 1e-5
+cfg.excWeight = 0.13435920910758772
+cfg.inhWeightScale = 3.224191247601775
+cfg.gnabar = 0.024135784291980992
+cfg.gkbar = 0.002954172759514262
+cfg.ukcc2 = 0.2532204018570924
+cfg.unkcc1 = 4.87306949791354
+cfg.pmax = 4.673670267295402
+cfg.gpas = 2.2990035536093757e-05
+"""
 cfg.excWeight = 3.810287340678953e-05
 cfg.inhWeightScale = 0.758808704666386
 cfg.gnabar = 0.023208319553518326
@@ -131,6 +140,7 @@ cfg.ukcc2 = 0.24444497795096276
 cfg.unkcc1 = 4.325588329498557
 cfg.pmax = 14.289942517745537
 cfg.gpas = 9.992715361947464e-06
+"""
 
 # default values
 cfg.weightMin = 0.1
@@ -195,7 +205,7 @@ cfg.Balanced = True  # False #True=Balanced // False=Unbalanced
 
 cfg.ouabain = False
 
-simLabel = f"SDG_{cfg.seed}_layer{cfg.k0Layer}_{cfg.scaleConnWeightNetStims}_{cfg.scaleConnWeightNetStimStd}_GP{cfg.GliaKKo}_{cfg.excWeight}_{cfg.inhWeightScale}_K{cfg.k0}_scale{cfg.ScaleFactor}_{cfg.prep}_{cfg.ox}_pois{cfg.poissonRateFactor}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}_Balanced{cfg.Balanced}_13kpmm_1mm3_dx{cfg.dx}"
+simLabel = f"SDLeak_{cfg.seed}_layer{cfg.k0Layer}_cfg.k0}_{cfg.prep}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}"
 cfg.simLabel = f"{simLabel}_{cfg.duration/1000:0.2f}s"
 cfg.saveFolder = f"./data/{simLabel}_{cfg.oldDuration/1000:0.2f}s"
 # cfg.simLabel = f"test_{cfg.ox}"
