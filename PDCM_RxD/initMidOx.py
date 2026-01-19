@@ -97,7 +97,7 @@ sim.net.createCells()  # instantiate network cells based on defined populations
 sim.net.connectCells()  # create connections between cells based on params
 sim.net.addStims()  # add external stimulation to cells (IClamps etc)
 sim.net.addRxD(nthreads=6)  # add reaction-diffusion (RxD)
-sim.setupRecording()  # setup variables to record for each cell 
+sim.setupRecording()  # setup variables to record for each cell
 fih = h.FInitializeHandler(1, lambda: fi(sim.net.cells))
 if not cfg.restore:
     fih0 = h.FInitializeHandler(0, lambda: fi0(sim.getCellsList(include=cfg.cellPops)))
@@ -168,7 +168,7 @@ def getRandSeq():
 
 
 def setRandSeq(seqDict):
-    """ Take a dict of gid->seq and apply it to all cells """
+    """Take a dict of gid->seq and apply it to all cells"""
     done = []
     for cell in sim.getCellsList(include=["all"]):
         if cell.tags["cellModel"] == "NetStim":
@@ -232,10 +232,12 @@ if pcid == 0:
     elif cfg.k0Layer == 6:
         yoff = sum(netParams.popParams["L6e"]["yRange"]) / 2
 
-cellSD = {}
+cellSDOpen, cellSDClosed = {}, {}
+
+
 def runIntervalFunc(t):
     """Write the wave_progress every 1ms"""
-    global lastss, cellSD
+    global lastss, cellSDOpen, cellSDClosed
     saveint = 100  # save concentrations interval
     ssint = 10000  # save state interval
     lastss = 0
@@ -243,32 +245,33 @@ def runIntervalFunc(t):
         if int(t) % saveint == 0:
             # plot extracellular concentrations averaged over depth every 100ms
             saveconc()
-    if ((int(t) % ssint == 0) and (t - lastss) > ssint) or (cfg.duration - t) < 1:
-        runSS()
-        lastss = t
-        json.dump(cellSD, open(os.path.join(outdir,f'cellsSD_{pcid}.json'),'w'))
     for cell in sim.getCellsList(include=cfg.cellPops):
-        v = cell.secs['soma']['hObj'].v
+        v = cell.secs["soma"]["hObj"].v
 
-        # check previously depolarized cells 
-        if cell.gid in cellSD:
+        # check previously depolarized cells
+        if cell.gid in cellSDOpen:
             if v <= cfg.SDThreshold:
-                a, b = cellSD[cell.gid][-1]
+                a = cellSDOpen[cell.gid]
 
                 # if the cell was only depolarized for a single interval
                 # it was probably just an AP -- remove it
-                if abs(a-h.t) <= 1.5:
-                    if len(cellSD[cell.gid]) > 1:
-                        cellSD[cell.gid] = cellSD[cell.gid][:-1]
-                    else:
-                        del cellSD[cell.gid]
-
-                # otherwise assume the cell recovered at time h.t
+                if abs(a - h.t) <= 2.5:
+                    del cellSDOpen[cell.gid]
                 else:
-                    cellSD[cell.gid][-1] = (a, h.t)
+                    cellSDClosed[cell.gid].append((a, h.t))
         else:
             if v > cfg.SDThreshold:
-                cellSD[cell.gid] = [(h.t,None)]
+                cellSDOpen[cell.gid] = a
+    if ((int(t) % ssint == 0) and (t - lastss) > ssint) or (cfg.duration - t) < 1:
+        runSS()
+        lastss = t
+
+        # sustained depolarization at current time
+        cellSD = cellSDClosed.copy()
+        for cell, a in cellSDOpen.items():
+            cellSD[cell].append([a, None])
+        json.dump(cellSD, open(os.path.join(outdir, f"cellsSD_{pcid}.json"), "w"))
+
     if pcid == 0:
         progress_bar(cfg.duration)
         dist = 0
@@ -286,6 +289,7 @@ def runIntervalFunc(t):
                     dist1 = r
         fout.write("%g\t%g\t%g\n" % (h.t, dist, dist1))
         fout.flush()
+
 
 sim.runSimWithIntervalFunc(1, runIntervalFunc)
 sim.gatherData()
