@@ -11,9 +11,9 @@ import numpy as np
 
 # Run parameters
 cfg = specs.SimConfig()  # object of class cfg to store simulation configuration
-cfg.duration = 5000  # Duration of the simulation, in ms
-cfg.oldDuration = 5000
-cfg.restore = False 
+cfg.duration = 10000  # Duration of the simulation, in ms
+cfg.oldDuration = 1000
+cfg.restore = True 
 cfg.hParams["celsius"] = 37.0
 cfg.hParams["v_init"] = -70
 cfg.Cm = 1.0  # pF/cm**2
@@ -96,7 +96,7 @@ if cfg.ox == "perfused":
     cfg.o2_init = 0.04  # ~24 mmHg
     cfg.alpha_ecs = 0.2
     cfg.tort_ecs = 1.6
-    cfg.o2drive = 5.0  # 0.013
+    cfg.o2drive = 60  # 0.013
 elif cfg.ox == "hypoxic":
     cfg.o2_bath = 0.06  # ~4 mmHg
     cfg.o2_init = 0.005
@@ -205,7 +205,7 @@ cfg.Balanced = True  # False #True=Balanced // False=Unbalanced
 
 cfg.ouabain = False
 
-simLabel = f"SDLeak_{cfg.seed}_layer{cfg.k0Layer}_cfg.k0}_{cfg.prep}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}"
+simLabel = f"SDLeak_{cfg.seed}_layer{cfg.k0Layer}_K0{cfg.k0}_{cfg.prep}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}"
 cfg.simLabel = f"{simLabel}_{cfg.duration/1000:0.2f}s"
 cfg.saveFolder = f"./data/{simLabel}_{cfg.oldDuration/1000:0.2f}s"
 # cfg.simLabel = f"test_{cfg.ox}"

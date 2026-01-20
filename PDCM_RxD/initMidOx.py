@@ -239,7 +239,7 @@ def runIntervalFunc(t):
     """Write the wave_progress every 1ms"""
     global lastss, cellSDOpen, cellSDClosed
     saveint = 100  # save concentrations interval
-    ssint = 10000  # save state interval
+    ssint = 1000  # save state interval
     lastss = 0
     if pcid == 0:
         if int(t) % saveint == 0:
@@ -255,21 +255,26 @@ def runIntervalFunc(t):
 
                 # if the cell was only depolarized for a single interval
                 # it was probably just an AP -- remove it
-                if abs(a - h.t) <= 2.5:
-                    del cellSDOpen[cell.gid]
-                else:
-                    cellSDClosed[cell.gid].append((a, h.t))
+                del cellSDOpen[cell.gid]
+                if abs(a - h.t) > 2.5:
+                    if cell.gid in cellSDClosed:
+                        cellSDClosed[cell.gid].append((a, h.t))
+                    else:
+                        cellSDClosed[cell.gid] = [(a, h.t)]
         else:
             if v > cfg.SDThreshold:
-                cellSDOpen[cell.gid] = a
-    if ((int(t) % ssint == 0) and (t - lastss) > ssint) or (cfg.duration - t) < 1:
+                cellSDOpen[cell.gid] = h.t 
+    if ((int(t) % ssint == 0) and (h.t - lastss) > ssint) or (cfg.duration - t) < 1:
         runSS()
         lastss = t
 
         # sustained depolarization at current time
         cellSD = cellSDClosed.copy()
         for cell, a in cellSDOpen.items():
-            cellSD[cell].append([a, None])
+            if cell in cellSD:
+                cellSD[cell].append([a, None])
+            else:
+                cellSD[cell] = [(a, None)]
         json.dump(cellSD, open(os.path.join(outdir, f"cellsSD_{pcid}.json"), "w"))
 
     if pcid == 0:
