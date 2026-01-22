@@ -608,11 +608,11 @@ def initEval(ratestr):
 
 min_pmax = f"p_max * ({nkcc1} + {kcc2} + {gk} * (v_initial - {ek})/({volume_scale}))/(2*{pump})"
 min_leak = initEval(
-    f"1e-5*{scale}*(v_initial - {ek})/((2*{volume_scale}*{pumpA}*{pumpB}*{p}))"
+    f"{cfg.kleakMin}*{scale}*(v_initial - {ek})/((2*{volume_scale}*{pumpA}*{pumpB}*{p}))"
 )
 pmin = initEval(min_pmax)
 if constants["p_max"] < pmin + min_leak:
-    print("Pump current is too low to balance K+ currents with gkbar_l 5e-5")
+    print("Pump current is too low to balance K+ currents with gkbar_l {cfg.kleakMin}")
     print(f"p_max set to {pmin + min_leak}")
     constants["p_max"] = pmin + min_leak
 

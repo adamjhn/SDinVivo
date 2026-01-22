@@ -11,9 +11,9 @@ import numpy as np
 
 # Run parameters
 cfg = specs.SimConfig()  # object of class cfg to store simulation configuration
-cfg.duration = 10000  # Duration of the simulation, in ms
+cfg.duration = 1000  # Duration of the simulation, in ms
 cfg.oldDuration = 1000
-cfg.restore = True 
+cfg.restore = False
 cfg.hParams["celsius"] = 37.0
 cfg.hParams["v_init"] = -70
 cfg.Cm = 1.0  # pF/cm**2
@@ -35,7 +35,7 @@ cfg.saveCellConns = False
 cfg.createPyStruct = False
 cfg.printPopAvgRates = True
 cfg.singleCells = False  # create one cell in each population
-cfg.printRunTime = False # will break save/restore via CVode events if True 
+cfg.printRunTime = False  # will break save/restore via CVode events if True
 cfg.Kceil = 15.0
 cfg.nRec = 25
 cfg.cellPops = [
@@ -96,7 +96,7 @@ if cfg.ox == "perfused":
     cfg.o2_init = 0.04  # ~24 mmHg
     cfg.alpha_ecs = 0.2
     cfg.tort_ecs = 1.6
-    cfg.o2drive = 60  # 0.013
+    cfg.o2drive = 50  # 0.013
 elif cfg.ox == "hypoxic":
     cfg.o2_bath = 0.06  # ~4 mmHg
     cfg.o2_init = 0.005
@@ -123,24 +123,15 @@ cfg.sa2v = 3.4  # False
 
 # Neuron parameters
 # Scale synapses weights -- optimized with min K-leak 1e-5
-cfg.excWeight = 0.13435920910758772
-cfg.inhWeightScale = 3.224191247601775
-cfg.gnabar = 0.024135784291980992
-cfg.gkbar = 0.002954172759514262
-cfg.ukcc2 = 0.2532204018570924
-cfg.unkcc1 = 4.87306949791354
-cfg.pmax = 4.673670267295402
-cfg.gpas = 2.2990035536093757e-05
-"""
-cfg.excWeight = 3.810287340678953e-05
-cfg.inhWeightScale = 0.758808704666386
-cfg.gnabar = 0.023208319553518326
-cfg.gkbar = 0.0030079942679858956
-cfg.ukcc2 = 0.24444497795096276
-cfg.unkcc1 = 4.325588329498557
-cfg.pmax = 14.289942517745537
-cfg.gpas = 9.992715361947464e-06
-"""
+cfg.excWeight = 0.11340561029159996
+cfg.inhWeightScale = 3.29613346485441
+cfg.gnabar = 0.021530950798278724
+cfg.gkbar = 0.0034046044423758815
+cfg.ukcc2 = 0.3512785168374003
+cfg.unkcc1 = 5.296351572549806
+cfg.pmax = 3.6194286632960067
+cfg.gpas = 1.4301645011112525e-05
+cfg.kleakMin = 5e-5
 
 # default values
 cfg.weightMin = 0.1
@@ -168,20 +159,20 @@ cfg.KNai = 27.9
 # Scaled to match original 1/3 scaling at Ko=3; i.e.
 # a = 3*(1 + np.exp(3.5-3))
 # GliaKKo = np.log(a-1) + 3
-cfg.GliaKKo = 3.5 #4.938189537703508  # originally 3.5 mM
+cfg.GliaKKo = 3.5  # 4.938189537703508  # originally 3.5 mM
 cfg.GliaPumpScale = 1 / 3  # 1 / 3  # originally 1/3
 cfg.scaleConnWeight = 1
 
 if cfg.sa2v:
-    cfg.somaR = (cfg.sa2v * cfg.rs ** 3 / 2.0) ** (1 / 2)
+    cfg.somaR = (cfg.sa2v * cfg.rs**3 / 2.0) ** (1 / 2)
 else:
     cfg.somaR = cfg.rs
-cfg.cyt_fraction = cfg.rs ** 3 / cfg.somaR ** 3
+cfg.cyt_fraction = cfg.rs**3 / cfg.somaR**3
 
 # sd init params
-cfg.k0 = 3.5 
+cfg.k0 = 3.5
 cfg.r0 = 100
-cfg.k0Layer = None # layer of elevated extracellular K+
+cfg.k0Layer = None  # layer of elevated extracellular K+
 
 ###########################################################
 # Network Options
@@ -205,11 +196,11 @@ cfg.Balanced = True  # False #True=Balanced // False=Unbalanced
 
 cfg.ouabain = False
 
-simLabel = f"SDLeak_{cfg.seed}_layer{cfg.k0Layer}_K0{cfg.k0}_{cfg.prep}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}"
+simLabel = f"SDLeak{cfg.kleakMin}_{cfg.seed}_layer{cfg.k0Layer}_K0{cfg.k0}_{cfg.prep}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}"
 cfg.simLabel = f"{simLabel}_{cfg.duration/1000:0.2f}s"
 cfg.saveFolder = f"./data/{simLabel}_{cfg.oldDuration/1000:0.2f}s"
 # cfg.simLabel = f"test_{cfg.ox}"
-#cfg.saveFolder = f"/tmp/test"
+# cfg.saveFolder = f"/tmp/test"
 # cfg.saveFolder = f"/tera/adam/{cfg.simLabel}/" # for neurosim
 cfg.restoredir = cfg.saveFolder if cfg.restore else None
 # v0.0 - combination of cfg from ../uniformdensity and netpyne PD thalamocortical model
