@@ -1,5 +1,6 @@
 from netpyne import specs
 import numpy as np
+from neuron.units import sec, mM, M, s, um
 
 # import cv2
 
@@ -121,17 +122,18 @@ cfg.epas = -70.00000000000013  # False
 cfg.sa2v = 3.4  # False
 
 
+cfg.kleakMin = 1e-5  # mS/cm^2 -- this may changed pmax
 # Neuron parameters
 # Scale synapses weights -- optimized with min K-leak 1e-5
-cfg.excWeight = 0.11340561029159996
-cfg.inhWeightScale = 3.29613346485441
-cfg.gnabar = 0.021530950798278724
-cfg.gkbar = 0.0034046044423758815
-cfg.ukcc2 = 0.3512785168374003
-cfg.unkcc1 = 5.296351572549806
-cfg.pmax = 3.6194286632960067
-cfg.gpas = 1.4301645011112525e-05
-cfg.kleakMin = 5e-5
+cfg.excWeight = 0.14674495781558847
+cfg.inhWeightScale = 3.4153543530615664
+cfg.gnabar = 0.026237256890948725
+cfg.gkbar = 0.007637200042935461
+cfg.ukcc2 = 0.007639678045426412
+cfg.unkcc1 = 2.161389868965627
+cfg.pmax = 5126.729549884236
+cfg.gpas = 4.3870606043750454e-05
+
 
 # default values
 cfg.weightMin = 0.1
@@ -148,6 +150,59 @@ cfg.unkcc1 = 0.1
 cfg.pmax = 3
 cfg.gpas = 0.0001
 """
+cfg.ATPss = 3.18  # mM PMC3524514 -- whole brain
+cfg.ATPDc = 0.445  # um**2/ms
+cfg.Ko2 = 0.3e-3  # mM  # Km for O2 at cytochrome c oxidase
+cfg.KmADP_synthase = 0.025  # mM, from PMC3833997 (human skeletal muscle)
+cfg.KmPi_synthase = 1.0  # mM, from PMC8434986 (cardiac tissue)
+cfg.KiATP_synthase = (
+    10.0  # mM, competitive inhibition constant for ATP (allows steady-state flux)
+)
+cfg.ADPss = 0.0944444444444444  # such that D2 (MgADP == 0.05 mM)
+cfg.tauADP = 1
+cfg.Pss = 4.2
+cfg.tauP = 1
+cfg.ATPase_basal_density = 0.05  # mM/ms
+
+# Adenylate kinase equilibrium: 2*ADP <-> ATP + AMP
+# At equilibrium: Keq = [ATP][AMP]/[ADP]^2 ≈ 1 (typical for adenylate kinase)
+# Solving: AMP = Keq * ADP^2 / ATP = 1.0 * (0.05)^2 / 2.59 ≈ 0.001 mM
+# Solving adenylateKinase rate_f == rate_b at steady-state gives exact value.
+cfg.AMPss = (
+    0.0692795435459248  # mM, from adenylate kinase equilibrium with ADPss and ATPss
+)
+cfg.Mg = 0.5  # mM (free Mg) https://doi.org/10.3390/ijms20143439
+
+cfg.glia = {
+    "nai": 18.0 * mM,
+    "ki": 80.0 * mM,
+    "ATP": 10 * mM,
+    "ADP": 10 / 15.4 * mM,
+    "Pos": cfg.Pss,
+}
+cfg.pH = 7.0
+cfg.NaKPump = {
+    "Tref": 310,
+    "q10": 3.2,
+    "Delta": -0.031,
+    "k1p": 1050 / s,
+    "k1m": 172.1 / s / mM,
+    "k2p": 481 / s,
+    "k2m": 40 / s,
+    "k3p": 2000 / s,
+    "k3m": 79.3e3 / s / mM**2,
+    "k4p": 320 / s,
+    "k4m": 40 / s,
+    "KATP": 2.51 * mM,
+    "KHPi": 6.77 * mM,
+    "KKPi": 292 * mM,
+    "KNaPi": 224 * mM,
+    "PiT": 4.2 * mM,
+    "KKe": 0.213 * mM,
+    "KKi": 0.5 * mM,
+    "KNae0": 15.5 * mM,
+    "KNai0": 2.49 * mM,
+}
 
 cfg.Ggliamax = 5.0  # mM/sec originally 5mM/sec
 # we scaled pump by ~4.84 so apply a corresponding
@@ -162,6 +217,28 @@ cfg.KNai = 27.9
 cfg.GliaKKo = 3.5  # 4.938189537703508  # originally 3.5 mM
 cfg.GliaPumpScale = 1 / 3  # 1 / 3  # originally 1/3
 cfg.scaleConnWeight = 1
+
+# converstionFactor: μmol·min−1·mg−1 -> mM/ms
+converstionFactor = 49 * 9.7e-7 / 16000  # mg of enzyme/m^3
+converstionFactor *= 60e3 * 1e6  # μmol/min -> mol/ms
+#    1g tissue = 9.7e-7 m^3
+#    49 units/g  (of tissue) brain
+# 1,600 units/mg (of enzyme) muscle
+# unit 1 μmol/min
+cfg.AK = {
+    "KmAMP": 0.12,  # mM
+    "KiAMP": 3.3,  # mM
+    "KmMgATP": 0.06,  # mM
+    "KmADP": 0.028,  # mM
+    "KiADP": 0.91,  # mM
+    "KmMgADP": 0.033,  # mM
+    "kp1": 14_000 * converstionFactor,  # mM/ms
+    "km1": 8_000 * converstionFactor,  # mM/ms
+    "kp2": 710 * converstionFactor,  # mM/ms
+    "km2": 960 * converstionFactor,  # mM/ms
+    "KMg": 2.5,  # /mM (stability constant)
+}
+
 
 if cfg.sa2v:
     cfg.somaR = (cfg.sa2v * cfg.rs**3 / 2.0) ** (1 / 2)

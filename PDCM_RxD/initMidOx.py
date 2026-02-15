@@ -17,7 +17,7 @@ def rand_uniform(gid, lb=0, ub=1):
 
 
 cfg, netParams = sim.readCmdLineArgs(
-    simConfigDefault="cfgMidOx.py", netParamsDefault="netParamsMidOx.py"
+    simConfigDefault="cfgMidOx.py", netParamsDefault="netParamsPump.py"
 )
 subdir = f"{cfg.ox}_{cfg.k0Layer}_{cfg.k0}_{cfg.o2drive}"
 outdir = cfg.saveFolder + os.path.sep + subdir
@@ -116,11 +116,11 @@ if pcid == 0:
     k_ecs = sim.net.rxd["species"]["kk"]["hObj"][sim.net.rxd["regions"]["ecs"]["hObj"]]
     na_ecs = sim.net.rxd["species"]["na"]["hObj"][sim.net.rxd["regions"]["ecs"]["hObj"]]
     cl_ecs = sim.net.rxd["species"]["cl"]["hObj"][sim.net.rxd["regions"]["ecs"]["hObj"]]
-    o2_ecs = sim.net.rxd["species"]["o2_extracellular"]["hObj"][
-        sim.net.rxd["regions"]["ecs_o2"]["hObj"]
+    o2_ecs = sim.net.rxd["species"]["oxygen"]["hObj"][
+        sim.net.rxd["regions"]["ecs"]["hObj"]
     ]
     o2con = sim.net.rxd["states"]["o2_consumed"]["hObj"][
-        sim.net.rxd["regions"]["ecs_o2"]["hObj"]
+        sim.net.rxd["regions"]["ecs"]["hObj"]
     ]
 
 # manually record from cells from each layer
