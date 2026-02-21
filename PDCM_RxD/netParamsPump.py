@@ -338,8 +338,8 @@ netParams.synMechParams["inh"] = {
 
 if cfg.DC == False:  # External Input as Poisson
     for r in range(0, 8):
-        excW = getattr(cfg, f"excWeight_{L[r]}", cfg.excWeight)
-        netParams.popParams["poiss" + str(L[rc])] = {
+        excW = getattr(cfg, f"excWeight_{L[r]}")
+        netParams.popParams["poiss" + str(L[r])] = {
             "numCells": N_[r],
             "cellModel": "NetStim",
             "rate": InpPoiss[r] * f_ext * cfg.poissonRateFactor,
@@ -376,7 +376,7 @@ if cfg.TH == True:
             "delay": 0,
         }
         auxConn = np.array([range(0, N_[r], 1), range(0, N_[r], 1)])
-        excW = getattr(cfg, f"excWeight_{L[r]}", cfg.excWeight)
+        excW = getattr(cfg, f"excWeight_{L[r]}")
         netParams.connParams["bkg_TH->" + str(L[r])] = {
             "preConds": {"pop": "bkg_TH" + str(L[r])},
             "postConds": {"pop": L[r]},
@@ -392,8 +392,8 @@ if cfg.TH == True:
 
 if cfg.connected:
     for r in range(0, 8):
-        excW = getattr(cfg, f"excWeight_{L[r]}", cfg.excWeight)
-        inhS = getattr(cfg, f"inhWeightScale_{L[r]}", cfg.inhWeightScale)
+        excW = getattr(cfg, f"excWeight_{L[r]}")
+        inhS = getattr(cfg, f"inhWeightScale_{L[r]}")
         for c in range(0, 8):
             if L[c][-1] == "e":
                 syn = "exc"

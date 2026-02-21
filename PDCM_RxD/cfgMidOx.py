@@ -1,6 +1,7 @@
 from netpyne import specs
 import numpy as np
-from neuron.units import sec, mM, M, s, # import cv2
+from neuron.units import sec, mM, M, s
+import cv2
 
 # ------------------------------------------------------------------------------
 #
@@ -60,7 +61,7 @@ cfg.recordCells = [
 ]
 cfg.recordTraces = {
     f"{var}_soma": {"sec": "soma", "loc": 0.5, "var": var}
-    for var in ["v", "nai", "ki", "cli", "dumpi", "o2o"]
+    for var in ["v", "nai", "ki", "cli", "dumpi", "oxygeno", "ATPi", "ADPi", "AMPi"]
 }
 cfg.seed = 0
 cfg.seeds = {
@@ -284,7 +285,7 @@ cfg.Balanced = True  # False #True=Balanced // False=Unbalanced
 
 cfg.ouabain = False
 
-simLabel = f"SDLeak{cfg.kleakMin}_{cfg.seed}_layer{cfg.k0Layer}_K0{cfg.k0}_{cfg.prep}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}"
+simLabel = f"SDPump{cfg.kleakMin}_{cfg.seed}_layer{cfg.k0Layer}_K0{cfg.k0}_{cfg.prep}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}"
 cfg.simLabel = f"{simLabel}_{cfg.duration/1000:0.2f}s"
 cfg.saveFolder = f"./data/{simLabel}_{cfg.oldDuration/1000:0.2f}s"
 # cfg.simLabel = f"test_{cfg.ox}"
