@@ -338,7 +338,8 @@ netParams.synMechParams["inh"] = {
 
 if cfg.DC == False:  # External Input as Poisson
     for r in range(0, 8):
-        netParams.popParams["poiss" + str(L[r])] = {
+        excW = getattr(cfg, f"excWeight_{L[r]}", cfg.excWeight)
+        netParams.popParams["poiss" + str(L[rc])] = {
             "numCells": N_[r],
             "cellModel": "NetStim",
             "rate": InpPoiss[r] * f_ext * cfg.poissonRateFactor,
@@ -352,7 +353,7 @@ if cfg.DC == False:  # External Input as Poisson
             "preConds": {"pop": "poiss" + str(L[r])},
             "postConds": {"pop": L[r]},
             "connList": auxConn.T,
-            "weight": f"max(0, {cfg.excWeight*cfg.scaleConnWeightNetStims} * (weightMin+normal(0,dweight*weightMin*{cfg.scaleConnWeightNetStimStd**2})))",
+            "weight": f"max(0, {excW*cfg.scaleConnWeightNetStims} * (weightMin+normal(0,dweight*weightMin*{cfg.scaleConnWeightNetStimStd**2})))",
             "delay": 0.5,
             "synMech": "exc",
         }  # 1 delay
@@ -375,11 +376,12 @@ if cfg.TH == True:
             "delay": 0,
         }
         auxConn = np.array([range(0, N_[r], 1), range(0, N_[r], 1)])
+        excW = getattr(cfg, f"excWeight_{L[r]}", cfg.excWeight)
         netParams.connParams["bkg_TH->" + str(L[r])] = {
             "preConds": {"pop": "bkg_TH" + str(L[r])},
             "postConds": {"pop": L[r]},
             "connList": auxConn.T,
-            "weight": f"max(0, {cfg.excWeight * cfg.scaleConnWeightNetStims} * (weightMin +normal(0,dweight*weightMin*{cfg.scaleConnWeightNetStimStd**2})))",
+            "weight": f"max(0, {excW * cfg.scaleConnWeightNetStims} * (weightMin +normal(0,dweight*weightMin*{cfg.scaleConnWeightNetStimStd**2})))",
             "delay": 0.5,
             "synMech": "exc",
         }  # 1 delay
@@ -390,13 +392,15 @@ if cfg.TH == True:
 
 if cfg.connected:
     for r in range(0, 8):
+        excW = getattr(cfg, f"excWeight_{L[r]}", cfg.excWeight)
+        inhS = getattr(cfg, f"inhWeightScale_{L[r]}", cfg.inhWeightScale)
         for c in range(0, 8):
             if L[c][-1] == "e":
                 syn = "exc"
-                weightScale = cfg.excWeight
+                weightScale = excW
             else:
                 syn = "inh"
-                weightScale = cfg.inhWeightScale * cfg.excWeight
+                weightScale = inhS * excW
             if (c % 2) == 0:
                 if c == 2 and r == 0:
                     netParams.connParams[str(L[c]) + "->" + str(L[r])] = {
