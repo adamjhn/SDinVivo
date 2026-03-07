@@ -633,29 +633,15 @@ gliaPumpRate = getPumpRate(
 # sodium activation 'm'
 alpha_m = "(0.32 * (rxd.v + 54.0))/(1.0 - rxd.rxdmath.exp(-(rxd.v + 54.0)/4.0))"
 beta_m = "(0.28 * (rxd.v + 27.0))/(rxd.rxdmath.exp((rxd.v + 27.0)/5.0) - 1.0)"
-alpha_m0 = (0.32 * (constants["v_initial"] + 54.0)) / (
-    1.0 - math.exp(-(constants["v_initial"] + 54) / 4.0)
-)
-beta_m0 = (0.28 * (constants["v_initial"] + 27.0)) / (
-    math.exp((constants["v_initial"] + 27.0) / 5.0) - 1.0
-)
-m_initial = alpha_m0 / (beta_m0 + alpha_m0)
 
 # sodium inactivation 'h'
 alpha_h = "0.128 * rxd.rxdmath.exp(-(rxd.v + 50.0)/18.0)"
 beta_h = "4.0/(1.0 + rxd.rxdmath.exp(-(rxd.v + 27.0)/5.0))"
-alpha_h0 = 0.128 * math.exp(-(constants["v_initial"] + 50.0) / 18.0)
-beta_h0 = 4.0 / (1.0 + math.exp(-(constants["v_initial"] + 27.0) / 5.0))
-h_initial = alpha_h0 / (beta_h0 + alpha_h0)
 
 # potassium activation 'n'
 alpha_n = "(0.032 * (rxd.v + 52.0))/(1.0 - rxd.rxdmath.exp(-(rxd.v + 52.0)/5.0))"
 beta_n = "0.5 * rxd.rxdmath.exp(-(rxd.v + 57.0)/40.0)"
-alpha_n0 = (0.032 * (constants["v_initial"] + 52.0)) / (
-    1.0 - math.exp(-(constants["v_initial"] + 52.0) / 5.0)
-)
-beta_n0 = 0.5 * math.exp(-(constants["v_initial"] + 57.0) / 40.0)
-n_initial = alpha_n0 / (beta_n0 + alpha_n0)
+
 
 
 ### reactions
@@ -730,19 +716,23 @@ evalInit = {
     "ADP[cyt]": constants["ADP_initial"],
     "AMP[cyt]": constants["AMP_initial"],
     "Pos[cyt]": constants["Pos_initial"],
-    "ngate": n_initial,
-    "mgate": m_initial,
-    "hgate": h_initial,
 }
 
 
-def initEval(ratestr):
+def initNoEval(ratestr):
     for k, v in evalInit.items():
         ratestr = ratestr.replace(k, str(v))
     for k, v in constants.items():
         ratestr = ratestr.replace(k, str(v))
-    return eval(ratestr)
+    return ratestr
 
+def initEval(ratestr):
+    return eval(initNoEval(ratestr))
+
+
+evalInit["mgate"] = initEval(f"{alpha_m}/({alpha_m}+{beta_m})")
+evalInit['hgate'] = initEval(f"{alpha_h}/({alpha_h}+{beta_h})")
+evalInit["ngate"] = initEval(f"{alpha_n}/({alpha_n}+{beta_n})")
 
 # check pump can balance K+ currents at rest with min leak cfg.kleakMin mS/cm^2
 min_pmax = f"p_max * ({volume_scale}*({nkcc1} + {kcc2}) + {gk} * (v_initial - {ek}))/(2*{pumpRate})"
@@ -899,7 +889,7 @@ else:
 k_init_str = f"ki_initial if isinstance(node, rxd.node.Node1D) else ({cfg.k0} if ((node.x3d - {cfg.sizeX/2})**2+(node.y3d + {yoff})**2+(node.z3d - {cfg.sizeZ/2})**2 <= {cfg.r0}**2) else ko_initial)"
 # k_init_str = 'ki_initial if isinstance(node, rxd.node.Node1D) else (%f if (((node.x3d - %f/2)**2+(node.z3d - %f/2)**2 < %f**2) and (-1100 < node.y3d < -900)) and  else ko_initial)' % (cfg.k, cfg.sizeX, cfg.sizeZ, cfg.r0)
 species["kk"] = {
-    "regions": ["cyt", "mem", "ecs"],
+    "regions": ["cyt", "ecs"],
     "d": 2.62,
     "charge": 1,
     "initial": k_init_str,
@@ -910,7 +900,7 @@ species["kk"] = {
 }
 
 species["na"] = {
-    "regions": ["cyt", "mem", "ecs"],
+    "regions": ["cyt", "ecs"],
     "d": 1.78,
     "charge": 1,
     "initial": "nai_initial if isinstance(node, rxd.node.Node1D) else nao_initial",
@@ -921,7 +911,7 @@ species["na"] = {
 }
 
 species["cl"] = {
-    "regions": ["cyt", "mem", "ecs"],
+    "regions": ["cyt", "ecs"],
     "d": 2.1,
     "charge": -1,
     "initial": "cli_initial if isinstance(node, rxd.node.Node1D) else clo_initial",
@@ -976,6 +966,12 @@ if cfg.o2drive:
 netParams.rxdParams["parameters"] = params
 
 ### states
+# per-section initialisation functions for gating variables
+evalInit["rxd.v"] = "node.sec.v"
+m_initial = initNoEval(f"{alpha_m} / ({beta_m} + {alpha_m})").replace("math","numpy")
+h_initial = initNoEval(f"{alpha_h} / ({beta_h} + {alpha_h})").replace("math","numpy")
+n_initial = initNoEval(f"{alpha_n} / ({beta_n} + {alpha_n})").replace("math","numpy")
+
 netParams.rxdParams["states"] = {
     "vol_ratio": {"regions": ["cyt", "ecs"], "initial": 1.0, "name": "volume"},
     "mgate": {"regions": ["mem"], "initial": m_initial, "name": "mgate"},
@@ -1135,7 +1131,7 @@ mcReactions["pump_current_others"] = {
 mcReactions["O2Flux"] = {
     "reactant": f"oxygen[ecs]",
     "product": f"oxygen[cyt]",
-    "rate_f": f"420e18 *({o2ecs} - {o2cyt})",
+    "rate_f": f"{420*avo/1e18} *({o2ecs} - {o2cyt})",
     "membrane": "mem",
     "custom_dynamics": True,
     "membrane_flux": False,
@@ -1144,7 +1140,7 @@ mcReactions["O2Flux"] = {
 mcReactions["O2Consumed"] = {
     "reactant": "dump[cyt]",
     "product": "o2_consumed[ecs]",
-    "rate_f": f"420e18 *({o2ecs} - {o2cyt})",
+    "rate_f": f"{420*avo/1e18}*({o2ecs} - {o2cyt})",
     "membrane": "mem",
     "custom_dynamics": True,
     "membrane_flux": False,

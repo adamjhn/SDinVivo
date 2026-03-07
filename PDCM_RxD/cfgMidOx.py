@@ -11,16 +11,16 @@ import cv2
 
 # Run parameters
 cfg = specs.SimConfig()  # object of class cfg to store simulation configuration
-cfg.duration = 1000  # Duration of the simulation, in ms
-cfg.oldDuration = 1000
-cfg.restore = False
+cfg.duration = 100  # Duration of the simulation, in ms
+cfg.oldDuration = 100
+cfg.restore = False 
 cfg.hParams["celsius"] = 37.0
 cfg.hParams["v_init"] = -70
 cfg.Cm = 1.0  # pF/cm**2
 cfg.Ra = 100
 cfg.dt = 0.025  # Internal integration timestep to use
 cfg.verbose = False  # Show detailed messages
-cfg.recordStep = 1  # Step size in ms to save data (eg. V traces, LFP, etc)
+cfg.recordStep = 0.1  # Step size in ms to save data (eg. V traces, LFP, etc)
 cfg.savePickle = True  # Save params, network and sim output to pickle file
 cfg.saveJson = False
 cfg.recordStim = False
@@ -48,7 +48,7 @@ cfg.cellPops = [
     "L6e",
     "L6i",
 ]  # record only spikes of cells (not ext stims)
-cfg.cellPopsInit = (-85, -60)
+cfg.cellPopsInit = {'mean':-70, 'std':5, 'thresh':-55}
 cfg.recordCellsSpikes = cfg.cellPops
 if cfg.recordStim:
     cfg.recordCellsSpikes += [
@@ -61,7 +61,7 @@ cfg.recordCells = [
 ]
 cfg.recordTraces = {
     f"{var}_soma": {"sec": "soma", "loc": 0.5, "var": var}
-    for var in ["v", "nai", "ki", "cli", "dumpi", "oxygeno", "ATPi", "ADPi", "AMPi"]
+    for var in ["v", "nai", "ki", "cli", "dumpi", "o2o", "ATPi", "ADPi", "AMPi"]
 }
 cfg.seed = 0
 cfg.seeds = {
@@ -96,7 +96,7 @@ if cfg.ox == "perfused":
     cfg.o2_init = 0.04  # ~24 mmHg
     cfg.alpha_ecs = 0.2
     cfg.tort_ecs = 1.6
-    cfg.o2drive = 50  # 0.013
+    cfg.o2drive = 100  # 0.013
 elif cfg.ox == "hypoxic":
     cfg.o2_bath = 0.06  # ~4 mmHg
     cfg.o2_init = 0.005
@@ -105,7 +105,7 @@ elif cfg.ox == "hypoxic":
     cfg.o2drive = 1.0 / 6  # 0.013 * (1 / 6)
 cfg.prep = "invivo"  # "invitro"
 # Size of Network. Adjust this constants, please!
-cfg.ScaleFactor = 0.16  # used for batch param search  # = 80.000
+cfg.ScaleFactor = 0.016  # used for batch param search  # = 80.000
 
 # neuron params
 cfg.betaNrn = (

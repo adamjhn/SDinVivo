@@ -10,10 +10,19 @@ import json
 
 
 def rand_uniform(gid, lb=0, ub=1):
-
     r = h.Random()
     r.Random123(gid, 1, 1)
     return r.uniform(lb, ub)
+
+def rand_truncnorm(gid, mean=0, var=1, lb=None, ub=None):
+    r = h.Random()
+    r.Random123(gid, 1, 1)
+    val = r.normal(mean, var)
+    if lb is not None:
+        val=max(lb, val)
+    if ub is not None:
+        val=min(val, ub)
+    return val
 
 
 cfg, netParams = sim.readCmdLineArgs(
@@ -82,7 +91,7 @@ def fi(cells):
 
 def fi0(cells):
     for cell in cells:
-        v = rand_uniform(cell.gid, cfg.cellPopsInit[0], cfg.cellPopsInit[1])
+        v = rand_truncnorm(cell.gid, cfg.cellPopsInit['mean'], cfg.cellPopsInit['std']**2, ub=cfg.cellPopsInit['thresh'])
         for sec in cell.secs.values():
             if "hObj" in sec:
                 sec["hObj"].v = v
@@ -97,6 +106,16 @@ sim.net.createCells()  # instantiate network cells based on defined populations
 sim.net.connectCells()  # create connections between cells based on params
 sim.net.addStims()  # add external stimulation to cells (IClamps etc)
 sim.net.addRxD(nthreads=6)  # add reaction-diffusion (RxD)
+"""clamps = []
+for cell in sim.net.cells:
+    if cell.tags['cellModel'] != "VecStim" and cell.tags['cellModel'] != "NetStim":
+        vclamp = h.VClamp(cell.secs['soma']['hObj'](0.5))
+        vclamp.dur[0] = 25
+        vclamp.dur[1] = 0
+        vclamp.dur[2] = 0
+        vclamp.amp[0] = cfg.hParams["v_init"] 
+        clamps.append(vclamp)
+"""
 sim.setupRecording()  # setup variables to record for each cell
 fih = h.FInitializeHandler(1, lambda: fi(sim.net.cells))
 if not cfg.restore:
@@ -294,8 +313,6 @@ def runIntervalFunc(t):
                     dist1 = r
         fout.write("%g\t%g\t%g\n" % (h.t, dist, dist1))
         fout.flush()
-
-
 sim.runSimWithIntervalFunc(1, runIntervalFunc)
 sim.gatherData()
 if pcid == 0:
@@ -337,6 +354,7 @@ if pcid == 0:
                 rec_all[lab], open(os.path.join(outdir, f"recs_{lab}.pkl"), "wb")
             )
     print("\nSimulation complete. Plotting membrane potentials")
+
 
 # v0.0 - direct copy from ../uniformdensity/init.py
 # v1.0 - added in o2 sources based on capillaries identified from histology
