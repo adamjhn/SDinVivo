@@ -11,8 +11,8 @@ import cv2
 
 # Run parameters
 cfg = specs.SimConfig()  # object of class cfg to store simulation configuration
-cfg.duration = 100  # Duration of the simulation, in ms
-cfg.oldDuration = 100
+cfg.duration = 1000  # Duration of the simulation, in ms
+cfg.oldDuration = 1000
 cfg.restore = False 
 cfg.hParams["celsius"] = 37.0
 cfg.hParams["v_init"] = -70
@@ -105,7 +105,7 @@ elif cfg.ox == "hypoxic":
     cfg.o2drive = 1.0 / 6  # 0.013 * (1 / 6)
 cfg.prep = "invivo"  # "invitro"
 # Size of Network. Adjust this constants, please!
-cfg.ScaleFactor = 0.016  # used for batch param search  # = 80.000
+cfg.ScaleFactor = 0.16  # used for batch param search  # = 80.000
 
 # neuron params
 cfg.betaNrn = (
