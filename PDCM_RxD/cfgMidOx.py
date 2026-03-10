@@ -11,8 +11,8 @@ import cv2
 
 # Run parameters
 cfg = specs.SimConfig()  # object of class cfg to store simulation configuration
-cfg.duration = 100  # Duration of the simulation, in ms
-cfg.oldDuration = 100
+cfg.duration = 1000  # Duration of the simulation, in ms
+cfg.oldDuration = 1000
 cfg.restore = False 
 cfg.hParams["celsius"] = 37.0
 cfg.hParams["v_init"] = -70
