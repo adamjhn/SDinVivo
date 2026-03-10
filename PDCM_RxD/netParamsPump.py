@@ -1207,7 +1207,7 @@ rates["PRestore"] = {
 
 if cfg.o2drive:
     rates["o2source"] = {
-        "species": o2ecs,
+        "species": "oxygen[ecs]",
         "regions": ["ecs"],
         "rate": f"numcap * {cfg.o2drive} * (epsilon_o2 * (o2_bath - {o2ecs}))",
     }
@@ -1222,9 +1222,9 @@ if cfg.o2drive:
 if cfg.prep == "invitro":
     ## diffusion
     rates["o2diff"] = {
-        "species": o2ecs,
+        "species": "oxygen[ecs]",
         "regions": ["ecs"],
-        "rate": "ecsbc * (epsilon_o2 * (o2_bath - %s/vol_ratio[ecs]))" % (o2ecs),
+        "rate": "ecsbc * (epsilon_o2 * (o2_bath - %s))" % (o2ecs),
     }  # original
 
     rates["kdiff"] = {
