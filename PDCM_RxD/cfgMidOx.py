@@ -105,7 +105,7 @@ elif cfg.ox == "hypoxic":
     cfg.o2drive = 1.0 / 6  # 0.013 * (1 / 6)
 cfg.prep = "invivo"  # "invitro"
 # Size of Network. Adjust this constants, please!
-cfg.ScaleFactor = 0.016  # used for batch param search  # = 80.000
+cfg.ScaleFactor = 0.16  # used for batch param search  # = 80.000
 
 # neuron params
 cfg.betaNrn = (
@@ -124,25 +124,24 @@ cfg.sa2v = 3.4  # False
 cfg.kleakMin = 1e-5 #mS/cm^2 -- this may changed pmax
 # Neuron parameters
 # Scale synapses weights -- optimized with min K-leak 1e-5
-cfg.excWeight_L2e = 0.12861529088835885
-cfg.excWeight_L4e = 0.18169356779579005
-cfg.excWeight_L5e = 0.043806142795524264
-cfg.excWeight_L6e = 0.27642308287182193
-cfg.excWeight_L2i = 0.13146266535439496
-cfg.excWeight_L4i = 0.06530070683093302
-cfg.excWeight_L5i = 0.1820856969048531
-cfg.excWeight_L6i = 0.22909354259474382
-cfg.inhWeightScale_L2e = 10.888846469402536
-cfg.inhWeightScale_L4e = 0.9710028368124768
-cfg.inhWeightScale_L5e = 7.109779329177732
-cfg.inhWeightScale_L6e = 1.2440275843551034
-cfg.inhWeightScale_L2i = 2.2076546856300467
-cfg.inhWeightScale_L4i = 5.941188668318516
-cfg.inhWeightScale_L5i = 2.236815467906211
-cfg.inhWeightScale_L6i = 4.20741098901948
-
-cfg.pmax = 4708.757564140781
-cfg.gnabar = 0.02187606398167006
+cfg.excWeight_L2e = 0.14961074422237464
+cfg.excWeight_L2i = 0.1351824774140537
+cfg.excWeight_L4e = 0.1815218663860975
+cfg.excWeight_L4i = 0.06998927827745641
+cfg.excWeight_L5e = 0.02810458817784048
+cfg.excWeight_L5i = 0.17534037167883168
+cfg.excWeight_L6e = 0.24676442924409633
+cfg.excWeight_L6i = 0.2197823031179946
+cfg.inhWeightScale_L2e = 2.9568886931609932
+cfg.inhWeightScale_L2i = 2.3609500335679123
+cfg.inhWeightScale_L4e = 0.8404310189472454
+cfg.inhWeightScale_L4i = 6.076002848613138
+cfg.inhWeightScale_L5e = 7.692306497454406
+cfg.inhWeightScale_L5i = 3.3758246947414157
+cfg.inhWeightScale_L6e = 1.3370908764830713
+cfg.inhWeightScale_L6i = 3.120219919509059
+cfg.pmax = 4897.239392861679
+cfg.gnabar = 0.021649587544584504
 
 
 cfg.gkbar = 0.004001629507118593
