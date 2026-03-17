@@ -11,11 +11,12 @@ import cv2
 
 # Run parameters
 cfg = specs.SimConfig()  # object of class cfg to store simulation configuration
-cfg.duration = 1000  # Duration of the simulation, in ms
-cfg.oldDuration = 1000
-cfg.restore = False 
+cfg.duration = 2000  # Duration of the simulation, in ms
+cfg.oldDuration = 2000
+cfg.restore = False
 cfg.hParams["celsius"] = 37.0
 cfg.hParams["v_init"] = -70
+cfg.v_balance = -70 #mV
 cfg.Cm = 1.0  # pF/cm**2
 cfg.Ra = 100
 cfg.dt = 0.025  # Internal integration timestep to use
@@ -51,9 +52,14 @@ cfg.cellPops = [
 cfg.cellPopsInit = {'mean':-70, 'std':5, 'thresh':-55}
 cfg.recordCellsSpikes = cfg.cellPops
 if cfg.recordStim:
-    cfg.recordCellsSpikes += [
-        f"poissL{i}{ei}" for i in [2, 4, 5, 6] for ei in ["e", "i"]
-    ]
+    if cfg.poisson_ramp_ms > 0:
+        cfg.recordCellsSpikes += [
+            f"poissL{i}{ei}_{gidx}" for i in [2, 4, 5, 6] for ei in ["e", "i"] for gidx in range(cfg.poisson_ramp_split)
+        ]
+    else:
+        cfg.recordCellsSpikes += [
+            f"poissL{i}{ei}" for i in [2, 4, 5, 6] for ei in ["e", "i"]
+        ]
     cfg.recordCellsSpikes += [f"bkg_THL{i}{ei}" for i in [4, 6] for ei in ["e", "i"]]
 
 cfg.recordCells = [
@@ -96,7 +102,7 @@ if cfg.ox == "perfused":
     cfg.o2_init = 0.04  # ~24 mmHg
     cfg.alpha_ecs = 0.2
     cfg.tort_ecs = 1.6
-    cfg.o2drive = 100  # 0.013
+    cfg.o2drive = 50  # 0.013
 elif cfg.ox == "hypoxic":
     cfg.o2_bath = 0.06  # ~4 mmHg
     cfg.o2_init = 0.005
@@ -282,9 +288,12 @@ cfg.TH = True  # True = on // False = off
 # Balanced and Unbalanced external input as PD article
 cfg.Balanced = True  # False #True=Balanced // False=Unbalanced
 
+cfg.poisson_ramp_ms = 500     # ramp up Poisson drive over the start of the sim to avoid a large initial population spike.
+cfg.poisson_ramp_split = 10   # split the cells into groups
+
 cfg.ouabain = False
 
-simLabel = f"SDPump{cfg.kleakMin}_{cfg.seed}_layer{cfg.k0Layer}_K0{cfg.k0}_{cfg.prep}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}"
+simLabel = f"SDramp_v_balance{cfg.v_balance}_ramp{cfg.poisson_ramp_ms}_{cfg.seed}_layer{cfg.k0Layer}_K0{cfg.k0}_{cfg.prep}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}"
 cfg.simLabel = f"{simLabel}_{cfg.duration/1000:0.2f}s"
 cfg.saveFolder = f"./data/{simLabel}_{cfg.oldDuration/1000:0.2f}s"
 # cfg.simLabel = f"test_{cfg.ox}"

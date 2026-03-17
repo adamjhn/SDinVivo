@@ -320,8 +320,8 @@ netParams.synMechParams["exc"] = {
     "mod": "Exp2Syn",
     "tau1": 0.8,
     "tau2": 5.3,
-    "e": 0,
-}  # NMDA synaptic mechanism
+    "e":0,
+}  # AMPA synaptic mechanism
 netParams.synMechParams["inh"] = {
     "mod": "Exp2Syn",
     "tau1": 0.6,
@@ -339,24 +339,56 @@ netParams.synMechParams["inh"] = {
 if cfg.DC == False:  # External Input as Poisson
     for r in range(0, 8):
         excW = getattr(cfg, f"excWeight_{L[r]}")
-        netParams.popParams["poiss" + str(L[r])] = {
-            "numCells": N_[r],
-            "cellModel": "NetStim",
-            "rate": InpPoiss[r] * f_ext * cfg.poissonRateFactor,
-            "start": 0.0,
-            "noise": 1.0,
-            "delay": 0,
-        }
+        ramp = getattr(cfg, "poisson_ramp_ms", 0)
+        split = getattr(cfg, "poisson_ramp_split", 1)
 
-        auxConn = np.array([range(0, N_[r], 1), range(0, N_[r], 1)])
-        netParams.connParams["poiss->" + str(L[r])] = {
-            "preConds": {"pop": "poiss" + str(L[r])},
-            "postConds": {"pop": L[r]},
-            "connList": auxConn.T,
-            "weight": f"max(0, {excW*cfg.scaleConnWeightNetStims} * (weightMin+normal(0,dweight*weightMin*{cfg.scaleConnWeightNetStimStd**2})))",
-            "delay": 0.5,
-            "synMech": "exc",
-        }  # 1 delay
+        if ramp > 0:
+            # is using a ramp -- subsets of cell start receiving Poisson input
+            # in sequence to avoid initial population spike
+            group_interval = ramp / split
+            for gidx in range(split):
+                group_cells = list(range(gidx, N_[r], split))
+                n_cells = len(group_cells)
+                if n_cells == 0:
+                    continue
+                start = gidx * group_interval
+                pop_name = f"poiss{L[r]}_{gidx}"
+                netParams.popParams[pop_name] = {
+                    "numCells": N_[r],
+                    "cellModel": "NetStim",
+                    "rate": InpPoiss[r] * f_ext * cfg.poissonRateFactor,
+                    "start": start,
+                    "noise": 1.0,
+                    "delay": 0,
+                }
+                auxConn = np.array([range(n_cells), group_cells])
+                netParams.connParams["poissi_{gidx}->" + str(L[r])] = {
+                    "preConds": {"pop": pop_name},
+                    "postConds": {"pop": L[r]},
+                    "connList": auxConn.T,
+                    "weight": f"max(0, {excW*cfg.scaleConnWeightNetStims} * (weightMin+normal(0,dweight*weightMin*{cfg.scaleConnWeightNetStimStd**2})))",
+                    "delay": 0.5,
+                    "synMech": "exc",
+                }  # 1 delay
+        else:
+            netParams.popParams["poiss" + str(L[r])] = {
+                "numCells": N_[r],
+                "cellModel": "NetStim",
+                "rate": InpPoiss[r] * f_ext * cfg.poissonRateFactor,
+                "start": 0.0,
+                "noise": 1.0,
+                "delay": 0,
+            }
+
+            auxConn = np.array([range(0, N_[r], 1), range(0, N_[r], 1)])
+            netParams.connParams["poiss->" + str(L[r])] = {
+                "preConds": {"pop": "poiss" + str(L[r])},
+                "postConds": {"pop": L[r]},
+                "connList": auxConn.T,
+                "weight": f"max(0, {excW*cfg.scaleConnWeightNetStims} * (weightMin+normal(0,dweight*weightMin*{cfg.scaleConnWeightNetStimStd**2})))",
+                "delay": 0.5,
+                "synMech": "exc",
+            }  # 1 delay
 
 # Thalamus Input: increased of 15Hz that lasts 10 ms
 # 0.15 fires in 10 ms each 902 cells -> number of spikes = T*f*N_ = 0.15*902 -> 1 spike each N_*0.15
@@ -502,7 +534,7 @@ constants = {
     "Pos_initial": cfg.Pss,
     "o2_bath": cfg.o2_bath,
     "o2_init": cfg.o2_init,
-    "v_initial": cfg.hParams["v_init"],
+    "v_initial": cfg.v_balance,  # cfg.hParams["v_init"],
     "xbins": np.linspace(0, cfg.sizeX, o2sources.shape[1], endpoint=True),
     "ybins": np.linspace(-cfg.sizeY, 0, o2sources.shape[0], endpoint=True),
     "zbins": np.linspace(0, cfg.sizeZ, o2sources.shape[2], endpoint=True),
@@ -643,7 +675,6 @@ alpha_n = "(0.032 * (rxd.v + 52.0))/(1.0 - rxd.rxdmath.exp(-(rxd.v + 52.0)/5.0))
 beta_n = "0.5 * rxd.rxdmath.exp(-(rxd.v + 57.0)/40.0)"
 
 
-
 ### reactions
 gna = "gnabar*mgate**3*hgate"
 gk = "gkbar*ngate**4"
@@ -654,9 +685,10 @@ nkcc1 = f"(unkcc1 * ({fko}) * ({nkcc1A} + {nkcc1B}))"
 kcc2 = "(ukcc2 * rxd.rxdmath.log((kk[cyt] * cl[cyt] * vol_ratio[cyt]**2) / (kk[ecs] * cl[ecs] * vol_ratio[ecs]**2)))"
 
 # Nerst equation - reversal potentials
-ena = "26.64 * rxd.rxdmath.log(na[ecs]*vol_ratio[cyt]/(na[cyt]*vol_ratio[ecs]))"
-ek = "26.64 * rxd.rxdmath.log(kk[ecs]*vol_ratio[cyt]/(kk[cyt]*vol_ratio[ecs]))"
-ecl = "26.64 * rxd.rxdmath.log(cl[cyt]*vol_ratio[ecs]/(cl[ecs]*vol_ratio[cyt]))"
+escale = 1e3 * h.R * (273.15 + cfg.hParams["celsius"]) / h.FARADAY
+ena = f"{escale} * rxd.rxdmath.log(na[ecs]*vol_ratio[cyt]/(na[cyt]*vol_ratio[ecs]))"
+ek = f"{escale} * rxd.rxdmath.log(kk[ecs]*vol_ratio[cyt]/(kk[cyt]*vol_ratio[ecs]))"
+ecl = f"{escale} * rxd.rxdmath.log(cl[cyt]*vol_ratio[ecs]/(cl[ecs]*vol_ratio[cyt]))"
 
 o2ecs = "(oxygen[ecs]/vol_ratio[ecs])"
 o2cyt = "(oxygen[cyt]/vol_ratio[cyt])"
@@ -726,12 +758,13 @@ def initNoEval(ratestr):
         ratestr = ratestr.replace(k, str(v))
     return ratestr
 
+
 def initEval(ratestr):
     return eval(initNoEval(ratestr))
 
 
 evalInit["mgate"] = initEval(f"{alpha_m}/({alpha_m}+{beta_m})")
-evalInit['hgate'] = initEval(f"{alpha_h}/({alpha_h}+{beta_h})")
+evalInit["hgate"] = initEval(f"{alpha_h}/({alpha_h}+{beta_h})")
 evalInit["ngate"] = initEval(f"{alpha_n}/({alpha_n}+{beta_n})")
 
 # check pump can balance K+ currents at rest with min leak cfg.kleakMin mS/cm^2
@@ -930,7 +963,7 @@ xscale = dx / (cfg.sizeX / o2sources.shape[0])
 o2_init_str = f"o2_bath if isinstance(node, rxd.node.Node1D) else 0.4*max(o2sources[int(node._j*{xscale}), int(node._i*{yscale}), int(node._k*{zscale})],0.1)"
 species["oxygen"] = {
     "regions": ["ecs", "cyt"],
-    "d": 3.3,
+    "d": 3.3 * cfg.tort_ecs**2,
     "initial": constants["o2_init"],
     "ecs_boundary_conditions": constants["o2_bath"] if cfg.prep == "invitro" else None,
     "name": "o2",
@@ -968,9 +1001,9 @@ netParams.rxdParams["parameters"] = params
 ### states
 # per-section initialisation functions for gating variables
 evalInit["rxd.v"] = "node.sec.v"
-m_initial = initNoEval(f"{alpha_m} / ({beta_m} + {alpha_m})").replace("math","numpy")
-h_initial = initNoEval(f"{alpha_h} / ({beta_h} + {alpha_h})").replace("math","numpy")
-n_initial = initNoEval(f"{alpha_n} / ({beta_n} + {alpha_n})").replace("math","numpy")
+m_initial = initNoEval(f"{alpha_m} / ({beta_m} + {alpha_m})").replace("math", "numpy")
+h_initial = initNoEval(f"{alpha_h} / ({beta_h} + {alpha_h})").replace("math", "numpy")
+n_initial = initNoEval(f"{alpha_n} / ({beta_n} + {alpha_n})").replace("math", "numpy")
 
 netParams.rxdParams["states"] = {
     "vol_ratio": {"regions": ["cyt", "ecs"], "initial": 1.0, "name": "volume"},
