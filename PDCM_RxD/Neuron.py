@@ -5,10 +5,14 @@ import numpy as np
 try:
     from __main__ import cfg  # import SimConfig object with params from parent module
 except:
-    from cfgMidOx import (
+    from cfgPop import (
         cfg,
     )  # if no simConfig in parent module, import directly from cfg.py:cfg
 
+if hasattr(cfg.gpas,'keys'):
+    gpas = cfg.gpas
+else:
+    gpas = {pop:cfg.gpas for pop in ['L2e','L2i','L4e','L4i','L5e','L5i','L6e','L6i']}
 class L2e:
     def __init__(self):
         self.soma = h.Section(name='soma', cell=self)
@@ -20,8 +24,7 @@ class L2e:
         if cfg.epas:
             self.soma.insert('pas')
             self.soma(0.5).pas.e = cfg.epas
-            self.soma(0.5).pas.g = cfg.gpas
-
+            self.soma(0.5).pas.g = gpas["L2e"]
 class L2i:
     def __init__(self):
         self.soma = h.Section(name='soma', cell=self)
@@ -33,7 +36,7 @@ class L2i:
         if cfg.epas:
             self.soma.insert('pas')
             self.soma(0.5).pas.e = cfg.epas
-            self.soma(0.5).pas.g = cfg.gpas
+            self.soma(0.5).pas.g = gpas["L2i"]
 
 class L4e:
     def __init__(self):
@@ -46,7 +49,7 @@ class L4e:
         if cfg.epas:
             self.soma.insert('pas')
             self.soma(0.5).pas.e = cfg.epas
-            self.soma(0.5).pas.g = cfg.gpas
+            self.soma(0.5).pas.g = gpas["L4e"]
 
 class L4i:
     def __init__(self):
@@ -59,7 +62,7 @@ class L4i:
         if cfg.epas:
             self.soma.insert('pas')
             self.soma(0.5).pas.e = cfg.epas
-            self.soma(0.5).pas.g = cfg.gpas
+            self.soma(0.5).pas.g = gpas["L4i"]
 
 class L5e:
     def __init__(self):
@@ -72,7 +75,7 @@ class L5e:
         if cfg.epas:
             self.soma.insert('pas')
             self.soma(0.5).pas.e = cfg.epas
-            self.soma(0.5).pas.g = cfg.gpas
+            self.soma(0.5).pas.g = gpas["L5e"]
 
 class L5i:
     def __init__(self):
@@ -85,7 +88,7 @@ class L5i:
         if cfg.epas:
             self.soma.insert('pas')
             self.soma(0.5).pas.e = cfg.epas
-            self.soma(0.5).pas.g = cfg.gpas
+            self.soma(0.5).pas.g = gpas["L5i"]
 
 
 class L6e:
@@ -99,7 +102,7 @@ class L6e:
         if cfg.epas:
             self.soma.insert('pas')
             self.soma(0.5).pas.e = cfg.epas
-            self.soma(0.5).pas.g = cfg.gpas
+            self.soma(0.5).pas.g = gpas["L6e"]
 
 class L6i:
     def __init__(self):
@@ -112,6 +115,8 @@ class L6i:
         if cfg.epas:
             self.soma.insert('pas')
             self.soma(0.5).pas.e = cfg.epas
-            self.soma(0.5).pas.g = cfg.gpas
+            self.soma(0.5).pas.g = gpas["L6i"]
+
 # v0.00 - classes for each cell type in network
 # v0.01 - rename soma section to 'soma'
+# v0.02 - added per-population gpas
