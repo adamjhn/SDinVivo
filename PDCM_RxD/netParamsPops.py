@@ -362,7 +362,7 @@ if cfg.DC == False:  # External Input as Poisson
                     "delay": 0,
                 }
                 auxConn = np.array([range(n_cells), group_cells])
-                netParams.connParams["poissi_{gidx}->" + str(L[r])] = {
+                netParams.connParams[f"poissi_{gidx}->" + str(L[r])] = {
                     "preConds": {"pop": pop_name},
                     "postConds": {"pop": L[r]},
                     "connList": auxConn.T,

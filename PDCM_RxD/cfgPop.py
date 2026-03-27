@@ -112,7 +112,7 @@ elif cfg.ox == "hypoxic":
     cfg.o2drive = 1.0 / 6  # 0.013 * (1 / 6)
 cfg.prep = "invivo"  # "invitro"
 # Size of Network. Adjust this constants, please!
-cfg.ScaleFactor = 0.016  # used for batch param search  # = 80.000
+cfg.ScaleFactor = 0.16  # used for batch param search  # = 80.000
 
 # neuron params
 cfg.betaNrn = (
