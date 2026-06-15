@@ -3,7 +3,7 @@ import numpy as np
 import os
 import sys
 import pickle
-from neuron import h
+from neuron import h, rxd
 import random
 from stats import networkStatsFromSim
 import json
@@ -142,6 +142,9 @@ if pcid == 0:
     k_ecs = sim.net.rxd["species"]["kk"]["hObj"][sim.net.rxd["regions"]["ecs"]["hObj"]]
     na_ecs = sim.net.rxd["species"]["na"]["hObj"][sim.net.rxd["regions"]["ecs"]["hObj"]]
     cl_ecs = sim.net.rxd["species"]["cl"]["hObj"][sim.net.rxd["regions"]["ecs"]["hObj"]]
+    volume_ecs = sim.net.rxd["states"]["vol_ratio"]["hObj"][
+        sim.net.rxd["regions"]["ecs"]["hObj"]
+    ]
     o2_ecs = sim.net.rxd["species"]["o2_extracellular"]["hObj"][
         sim.net.rxd["regions"]["ecs_o2"]["hObj"]
     ]
@@ -152,6 +155,9 @@ if pcid == 0:
 # manually record from cells from each layer
 rng = np.random.default_rng(seed=pcid + cfg.seeds["rec"])
 rec_cells = {}
+# look up volume ratio species
+rxd_volume = sim.net.rxd["states"]["vol_ratio"]["hObj"]
+
 for lab, pop in sim.net.pops.items():
     if "xRange" in pop.tags:
         rec_cells[lab] = {
@@ -164,7 +170,7 @@ for lab, pop in sim.net.pops.items():
             )
         }
         rec_cells[lab]["pos"] = []
-        for k in ["v", "ki", "nai", "cli", "ko", "nao", "clo", "o2o"]:
+        for k in ["v", "ki", "nai", "cli", "ko", "nao", "clo", "o2o", "volume"]:
             rec_cells[lab][k] = []
         for idx in rec_cells[lab]["gid"]:
             cell = sim.cellByGid(idx)
@@ -174,6 +180,9 @@ for lab, pop in sim.net.pops.items():
                 rec_cells[lab][k].append(
                     h.Vector().record(getattr(soma(0.5), f"_ref_{k}"))
                 )
+            rec_cells[lab]["volume"].append(
+                h.Vector().record(rxd_volume.nodes(soma(0.5))._ref_value)
+            )
 if pcid == 0:
     rec_cells["time"] = h.Vector().record(h._ref_t)
 
@@ -228,6 +237,7 @@ def saveconc():
     np.save(os.path.join(outdir, "cl_%i.npy" % int(h.t)), cl_ecs.states3d)
     np.save(os.path.join(outdir, "o2_%i.npy" % int(h.t)), o2_ecs.states3d)
     np.save(os.path.join(outdir, "o2con_%i.npy" % int(h.t)), o2con.states3d)
+    np.save(os.path.join(outdir, "volume_%i.npy" % int(h.t)), volume_ecs.states3d)
 
 
 def progress_bar(tstop, size=40):

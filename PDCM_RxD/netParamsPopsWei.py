@@ -6,6 +6,12 @@ import cv2
 from neuron import h
 
 
+def vtrap(x, y):
+    if abs(x / y) < 1e-6:
+        return y * (1 - x / y / 2)
+    return x / (math.exp(x / y) - 1)
+
+
 def rand_uniform(gid=0):
     r = h.Random()
     r.Random123(gid, 1, 1)
@@ -509,7 +515,6 @@ constants = {
     "cli_initial": 6.0,
     "o2_bath": cfg.o2_bath,
     "o2_init": cfg.o2_init,
-    "v_initial": cfg.hParams["v_init"],
     "xbins": np.linspace(0, cfg.sizeX, o2sources.shape[1], endpoint=True),
     "ybins": np.linspace(-cfg.sizeY, 0, o2sources.shape[0], endpoint=True),
     "zbins": np.linspace(0, cfg.sizeZ, o2sources.shape[2], endpoint=True),
@@ -523,38 +528,28 @@ for pop in L:
     constants[f"ukcc2_{pop}"] = cfg.ukcc2[pop] * mM / sec
     constants[f"unkcc1_{pop}"] = cfg.unkcc1[pop] * mM / sec
     constants[f"p_max_{pop}"] = cfg.pmax[pop] * mM / sec
+    constants[f"v_initial_{pop}"] = cfg.v_initial[pop]
 
 
 # sodium activation 'm'
-alpha_m = "(0.32 * (rxd.v + 54.0))/(1.0 - rxd.rxdmath.exp(-(rxd.v + 54.0)/4.0))"
-beta_m = "(0.28 * (rxd.v + 27.0))/(rxd.rxdmath.exp((rxd.v + 27.0)/5.0) - 1.0)"
-alpha_m0 = (0.32 * (constants["v_initial"] + 54.0)) / (
-    1.0 - math.exp(-(constants["v_initial"] + 54) / 4.0)
-)
-beta_m0 = (0.28 * (constants["v_initial"] + 27.0)) / (
-    math.exp((constants["v_initial"] + 27.0) / 5.0) - 1.0
-)
-m_initial = alpha_m0 / (beta_m0 + alpha_m0)
+alpha_m = "(0.32*rxd.rxdmath.vtrap(-(rxd.v + 54.0), 4.0))"
+beta_m = "(0.28*rxd.rxdmath.vtrap(rxd.v + 27.0, 5.0))"
+# alpha_m = "(0.32 * (rxd.v + 54.0))/(1.0 - rxd.rxdmath.exp(-(rxd.v + 54.0)/4.0))"
+# beta_m = "(0.28 * (rxd.v + 27.0))/(rxd.rxdmath.exp((rxd.v + 27.0)/5.0) - 1.0)"
+
 # sodium inactivation 'h'
-alpha_h = "0.128 * rxd.rxdmath.exp(-(rxd.v + 50.0)/18.0)"
-beta_h = "4.0/(1.0 + rxd.rxdmath.exp(-(rxd.v + 27.0)/5.0))"
-alpha_h0 = 0.128 * math.exp(-(constants["v_initial"] + 50.0) / 18.0)
-beta_h0 = 4.0 / (1.0 + math.exp(-(constants["v_initial"] + 27.0) / 5.0))
-h_initial = alpha_h0 / (beta_h0 + alpha_h0)
+alpha_h = "(0.128 * rxd.rxdmath.exp(-(rxd.v + 50.0)/18.0))"
+beta_h = "(4.0/(1.0 + rxd.rxdmath.exp(-(rxd.v + 27.0)/5.0)))"
 
 # potassium activation 'n'
-alpha_n = "(0.032 * (rxd.v + 52.0))/(1.0 - rxd.rxdmath.exp(-(rxd.v + 52.0)/5.0))"
-beta_n = "0.5 * rxd.rxdmath.exp(-(rxd.v + 57.0)/40.0)"
-alpha_n0 = (0.032 * (constants["v_initial"] + 52.0)) / (
-    1.0 - math.exp(-(constants["v_initial"] + 52.0) / 5.0)
-)
-beta_n0 = 0.5 * math.exp(-(constants["v_initial"] + 57.0) / 40.0)
-n_initial = alpha_n0 / (beta_n0 + alpha_n0)
+alpha_n = "(0.032 * rxd.rxdmath.vtrap(-(rxd.v + 52.0), 5.0))"
+# alpha_n = "(0.032 * (rxd.v + 52.0))/(1.0 - rxd.rxdmath.exp(-(rxd.v + 52.0)/5.0))"
+beta_n = "(0.5 * rxd.rxdmath.exp(-(rxd.v + 57.0)/40.0))"
 
 
 ### reactions
-gna = {pop: f"gnabar_{pop}*mgate**3*hgate" for pop in L}
-gk = {pop: f"gkbar_{pop}*ngate**4" for pop in L}
+gna = {pop: f"gnabar_{pop}*mgate[mem_{pop}]**3*hgate[mem_{pop}]" for pop in L}
+gk = {pop: f"gkbar_{pop}*ngate[mem_{pop}]**4" for pop in L}
 
 nkcc1 = {}
 fko = "1.0 / (1.0 + rxd.rxdmath.exp(16.0 - kk[ecs] / vol_ratio[ecs]))"
@@ -631,8 +626,8 @@ scaleo = str(avo * 1e-18)
 # update constants to ensure net zero flux at RMP
 evalInit = {
     "vol_ratio[ecs]": "1.0",
+    "rxd.rxdmath.vtrap": "vtrap",
     "rxd.rxdmath": "math",
-    "rxd.v": constants["v_initial"],
     "kk[ecs]": constants["ko_initial"],
     "na[ecs]": constants["nao_initial"],
     "cl[ecs]": constants["clo_initial"],
@@ -645,7 +640,9 @@ for pop in L:
     evalInit[f"cl[cyt_{pop}]"] = constants["cli_initial"]
 
 
-def initNoEval(ratestr):
+def initNoEval(ratestr, pop=None):
+    if pop is not None:
+        ratestr = ratestr.replace("rxd.v", str(constants[f"v_initial_{pop}"]))
     for k, v in evalInit.items():
         ratestr = ratestr.replace(k, str(v))
     for k, v in constants.items():
@@ -653,21 +650,23 @@ def initNoEval(ratestr):
     return ratestr
 
 
-def initEval(ratestr):
-    return eval(initNoEval(ratestr))
-
-
-evalInit["mgate"] = initEval(f"{alpha_m}/({alpha_m}+{beta_m})")
-evalInit["hgate"] = initEval(f"{alpha_h}/({alpha_h}+{beta_h})")
-evalInit["ngate"] = initEval(f"{alpha_n}/({alpha_n}+{beta_n})")
+def initEval(ratestr, pop=None):
+    return eval(initNoEval(ratestr, pop=pop))
 
 
 for pop in L:
-    min_pmax = f"p_max_{pop} * ({nkcc1[pop]} + {kcc2[pop]} + {gk[pop]} * (v_initial - {ek[pop]})/({volume_scale}))/(2*{pump[pop]})"
+    evalInit[f"mgate[mem_{pop}]"] = initEval(f"{alpha_m}/({alpha_m}+{beta_m})", pop=pop)
+    evalInit[f"hgate[mem_{pop}]"] = initEval(f"{alpha_h}/({alpha_h}+{beta_h})", pop=pop)
+    evalInit[f"ngate[mem_{pop}]"] = initEval(f"{alpha_n}/({alpha_n}+{beta_n})", pop=pop)
+
+
+for pop in L:
+    min_pmax = f"p_max_{pop} * ({nkcc1[pop]} + {kcc2[pop]} + {gk[pop]} * (rxd.v - {ek[pop]})/({volume_scale}))/(2*{pump[pop]})"
     min_leak = initEval(
-        f"{cfg.kleakMin}*{scale}*(v_initial - {ek[pop]})/(2*{volume_scale}*({pump[pop]})/(p_max_{pop}))"
+        f"{cfg.kleakMin}*{scale}*(rxd.v - {ek[pop]})/(2*{volume_scale}*({pump[pop]})/(p_max_{pop}))",
+        pop=pop,
     )
-    pmin = initEval(min_pmax)
+    pmin = initEval(min_pmax, pop=pop)
     if constants[f"p_max_{pop}"] < pmin + min_leak:
         print(
             "Pump current is too low to balance K+ currents with gkbar_l {cfg.kleakMin}"
@@ -677,14 +676,14 @@ for pop in L:
         constants[f"p_max_{pop}"] = pmin + min_leak
 
     clbalance = (
-        f"(-(2*{nkcc1[pop]} + {kcc2[pop]}) * {volume_scale})/({ecl[pop]} - v_initial)"
+        f"(-(2*{nkcc1[pop]} + {kcc2[pop]}) * {volume_scale})/({ecl[pop]} - rxd.v)"
     )
-    kbalance = f"({gk[pop]} * (v_initial - {ek[pop]}) + ({volume_scale} * ({nkcc1[pop]} + {kcc2[pop]})  -2.0 * {pump[pop]}*{volume_scale}))  / ({ek[pop]} - v_initial)"
-    nabalance = f"({gna[pop]} * (v_initial - {ena[pop]}) + ({nkcc1[pop]}*{volume_scale} + 3.0 * {pump[pop]}*{volume_scale})) / ({ena[pop]} - v_initial)"
+    kbalance = f"({gk[pop]} * (rxd.v - {ek[pop]}) + ({volume_scale} * ({nkcc1[pop]} + {kcc2[pop]})  -2.0 * {pump[pop]}*{volume_scale}))  / ({ek[pop]} - rxd.v)"
+    nabalance = f"({gna[pop]} * (rxd.v - {ena[pop]}) + ({nkcc1[pop]}*{volume_scale} + 3.0 * {pump[pop]}*{volume_scale})) / ({ena[pop]} - rxd.v)"
 
-    constants[f"gclbar_l_{pop}"] = initEval(clbalance)
-    constants[f"gkbar_l_{pop}"] = cfg.gkleak_scale * initEval(kbalance)
-    constants[f"gnabar_l_{pop}"] = initEval(nabalance)
+    constants[f"gclbar_l_{pop}"] = max(0, initEval(clbalance, pop=pop))
+    constants[f"gkbar_l_{pop}"] = max(0, initEval(kbalance, pop=pop))
+    constants[f"gnabar_l_{pop}"] = max(0, initEval(nabalance, pop=pop))
 
 
 netParams.rxdParams["constants"] = constants
@@ -849,11 +848,27 @@ netParams.rxdParams["parameters"] = params
 ### states
 cyts = [f"cyt_{pop}" for pop in L]
 mems = [f"mem_{pop}" for pop in L]
+h_initial = {f"mem_{pop}": evalInit[f"hgate[mem_{pop}]"] for pop in L}
+m_initial = {f"mem_{pop}": evalInit[f"mgate[mem_{pop}]"] for pop in L}
+n_initial = {f"mem_{pop}": evalInit[f"ngate[mem_{pop}]"] for pop in L}
+
 netParams.rxdParams["states"] = {
     "vol_ratio": {"regions": cyts + ["ecs"], "initial": 1.0, "name": "volume"},
-    "mgate": {"regions": mems, "initial": m_initial, "name": "mgate"},
-    "hgate": {"regions": mems, "initial": h_initial, "name": "hgate"},
-    "ngate": {"regions": mems, "initial": n_initial, "name": "ngate"},
+    "mgate": {
+        "regions": mems,
+        "initial": lambda nd: m_initial[nd.region.name],
+        "name": "mgate",
+    },
+    "hgate": {
+        "regions": mems,
+        "initial": lambda nd: h_initial[nd.region.name],
+        "name": "hgate",
+    },
+    "ngate": {
+        "regions": mems,
+        "initial": lambda nd: n_initial[nd.region.name],
+        "name": "ngate",
+    },
     "o2_consumed": {"regions": ["ecs_o2"], "initial": 0, "name": "o2_consumed"},
 }
 
