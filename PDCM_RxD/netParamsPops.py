@@ -9,6 +9,12 @@ import pickle
 import re
 
 
+def vtrap(x, y):
+    if abs(x / y) < 1e-6:
+        return y * (1 - x / y / 2)
+    return x / (math.exp(x / y) - 1)
+
+
 def rand_uniform(gid=0):
     r = h.Random()
     r.Random123(gid, 1, 1)
@@ -212,8 +218,6 @@ else:
 Inp = np.array([1600, 1500, 2100, 1900, 2000, 1900, 2900, 2100])
 if cfg.Balanced == False:
     InpUnb = np.array([2000, 1850, 2000, 1850, 2000, 1850, 2000, 1850])
-
-
 ###########################################################
 # Reescaling calculation
 ###########################################################
@@ -241,7 +245,7 @@ netParams.delayMin_e = 1.5
 netParams.ddelay = 0.5
 netParams.delayMin_i = 0.75
 netParams.weightMin = cfg.weightMin
-netParams.dweight = cfg.dweight
+netParams.dweight = cfg.dWeight
 
 netParams.sizeX = (
     cfg.sizeX
@@ -524,7 +528,6 @@ constants = {
     "Pos_initial": cfg.Pss,
     "o2_bath": cfg.o2_bath,
     "o2_init": cfg.o2_init,
-    "v_initial": cfg.v_balance,  # cfg.hParams["v_init"],
     "xbins": np.linspace(0, cfg.sizeX, o2sources.shape[1], endpoint=True),
     "ybins": np.linspace(-cfg.sizeY, 0, o2sources.shape[0], endpoint=True),
     "zbins": np.linspace(0, cfg.sizeZ, o2sources.shape[2], endpoint=True),
@@ -538,6 +541,7 @@ for pop in L:
     constants[f"ukcc2_{pop}"] = cfg.ukcc2[pop] * mM / sec
     constants[f"unkcc1_{pop}"] = cfg.unkcc1[pop] * mM / sec
     constants[f"p_max_{pop}"] = cfg.pmax[pop] / um**2
+    constants[f"v_initial_{pop}"] = cfg.v_initial[pop]
 
 
 # Pump model
@@ -662,21 +666,21 @@ gliaPumpRate = getPumpRate(
 )  # mM/ms
 
 # sodium activation 'm'
-alpha_m = "(0.32 * (rxd.v + 54.0))/(1.0 - rxd.rxdmath.exp(-(rxd.v + 54.0)/4.0))"
-beta_m = "(0.28 * (rxd.v + 27.0))/(rxd.rxdmath.exp((rxd.v + 27.0)/5.0) - 1.0)"
+alpha_m = "(0.32*rxd.rxdmath.vtrap(-(rxd.v + 54.0), 4.0))"
+beta_m = "(0.28*rxd.rxdmath.vtrap(rxd.v + 27.0, 5.0))"
 
 # sodium inactivation 'h'
 alpha_h = "0.128 * rxd.rxdmath.exp(-(rxd.v + 50.0)/18.0)"
 beta_h = "4.0/(1.0 + rxd.rxdmath.exp(-(rxd.v + 27.0)/5.0))"
 
 # potassium activation 'n'
-alpha_n = "(0.032 * (rxd.v + 52.0))/(1.0 - rxd.rxdmath.exp(-(rxd.v + 52.0)/5.0))"
+alpha_n = "(0.032 * rxd.rxdmath.vtrap(-(rxd.v + 52.0), 5.0))"
 beta_n = "0.5 * rxd.rxdmath.exp(-(rxd.v + 57.0)/40.0)"
 
 
 ### reactions
-gna = {pop: f"gnabar_{pop}*mgate**3*hgate" for pop in L}
-gk = {pop: f"gkbar_{pop}*ngate**4" for pop in L}
+gna = {pop: f"gnabar_{pop}*mgate[mem_{pop}]**3*hgate[mem_{pop}]" for pop in L}
+gk = {pop: f"gkbar_{pop}*ngate[mem_{pop}]**4" for pop in L}
 
 nkcc1 = {}
 fko = "1.0 / (1.0 + rxd.rxdmath.exp(16.0 - kk[ecs] / vol_ratio[ecs]))"
@@ -729,11 +733,15 @@ scaleo = str(avo * 1e-18)
 # switches used to avoid concentration becoming negative
 o2switch, ATPswitch, ADPswitch, AMPswitch, PosSwitch = {}, {}, {}, {}, {}
 for pop in L:
-    o2switch[pop] = f"((1.0 + rxd.rxdmath.tanh(1e5 * (%s - 5e-4))) / 2.0)" % (o2cyt)
+    o2switch[pop] = f"((1.0 + rxd.rxdmath.tanh(1e4 * ({o2cyt[pop]} - 5e-4))) / 2.0)"
     ATPswitch[pop] = f"((1.0 + rxd.rxdmath.tanh(1e5 * (ATP[cyt_{pop}] - 5e-4))) / 2.0)"
     ADPswitch[pop] = f"((1.0 + rxd.rxdmath.tanh(1e5 * (ADP[cyt_{pop}] - 5e-4))) / 2.0)"
     AMPswitch[pop] = f"((1.0 + rxd.rxdmath.tanh(1e5 * (AMP[cyt_{pop}] - 5e-4))) / 2.0)"
     PosSwitch[pop] = f"((1.0 + rxd.rxdmath.tanh(1e5 * (Pos[cyt_{pop}] - 5e-4))) / 2.0)"
+
+o2ecs_switch = f"((1.0 + rxd.rxdmath.tanh(1e4 * ({o2ecs} - 5e-4))) / 2.0)"
+o2ecs_pos = f"({o2ecs} * {o2ecs_switch})"
+o2cyt_pos = {pop: f"({o2cyt[pop]} * {o2switch[pop]})" for pop in L}
 
 
 # ATP synthase kinetics with Michaelis-Menten terms for all substrates
@@ -751,7 +759,7 @@ for pop in L:
     Vatp[
         pop
     ] += f"((Pos[cyt_{pop}]/vol_ratio[cyt_{pop}])/(Pos[cyt_{pop}]/vol_ratio[cyt_{pop}] + {cfg.KmPi_synthase})) * "
-    Vatp[pop] += f"({o2cyt[pop]}/({cfg.Ko2} + {o2cyt[pop]})) * "
+    Vatp[pop] += f"({o2cyt_pos[pop]}/({cfg.Ko2} + {o2cyt_pos[pop]})) * "
     Vatp[
         pop
     ] += f"({cfg.KiATP_synthase}/({cfg.KiATP_synthase} + ATP[cyt_{pop}]/vol_ratio[cyt_{pop}]))"
@@ -760,8 +768,8 @@ for pop in L:
 # update constants to ensure net zero flux at RMP
 evalInit = {
     "vol_ratio[ecs]": "1.0",
+    "rxd.rxdmath.vtrap": "vtrap",
     "rxd.rxdmath": "math",
-    "rxd.v": constants["v_initial"],
     "kk[ecs]": constants["ko_initial"],
     "na[ecs]": constants["nao_initial"],
     "cl[ecs]": constants["clo_initial"],
@@ -779,7 +787,9 @@ for pop in L:
     evalInit[f"Pos[cyt_{pop}]"] = constants["Pos_initial"]
 
 
-def initNoEval(ratestr):
+def initNoEval(ratestr, pop=None):
+    if pop is not None:
+        ratestr = ratestr.replace("rxd.v", str(constants[f"v_initial_{pop}"]))
     for k, v in evalInit.items():
         ratestr = ratestr.replace(k, str(v))
     for k, v in constants.items():
@@ -787,28 +797,30 @@ def initNoEval(ratestr):
     return ratestr
 
 
-def initEval(ratestr):
-    return eval(initNoEval(ratestr))
+def initEval(ratestr, pop=None):
+    return eval(initNoEval(ratestr, pop=pop))
 
 
-evalInit["mgate"] = initEval(f"{alpha_m}/({alpha_m}+{beta_m})")
-evalInit["hgate"] = initEval(f"{alpha_h}/({alpha_h}+{beta_h})")
-evalInit["ngate"] = initEval(f"{alpha_n}/({alpha_n}+{beta_n})")
+for pop in L:
+    evalInit[f"mgate[mem_{pop}]"] = initEval(f"{alpha_m}/({alpha_m}+{beta_m})", pop=pop)
+    evalInit[f"hgate[mem_{pop}]"] = initEval(f"{alpha_h}/({alpha_h}+{beta_h})", pop=pop)
+    evalInit[f"ngate[mem_{pop}]"] = initEval(f"{alpha_n}/({alpha_n}+{beta_n})", pop=pop)
+
 
 for pop in L:
     # check pump can balance K+ currents at rest with min leak cfg.kleakMin mS/cm^2
-    min_pmax = f"p_max_{pop} * ({volume_scale}*({nkcc1[pop]} + {kcc2[pop]}) + {gk[pop]} * (v_initial - {ek[pop]}))/(2*{pumpRate[pop]})"
+    min_pmax = f"p_max_{pop} * ({volume_scale}*({nkcc1[pop]} + {kcc2[pop]}) + {gk[pop]} * (rxd.v - {ek[pop]}))/(2*{pumpRate[pop]})"
     min_leak = initEval(
-        f"{cfg.kleakMin}*p_max_{pop}*{scale}*(v_initial - {ek[pop]})/((2*{pumpRate[pop]}))"
+        f"{cfg.kleakMin}*p_max_{pop}*{scale}*(rxd.v - {ek[pop]})/((2*{pumpRate[pop]}))", pop=pop
     )
-    pmin = initEval(min_pmax)
+    pmin = initEval(min_pmax, pop=pop)
     if constants[f"p_max_{pop}"] < pmin + min_leak:
         print(
             f"Pump current is too low in {pop} to balance K+ currents with gkbar_l {cfg.kleakMin}"
         )
         print(f"p_max_{pop} set to {pmin + min_leak}")
+        # change the pump
         constants[f"p_max_{pop}"] = pmin + min_leak
-
 
 # scale by area(um**2)/(N_A * volume(m**3) * vol_fraction) to give cyt mM/ms
 Prescale = (
@@ -820,15 +832,15 @@ Prescale = (
 VBasalATP = {}
 ADKf, ADKb = {}, {}
 for pop in L:
-    pr = initEval(pumpRate[pop]) * Prescale  # cyt mM/ms ATP->ADP + Pos
+    pr = initEval(pumpRate[pop], pop=pop) * Prescale  # cyt mM/ms ATP->ADP + Pos
     print(f"{pop}: Pump ATP consumption = {pr:.6e} mM/ms")
     print(f"{pop}: Basal ATP consumption = {pr/2:.6e} mM/ms")
     print(f"{pop}: Total ATP consumption = {1.5*pr:.6e} mM/ms")
 
     VBasalATP[pop] = pr / 2
-    Vmax_ATPsyth = (1.5 * pr) / (5 * initEval(Vatp[pop]))
+    Vmax_ATPsyth = (1.5 * pr) / (5 * initEval(Vatp[pop],pop=pop))
     print(f"Vmax_ATPsynthase = {Vmax_ATPsyth:.6e} mM/ms")
-    Vatp_rate = 5 * Vmax_ATPsyth * initEval(Vatp[pop])
+    Vatp_rate = 5 * Vmax_ATPsyth * initEval(Vatp[pop], pop=pop)
     print(f"ATP production rate = {Vatp_rate:.6e} mM/ms")
 
     # ADP is the total ADP (D2 is MgADP -- used by the pump, D1 is free ADP)
@@ -873,14 +885,14 @@ for pop in L:
     Vatp[pop] += "*" + str(Vmax_ATPsyth)
 
     clbalance = (
-        f"(-(2*{nkcc1[pop]} + {kcc2[pop]}) * {volume_scale})/({ecl[pop]} - v_initial)"
+        f"(-(2*{nkcc1[pop]} + {kcc2[pop]}) * {volume_scale})/({ecl[pop]} - rxd.v)"
     )
-    kbalance = f"({gk[pop]} * (v_initial - {ek[pop]}) + ({volume_scale} * ({nkcc1[pop]} + {kcc2[pop]})  -2.0 * {pumpRate[pop]}))  / ({ek[pop]} - v_initial)"
-    nabalance = f"({gna[pop]} * (v_initial - {ena[pop]}) + ({nkcc1[pop]}*{volume_scale} + 3.0 * {pumpRate[pop]})) / ({ena[pop]} - v_initial)"
+    kbalance = f"({gk[pop]} * (rxd.v - {ek[pop]}) + ({volume_scale} * ({nkcc1[pop]} + {kcc2[pop]})  -2.0 * {pumpRate[pop]}))  / ({ek[pop]} - rxd.v)"
+    nabalance = f"({gna[pop]} * (rxd.v - {ena[pop]}) + ({nkcc1[pop]}*{volume_scale} + 3.0 * {pumpRate[pop]})) / ({ena[pop]} - rxd.v)"
 
-    constants[f"gclbar_l_{pop}"] = initEval(clbalance)
-    constants[f"gkbar_l_{pop}"] = cfg.gkleak_scale * initEval(kbalance)
-    constants[f"gnabar_l_{pop}"] = initEval(nabalance)
+    constants[f"gclbar_l_{pop}"] = initEval(clbalance, pop=pop)
+    constants[f"gkbar_l_{pop}"] = cfg.gkleak_scale * initEval(kbalance, pop=pop)
+    constants[f"gnabar_l_{pop}"] = initEval(nabalance, pop=pop)
 
 
 # scale the pump rates
@@ -892,8 +904,8 @@ gps = 4 * np.pi * cfg.somaR**2 / (avo * 1e-18 * cfg.dx**3 * cfg.alpha_ecs)
 gPmaxScale = {
     pop: (
         (gps / cfg.GliaPumpScale)
-        * initEval(pumpRate[pop])
-        / initEval(gliaPumpRate)
+        * initEval(pumpRate[pop],pop=pop)
+        / initEval(gliaPumpRate,pop=pop)
         / constants[f"p_max_{pop}"]
     )
     for pop in L
@@ -949,8 +961,6 @@ for pop in L:
         "nrn_region": None,
         "geometry": "membrane",
     }
-
-
 netParams.rxdParams["regions"] = regions
 
 ### species
@@ -1054,19 +1064,17 @@ if cfg.o2drive:
 netParams.rxdParams["parameters"] = params
 
 ### states
-# per-section initialisation functions for gating variables
-evalInit["rxd.v"] = "node.sec.v"
-m_initial = initNoEval(f"{alpha_m} / ({beta_m} + {alpha_m})").replace("math", "numpy")
-h_initial = initNoEval(f"{alpha_h} / ({beta_h} + {alpha_h})").replace("math", "numpy")
-n_initial = initNoEval(f"{alpha_n} / ({beta_n} + {alpha_n})").replace("math", "numpy")
+h_initial = {f"mem_{pop}": evalInit[f"hgate[mem_{pop}]"] for pop in L}
+m_initial = {f"mem_{pop}": evalInit[f"mgate[mem_{pop}]"] for pop in L}
+n_initial = {f"mem_{pop}": evalInit[f"ngate[mem_{pop}]"] for pop in L}
 
 cyts = [f"cyt_{pop}" for pop in L]
 mems = [f"mem_{pop}" for pop in L]
 netParams.rxdParams["states"] = {
     "vol_ratio": {"regions": cyts + ["ecs"], "initial": 1.0, "name": "volume"},
-    "mgate": {"regions": mems, "initial": m_initial, "name": "mgate"},
-    "hgate": {"regions": mems, "initial": h_initial, "name": "hgate"},
-    "ngate": {"regions": mems, "initial": n_initial, "name": "ngate"},
+    "mgate": {"regions": mems, "initial": lambda nd: m_initial[nd.region.name], "name": "mgate"},
+    "hgate": {"regions": mems, "initial": lambda nd: h_initial[nd.region.name], "name": "hgate"},
+    "ngate": {"regions": mems, "initial": lambda nd: n_initial[nd.region.name], "name": "ngate"},
     "o2_consumed": {"regions": ["ecs"], "initial": 0, "name": "o2_consumed"},
     "ATP": {"regions": cyts, "initial": constants["ATP_initial"], "name": "ATP"},
     "ADP": {"regions": cyts, "initial": constants["ADP_initial"], "name": "ADP"},
@@ -1113,7 +1121,6 @@ for pop in L:
         "custom_dynamics": True,
         "membrane_flux": True,
     }
-
     # potassium (K) current
     mcReactions[f"k_current_{pop}"] = {
         "reactant": f"kk[cyt_{pop}]",
@@ -1178,7 +1185,6 @@ for pop in L:
         "custom_dynamics": True,
         "membrane_flux": True,
     }
-
     # ## potassium leak
     mcReactions[f"k_leak_{pop}"] = {
         "reactant": f"kk[cyt_{pop}]",
@@ -1215,30 +1221,42 @@ for pop in L:
         "custom_dynamics": True,
         "membrane_flux": True,
     }
-    mcReactions[f"pump_current_others_{pop}"] = {
+    mcReactions[f"pump_current_ADP_{pop}"] = {
         "reactant": f"ATP[cyt_{pop}]",
-        "product": f"ADP[cyt_{pop}] + Pos[cyt_{pop}]",
+        "product": f"ADP[cyt_{pop}]",
         "rate_f": pumpRate[pop],
         "membrane": f"mem_{pop}",
         "custom_dynamics": True,
         "membrane_flux": False,
     }
 
-    # 6 o2 -> 30 ATP
-    # assumed o2 in cyt (mM) == o2 in ecs (mM) due to rapid flux across the membrane (~42cm/s == 420um/ms)
-    mcReactions[f"O2Flux_{pop}"] = {
-        "reactant": f"oxygen[ecs]",
-        "product": f"oxygen[cyt_{pop}]",
-        "rate_f": f"{420*avo/1e18} *({o2ecs} - {o2cyt[pop]})",
+    mcReactions[f"pump_current_Pos_{pop}"] = {
+        "reactant": f"ATP[cyt_{pop}]",
+        "product": f"Pos[cyt_{pop}]",
+        "rate_f": pumpRate[pop],
         "membrane": f"mem_{pop}",
         "custom_dynamics": True,
         "membrane_flux": False,
     }
 
+
+    # 6 o2 -> 30 ATP
+    # assumed o2 in cyt (mM) == o2 in ecs (mM) due to rapid flux across the membrane (~42cm/s == 420um/ms)
+    stab_reduction = 500e3 # reduced 80-fold to maintain equilibrium without instability
+    mcReactions[f"O2Flux_{pop}"] = {
+        "reactant": f"oxygen[ecs]",
+        "product": f"oxygen[cyt_{pop}]",
+        "rate_f": f"{420*avo/1e18/stab_reduction} *({o2ecs_pos} - {o2cyt_pos[pop]})",
+        "membrane": f"mem_{pop}",
+        "custom_dynamics": True,
+        "membrane_flux": False,
+    }
+
+    # record oxygen entering the cyt as consumed
     mcReactions[f"O2Consumed_{pop}"] = {
         "reactant": f"dump[cyt_{pop}]",
         "product": "o2_consumed[ecs]",
-        "rate_f": f"{420*avo/1e18}*({o2ecs} - {o2cyt[pop]})",
+        "rate_f": f"{420*avo/1e18/stab_reduction}*({o2ecs_pos} - {o2cyt_pos[pop]})",
         "membrane": f"mem_{pop}",
         "custom_dynamics": True,
         "membrane_flux": False,
@@ -1251,7 +1269,7 @@ reactions = {}
 reactions["glia_oxygen"] = {
     "reactant": "oxygen[ecs]",
     "product": "o2_consumed[ecs]",
-    "rate_f": f"(1/5) * {(gliapump)}",
+    "rate_f": f"(1/5) * {gliapump} * ({o2ecs_pos}/({cfg.Ko2} + {o2ecs_pos}))",
     "custom_dynamics": True,
 }
 for pop in L:
@@ -1276,6 +1294,7 @@ for pop in L:
         "custom_dynamics": True,
     }
 netParams.rxdParams["reactions"] = reactions
+
 # RATES--------------------------------------------------------------------------
 rates = {}
 ## dm/dt
