@@ -9,26 +9,41 @@ from stats import networkStatsFromSim
 import json
 from time import time
 
+
 def rand_uniform(gid, lb=0, ub=1):
     r = h.Random()
     r.Random123(gid, 1, 1)
     return r.uniform(lb, ub)
+
 
 def rand_truncnorm(gid, mean=0, var=1, lb=None, ub=None):
     r = h.Random()
     r.Random123(gid, 1, 1)
     val = r.normal(mean, var)
     if lb is not None:
-        val=max(lb, val)
+        val = max(lb, val)
     if ub is not None:
-        val=min(val, ub)
+        val = min(val, ub)
     return val
 
 
 cfg, netParams = sim.readCmdLineArgs(
     simConfigDefault="cfgPop.py", netParamsDefault="netParamsPops.py"
 )
-subdir = f"{cfg.ox}_{cfg.k0Layer}_{cfg.k0}_{cfg.o2drive}"
+subdir = f"{cfg.ox}_{cfg.k0Layer}_{cfg.k0}_{cfg.o2drive}_gps{cfg.GliaPumpScale:.3f}_gk{cfg.gkbar_scale:.2f}_pm{cfg.pmax_scale:.2f}_kh{cfg.gliaKHalf:.1f}_o2h{cfg.gliaO2Half:.2f}"
+if getattr(cfg, "scStartV", None) is not None:
+    subdir += f"_sv{cfg.scStartV:.0f}"
+for _p in cfg.cellPops:
+    for _knob, _tag in (("gkbar", "gk"), ("pmax", "pm"), ("gnabar", "gn")):
+        _v = getattr(cfg, f"sc_{_p}_{_knob}", None)
+        if _v is not None:
+            subdir += f"_{_p}{_tag}{_v:g}"
+if getattr(cfg, "poisson_ramp_ms", 200) != 200:
+    subdir += f"_rmp{cfg.poisson_ramp_ms:g}"
+if getattr(cfg, "iGnaScale", 1.0) != 1.0:
+    subdir += f"_ign{cfg.iGnaScale:g}"
+if getattr(cfg, "poissonRateFactor", 1.0) != 1.0:
+    subdir += f"_prf{cfg.poissonRateFactor:g}"
 outdir = cfg.saveFolder + os.path.sep + subdir
 
 # Additional sim setup
@@ -89,12 +104,116 @@ def fi(cells):
         restoreSS()
 
 
+class EarlyAbort(Exception):
+    """Raised (symmetrically on all ranks) to break out of the interval-func
+    run loop when a run is committed to SD or off-target firing.
+    Used during optimization."""
+
+    pass
+
+
 def fi0(cells):
     for cell in cells:
-        v = rand_truncnorm(cell.gid, cfg.cellPopsInit['mean'], cfg.cellPopsInit['std']**2, ub=cfg.cellPopsInit['thresh'])
+        v = rand_truncnorm(
+            cell.gid,
+            cfg.cellPopsInit["mean"],
+            cfg.cellPopsInit["std"] ** 2,
+            ub=cfg.cellPopsInit["thresh"],
+        )
         for sec in cell.secs.values():
             if "hObj" in sec:
                 sec["hObj"].v = v
+
+
+def getV():
+    """average membrane potential for each populations
+    Used to set v_init distributions by population.
+    """
+    vinit = {}
+    for label, pop in sim.net.pops.items():
+        cells = sim.getCellsList(pop.cellGids)
+        if len(cells) > 0 and hasattr(cells[0].secs, "soma"):
+            for cell in cells:
+                v = cell.secs["soma"]["hObj"].v
+                if v > 30:
+                    continue
+                if label in vinit:
+                    vinit[label].append(v)
+                else:
+                    vinit[label] = [v]
+    vinit_mean = {}
+    for pop, v in vinit.items():
+        gsum = pc.allreduce(sum(v), 1)
+        glen = pc.allreduce(len(v), 1)
+        vinit_mean[pop] = gsum / glen if glen > 0 else 0
+    return vinit_mean
+
+
+def spikeRateInWindow(t0, t1):
+    """Mean firing rate (Hz) across all cells over [t0, t1] ms.
+
+    MUST be called on every rank: the cross-rank sum is a collective. spkt is
+    appended in time order, so scan back from the end and stop once past t0.
+    """
+    n = 0
+    try:
+        spkt = sim.simData["spkt"]
+        for i in range(len(spkt) - 1, -1, -1):
+            st = spkt[i]
+            if st < t0:
+                break
+            if st <= t1:
+                n += 1
+    except Exception:
+        n = 0
+    n = pc.allreduce(n, 1)  # sum across ranks -- collective, all ranks
+    ncell = max(1, cfg.Ncell)
+    dur_s = max(1e-9, (t1 - t0) / 1000.0)
+    return n / (ncell * dur_s)
+
+
+def checkEarlyAbort(t, maxK, rate=None):
+    """Check for SD or off-target rates and abort.
+    Returns (stop:int, verdict:dict|None).
+    """
+    if not np.isfinite(maxK):
+        return 1, {
+            "verdict": "nan",
+            "t": t,
+            "maxK": maxK,
+            "reason": f"non-finite maxK={maxK} (numerical blowup)",
+        }
+    if t < cfg.abortWarmup:
+        return 0, None
+    # K+ divergence: max ECS [K+] high AND still climbing over the window
+    window = [k for (tt, k) in kmax_traj if tt >= t - cfg.abortWindow]
+    slope = (window[-1] - window[0]) / cfg.abortWindow if len(window) > 1 else 0.0
+    if maxK >= cfg.abortKmax and slope > cfg.abortKslope:
+        return 1, {
+            "verdict": "SD",
+            "t": t,
+            "maxK": maxK,
+            "slope": slope,
+            "reason": f"maxK={maxK:.2f}mM >= {cfg.abortKmax} and slope={slope:.4f} > {cfg.abortKslope} mM/ms",
+        }
+    # optional firing-rate gates (rate precomputed collectively by the caller)
+    if cfg.abortMinRate is not None or cfg.abortMaxRate is not None:
+        if rate is not None:
+            if cfg.abortMinRate is not None and rate < cfg.abortMinRate:
+                return 1, {
+                    "verdict": "rate_low",
+                    "t": t,
+                    "rate": rate,
+                    "reason": f"rate={rate:.2f}Hz < {cfg.abortMinRate}",
+                }
+            if cfg.abortMaxRate is not None and rate > cfg.abortMaxRate:
+                return 1, {
+                    "verdict": "rate_high",
+                    "t": t,
+                    "rate": rate,
+                    "reason": f"rate={rate:.2f}Hz > {cfg.abortMaxRate}",
+                }
+    return 0, None
 
 
 sim.initialize(
@@ -105,7 +224,7 @@ sim.net.createCells()  # instantiate network cells based on defined populations
 
 sim.net.connectCells()  # create connections between cells based on params
 sim.net.addStims()  # add external stimulation to cells (IClamps etc)
-sim.net.addRxD(nthreads=6)  # add reaction-diffusion (RxD)
+sim.net.addRxD(nthreads=1)  # add reaction-diffusion (RxD)
 """clamps = []
 for cell in sim.net.cells:
     if cell.tags['cellModel'] != "VecStim" and cell.tags['cellModel'] != "NetStim":
@@ -255,6 +374,8 @@ cellSDOpen, cellSDClosed = {}, {}
 
 
 durs = []
+
+
 def runIntervalFunc(t):
     durs.append(time())
     """Write the wave_progress every 1ms"""
@@ -262,6 +383,14 @@ def runIntervalFunc(t):
     saveint = 100  # save concentrations interval
     ssint = 1000  # save state interval
     lastss = 0
+    if getattr(cfg, "v_reinit", False):
+        if t > 900:
+            vinit = getV()
+            for pop, v in vinit.items():
+                if pop in vreinit:
+                    vreinit[pop].append(v)
+                else:
+                    vreinit[pop] = [v]
     if pcid == 0:
         if int(t) % saveint == 0:
             # plot extracellular concentrations averaged over depth every 100ms
@@ -284,7 +413,7 @@ def runIntervalFunc(t):
                         cellSDClosed[cell.gid] = [(a, h.t)]
         else:
             if v > cfg.SDThreshold:
-                cellSDOpen[cell.gid] = h.t 
+                cellSDOpen[cell.gid] = h.t
     if ((int(t) % ssint == 0) and (h.t - lastss) > ssint) or (cfg.duration - t) < 1:
         runSS()
         lastss = t
@@ -302,25 +431,76 @@ def runIntervalFunc(t):
         progress_bar(cfg.duration)
         dist = 0
         dist1 = 1e9
-        for nd in sim.net.rxd.species["kk"]["hObj"].nodes:
-            if str(nd.region).split("(")[0] == "Extracellular":
-                r = (
-                    (nd.x3d - cfg.sizeX / 2.0) ** 2
-                    + (nd.y3d + yoff) ** 2
-                    + (nd.z3d - cfg.sizeZ / 2.0) ** 2
-                ) ** 0.5
-                if nd.concentration > cfg.Kceil and r > dist:
-                    dist = r
-                if nd.concentration <= cfg.Kceil and r < dist1:
-                    dist1 = r
-        fout.write("%g\t%g\t%g\n" % (h.t, dist, dist1))
+        kk = sim.net.rxd.species["kk"]["hObj"]
+        ecs = sim.net.rxd["regions"]["ecs"]["hObj"]
+        for nd in kk[ecs].nodes:
+            c = nd.concentration
+            r = (
+                (nd.x3d - cfg.sizeX / 2.0) ** 2
+                + (nd.y3d + yoff) ** 2
+                + (nd.z3d - cfg.sizeZ / 2.0) ** 2
+            ) ** 0.5
+            if c > cfg.Kceil and r > dist:
+                dist = r
+            if c <= cfg.Kceil and r < dist1:
+                dist1 = r
+        vals = kk[ecs].nodes.value
+        meanK = np.mean(vals)
+        maxK = max(vals)
+        fout.write("%g\t%g\t%g\t%g\t%g\n" % (h.t, dist, dist1, maxK, meanK))
         fout.flush()
+
+    # ---- early-warning / early-abort -- use during optimization
+    if getattr(cfg, "earlyAbort", False):
+        stop = 0
+        verdict = None
+        rate = spikeRateInWindow(t - cfg.abortWindow, t) if rateGateActive(t) else None
+        if pcid == 0:
+            stop, verdict = checkEarlyAbort(t, maxK, rate)
+        stop = int(pc.allreduce(stop, 2))  # max across ranks; all ranks agree
+        if stop:
+            if pcid == 0 and verdict is not None:
+                verdict["aborted"] = True
+                abort_reason = verdict["verdict"]  # "SD" | "rate_low" | "nan"
+                json.dump(
+                    verdict, open(os.path.join(outdir, "verdict.json"), "w"), indent=2
+                )
+                print(
+                    "\n[earlyAbort] %s -> stopping at t=%gms" % (verdict["reason"], t)
+                )
+            aborted = True
+            # break out of runSimWithIntervalFunc's while loop symmetrically on
+            # every rank (its condition keys off h.t, so h.stoprun would spin).
+            raise EarlyAbort()
+
+
+try:
+    sim.runSimWithIntervalFunc(1, runIntervalFunc)
+except EarlyAbort:
+    sim.pc.barrier()
+    try:
+        sim.timing("stop", "runTime")
+    except Exception:
+        pass
 sim.runSimWithIntervalFunc(1, runIntervalFunc)
+
+if pcid == 0 and not aborted:
+    json.dump(
+        {"verdict": "completed", "aborted": False, "t": h.t, "maxK": maxK},
+        open(os.path.join(outdir, "verdict.json"), "w"),
+        indent=2,
+    )
 sim.gatherData()
+
+
 if pcid == 0:
     networkStatsFromSim(
         sim, filename=os.path.join(outdir, f"netstats_{cfg.duration/1000:0.2f}s.json")
     )
+    if getattr(cfg, "v_reinit", False):
+        vinit_mean = {p: np.mean(v) for p, v in vreinit.items()}
+        json.dump(vinit_mean, open("v_initial_pop.json", "w"), indent=4)
+
 
 sim.saveData()
 sim.analysis.plotData()

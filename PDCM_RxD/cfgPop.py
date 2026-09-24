@@ -2,6 +2,7 @@ from netpyne import specs
 import numpy as np
 from neuron.units import sec, mM, M, s
 import cv2
+import json
 
 # ------------------------------------------------------------------------------
 #
@@ -12,11 +13,12 @@ import cv2
 # Run parameters
 cfg = specs.SimConfig()  # object of class cfg to store simulation configuration
 cfg.duration = 5000  # Duration of the simulation, in ms
-cfg.oldDuration = 1000
-cfg.restore = True
+cfg.oldDuration = 5000
+cfg.restore = False
 cfg.hParams["celsius"] = 37.0
 cfg.hParams["v_init"] = -70
 cfg.v_balance = -70  # mV
+cfg.v_reinit = False  # calcuate mean population Vm
 cfg.Cm = 1.0  # pF/cm**2
 cfg.Ra = 100
 cfg.dt = 0.025  # Internal integration timestep to use
@@ -73,8 +75,22 @@ cfg.recordCells = [
 ]
 cfg.recordTraces = {
     f"{var}_soma": {"sec": "soma", "loc": 0.5, "var": var}
-    for var in ["v", "nai", "ki", "cli", "dumpi", "o2o", "ATPi", "ADPi", "AMPi"]
+    for var in [
+        "v",
+        "nai",
+        "ki",
+        "cli",
+        "dumpi",
+        "o2o",
+        "o2i",
+        "ATPi",
+        "ADPi",
+        "AMPi",
+        "Posi",
+        "volumei",
+    ]
 }
+
 cfg.seed = 0
 cfg.seeds = {
     "conn": 2 + cfg.seed,
@@ -108,13 +124,13 @@ if cfg.ox == "perfused":
     cfg.o2_init = 0.04  # ~24 mmHg
     cfg.alpha_ecs = 0.2
     cfg.tort_ecs = 1.6
-    cfg.o2drive = 50  # 0.013
+    cfg.o2drive = 10  # orignal 0.013
 elif cfg.ox == "hypoxic":
     cfg.o2_bath = 0.06  # ~4 mmHg
     cfg.o2_init = 0.005
     cfg.alpha_ecs = 0.07
     cfg.tort_ecs = 1.8
-    cfg.o2drive = 1.0 / 6  # 0.013 * (1 / 6)
+    cfg.o2drive = 10 / 6  # 0.013 * (1 / 6)
 cfg.prep = "invivo"  # "invitro"
 # Size of Network. Adjust this constants, please!
 cfg.ScaleFactor = 0.16  # used for batch param search  # = 80.000
@@ -134,93 +150,61 @@ cfg.sa2v = 3.4  # False
 
 
 cfg.kleakMin = 1e-5  # mS/cm^2 -- this may changed pmax
-# Neuron parameters
-# Scale synapses weights -- optimized with min K-leak 1e-5
-cfg.excWeight_L2e = 0.005597674309415666  # 0.02043492082651853#0.06111943934536194
-cfg.excWeight_L2i = 0.007435639178903054
-cfg.excWeight_L4e = 0.00535800846139247
-cfg.excWeight_L4i = 0.004635132492217301
-cfg.excWeight_L5e = 0.0019321344065691371
-cfg.excWeight_L5i = 0.006431462642063759
-cfg.excWeight_L6e = 0.004054596087710405
-# cfg.excWeight_L6e = 0.04042503989823158
-cfg.excWeight_L6i = 0.005087528200972051
+# Neuron parameters - load from single-cell optimization
+params = json.load(open("phase3_pump_results.json", "r"))
 
-cfg.inhWeightScale_L2e = 4.076789492762525  # 5.933549489479105#8.433834932025794
-cfg.inhWeightScale_L2i = 8.756914769882469
-cfg.inhWeightScale_L4e = 5.420514099517173
-cfg.inhWeightScale_L4i = 7.495240884820139
-cfg.inhWeightScale_L5e = 5.108836856739071
-cfg.inhWeightScale_L5i = 4.90013157293792
-cfg.inhWeightScale_L6i = 3.3945419748291674
-# cfg.inhWeightScale_L6e = 4.0788985810296055
-cfg.inhWeightScale_L6e = 2.2965582857432723
+# rescale parameters based on network optimization
+cfg.pmax_scale = 1.05
+cfg.gkbar_scale = 1
+cfg.gnabar_scale = 1
+for k, v in params.items():
+    if hasattr(v, "keys"):
+        for pop, value in v.items():
+            if hasattr(cfg, k):
+                getattr(cfg, k)[pop] = value
+            else:
+                setattr(cfg, k, {pop: value})
+    else:
+        setattr(cfg, k, v)
 
+# Use published cotransporter rates (Wei et al.)
+# Poorly constrain by single-cell optimization
+pops = ["L2e", "L2i", "L4e", "L4i", "L5e", "L5i", "L6e", "L6i"]
+cfg.ukcc2 = {p: 0.3 for p in pops}
+cfg.unkcc1 = {p: 0.1 for p in pops}
+cfg.excWeight_L2e *= 0.63
+cfg.excWeight_L2i *= 1.3
 
-cfg.gnabar = {
-    "L2e": 0.01494497819761082,  # 0.01278120952055713, #0.023879500829806263,
-    "L2i": 0.027571819187312125,
-    "L4e": 0.02266830013423984,
-    "L4i": 0.029102001912798815,
-    "L5e": 0.02535744555783162,
-    "L5i": 0.03081119693176582,
-    "L6e": 0.01448372008971738,  # 0.01432915828267751, #0.014190175184284526,
-    "L6i": 0.02446848239757097,
-}
-cfg.gkbar = {
-    "L2e": 0.008395140221772518,  # 0.009262368168545662, #0.005503941025212365,
-    "L2i": 0.006185825153046352,
-    "L4e": 0.0060870611284361865,
-    "L4i": 0.005724121639411816,
-    "L5e": 0.003982061249246858,
-    "L5i": 0.0055982570786592785,
-    "L6e": 0.013227091883189206,  # 0.013000369757228975, #0.006104158510203938,
-    "L6i": 0.005933783169921459,
-}
-cfg.ukcc2 = {
-    "L2e": 0.005668794813767679,  # 0.006497937144415892, #0.011798355815868605,
-    "L2i": 0.0031509077144799,
-    "L4e": 0.005288380837054354,
-    "L4i": 0.00478331053234558,
-    "L5e": 0.002703258989241554,
-    "L5i": 0.010726802038549095,
-    "L6e": 0.00536433412193705,  # 0.008229354479273341, #0.0063079310332819745,
-    "L6i": 0.005139646428462374,
-}
-cfg.unkcc1 = {
-    "L2e": 5.998805565670575,  # 4.804020851380035, #5.864674216188765,
-    "L2i": 5.162627978681683,
-    "L4e": 5.060143706759098,
-    "L4i": 3.4421630020948286,
-    "L5e": 7.306905091131788,
-    "L5i": 1.6016563592554993,
-    "L6e": 6.095823189557075,  # 5.3958865386598, #3.9372820365170718,
-    "L6i": 2.5419746302997566,
-}
-cfg.pmax = {
-    "L2e": 6477.185171908269,  # 8947.022230949,
-    "L2i": 4392.347665970014,
-    "L4e": 7010.1014895806475,
-    "L4i": 4076.953587990565,
-    "L5e": 5258.713071981389,
-    "L5i": 7070.669845884245,
-    "L6e": 9230.737623635692,  # 16999.420231367905,#9504.51308545181,
-    "L6i": 9050.513090329627,
-}
-cfg.gpas = {
-    "L2e": 5.567152679219966e-05,  # 6.143105541570282e-05,#2.9517993768348464e-05,
-    "L2i": 2.6478580348538306e-05,
-    "L4e": 2.474426208575386e-05,
-    "L4i": 2.7062297576296835e-05,
-    "L5e": 4.010647009384075e-05,
-    "L5i": 5.412714996482607e-05,
-    "L6e": 4.127070165291617e-05,  # 4.0557860725625625e-05, #4.497389109100521e-05,
-    "L6i": 3.286565186740838e-05,
-}
+cfg.excWeight_L4e *= 0.53
+cfg.excWeight_L4i *= 1.4
+
+cfg.excWeight_L5e *= 2.5
+cfg.excWeight_L5i *= 1.26
+
+cfg.excWeight_L6e *= 0.09
+cfg.excWeight_L6i *= 0.44
+
+# parameter updated to fix early spontaneous SD
+cfg.gkbar["L6i"] = 0.008
+
+# Network optimized weight scales
+cfg.inhWeightScale_L2e = 2.5697443674694327
+cfg.inhWeightScale_L2i = 6.183803804460465
+cfg.inhWeightScale_L4e = 5.913592881130627
+cfg.inhWeightScale_L4i = 1.18215764089403
+cfg.inhWeightScale_L5e = 5.448105699530747
+cfg.inhWeightScale_L5i = 7.964632374560855
+cfg.inhWeightScale_L6e = 4.713135040692444
+cfg.inhWeightScale_L6i = 3.466063247278141
+cfg.excWeight_L4i = 0.005578001123872654
+cfg.excWeight_L6i = 0.00610176940666266
+cfg.excWeight_L6e = 0.0013608676155760994
+cfg.excWeightScale = 1.2448667875846924
+
 
 # default values
 cfg.weightMin = 0.1
-cfg.dweight = 0.1
+cfg.dWeight = 0.1
 cfg.scaleConnWeightNetStims = 1
 cfg.scaleConnWeightNetStimStd = 1
 
@@ -236,12 +220,10 @@ cfg.gpas = 0.0001
 cfg.ATPss = 3.18  # mM PMC3524514 -- whole brain
 cfg.ATPDc = 0.445  # um**2/ms
 cfg.Ko2 = 0.3e-3  # mM  # Km for O2 at cytochrome c oxidase
-cfg.KmADP_synthase = 0.025  # mM, from PMC3833997 (human skeletal muscle)
+cfg.KmADP_synthase = 0.022  # mM, from PMC3833997 (human skeletal muscle)
+cfg.KmADP_synthase_hc = 1.9  # Hill Coeff
 cfg.KmPi_synthase = 1.0  # mM, from PMC8434986 (cardiac tissue)
-cfg.KiATP_synthase = (
-    10.0  # mM, competitive inhibition constant for ATP (allows steady-state flux)
-)
-cfg.ADPss = 0.0944444444444444  # such that D2 (MgADP == 0.05 mM)
+cfg.ADPss = 0.094444444444444  # such that D2 (MgADP == 0.05 mM)
 cfg.tauADP = 1
 cfg.Pss = 4.2
 cfg.tauP = 1
@@ -257,7 +239,7 @@ cfg.AMPss = (
 cfg.Mg = 0.5  # mM (free Mg) https://doi.org/10.3390/ijms20143439
 
 cfg.glia = {
-    "nai": 18.0 * mM,
+    "nai": 55.0 * mM,
     "ki": 80.0 * mM,
     "ATP": 10 * mM,
     "ADP": 10 / 15.4 * mM,
@@ -286,6 +268,20 @@ cfg.NaKPump = {
     "KNae0": 15.5 * mM,
     "KNai0": 2.49 * mM,
 }
+# Glial Kir4.1 K+-uptake sigmoid: activation = 1/(1+exp((gliaKHalf - [K+]_ecs)/gliaKSlope))
+# The legacy half-activation of 18 mM (Cressman et al. 2009) is phenomenological
+# and above the non-SD physiological range (seizure ceiling ~10-12 mM; Heinemann
+# & Lux 1977), so glial clearance never reaches half-max during normal activity.
+cfg.gliaKHalf = 9.61539501826942  # mM optimized in network sim
+cfg.gliaKSlope = 2.5  # mM; sigmoid slope (Cressman et al. 2009)
+
+# Glial Kir O2 gate: g_glia = g_gliamax/(1+exp(-((o2ecs*32) - gliaO2Half)/gliaO2Slope)).
+# Original half-point of 2.5 mg/mL (o2ecs=0.078 mM ~48 mmHg) sits perfused
+# tissue O2 (init 0.04 -> 1.28 mg/mL ~24 mmHg; bath 0.06 -> 1.92 mg/mL),
+# so the Kir term is ~0.2-5% ON and gliaKHalf is inert.
+# Lowering gliaO2Half turns Kir on in normoxia (fail only under ischemia, as intended).
+cfg.gliaO2Half = 0.5  # mg/mL
+cfg.gliaO2Slope = 0.2  # mg/mL; O2-gate steepness
 
 cfg.Ggliamax = 5.0  # mM/sec originally 5mM/sec
 # we scaled pump by ~4.84 so apply a corresponding
@@ -298,7 +294,7 @@ cfg.KNai = 27.9
 # a = 3*(1 + np.exp(3.5-3))
 # GliaKKo = np.log(a-1) + 3
 cfg.GliaKKo = 3.5  # 4.938189537703508  # originally 3.5 mM
-cfg.GliaPumpScale = 1 / 3  # 1 / 3  # originally 1/3
+cfg.GliaPumpScale = 1.0  # optimized -- 1 / 3  # originally 1/3
 cfg.scaleConnWeight = 1
 
 # converstionFactor: μmol·min−1·mg−1 -> mM/ms
@@ -359,7 +355,7 @@ cfg.poisson_ramp_split = 10  # split the cells into groups
 
 cfg.ouabain = False
 
-simLabel = f"SDCPops_v_balance{cfg.v_balance}_ramp{cfg.poisson_ramp_ms}_{cfg.seed}_layer{cfg.k0Layer}_K0{cfg.k0}_{cfg.prep}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}"
+simLabel = f"SDModel_v_balance{cfg.v_balance}_ramp{cfg.poisson_ramp_ms}_{cfg.seed}_layer{cfg.k0Layer}_K0{cfg.k0}_{cfg.prep}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}"
 cfg.simLabel = f"{simLabel}_{cfg.duration/1000:0.2f}s"
 cfg.saveFolder = f"./data/{simLabel}_{cfg.oldDuration/1000:0.2f}s"
 # cfg.simLabel = f"test_{cfg.ox}"
@@ -368,3 +364,5 @@ cfg.saveFolder = f"./data/{simLabel}_{cfg.oldDuration/1000:0.2f}s"
 cfg.restoredir = cfg.saveFolder if cfg.restore else None
 # v0.0 - combination of cfg from ../uniformdensity and netpyne PD thalamocortical model
 # v1.0 - cfg for o2 sources based on capillaries identified from histology
+# v1.1 - single cell optimized parameters load from json
+# v1.2 - network optimization rescale network weights and clearance
