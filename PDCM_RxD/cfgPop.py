@@ -44,6 +44,13 @@ cfg.singleCells = False  # create one cell in each population
 cfg.printRunTime = False  # will break save/restore via CVode events if True
 cfg.Kceil = 15.0
 cfg.nRec = 25
+
+# Early abort options useful during param optimization
+cfg.earlyAbort = True  # enable early-abort
+cfg.abortWarmup = 300.0  # ms wait until after 200 ms Poisson ramp
+cfg.abortKmax = 15.0  # mM max ECS [K+]
+cfg.abortKslope = 0.002  # mM/ms
+cfg.abortWindow = 100.0  # ms additional time to estimate slope
 cfg.cellPops = [
     "L2e",
     "L2i",
@@ -124,13 +131,13 @@ if cfg.ox == "perfused":
     cfg.o2_init = 0.04  # ~24 mmHg
     cfg.alpha_ecs = 0.2
     cfg.tort_ecs = 1.6
-    cfg.o2drive = 10  # orignal 0.013
+    cfg.o2drive = 3.85  # orignal 0.013
 elif cfg.ox == "hypoxic":
     cfg.o2_bath = 0.06  # ~4 mmHg
     cfg.o2_init = 0.005
     cfg.alpha_ecs = 0.07
     cfg.tort_ecs = 1.8
-    cfg.o2drive = 10 / 6  # 0.013 * (1 / 6)
+    cfg.o2drive = 3.85 / 6  # 0.013 * (1 / 6)
 cfg.prep = "invivo"  # "invitro"
 # Size of Network. Adjust this constants, please!
 cfg.ScaleFactor = 0.16  # used for batch param search  # = 80.000
@@ -188,18 +195,20 @@ cfg.excWeight_L6i *= 0.44
 cfg.gkbar["L6i"] = 0.008
 
 # Network optimized weight scales
-cfg.inhWeightScale_L2e = 2.5697443674694327
-cfg.inhWeightScale_L2i = 6.183803804460465
-cfg.inhWeightScale_L4e = 5.913592881130627
-cfg.inhWeightScale_L4i = 1.18215764089403
-cfg.inhWeightScale_L5e = 5.448105699530747
-cfg.inhWeightScale_L5i = 7.964632374560855
-cfg.inhWeightScale_L6e = 4.713135040692444
-cfg.inhWeightScale_L6i = 3.466063247278141
-cfg.excWeight_L4i = 0.005578001123872654
-cfg.excWeight_L6i = 0.00610176940666266
-cfg.excWeight_L6e = 0.0013608676155760994
-cfg.excWeightScale = 1.2448667875846924
+cfg.inhWeightScale_L2e = 1.5510968950613568
+cfg.inhWeightScale_L2i = 9.349164432007036
+cfg.inhWeightScale_L4e = 7.884076308276154
+cfg.inhWeightScale_L4i = 0.5121398899190683
+cfg.inhWeightScale_L5e = 6.201225447282737
+cfg.inhWeightScale_L5i = 3.354897939316443
+cfg.inhWeightScale_L6e = 5.239283747566387
+cfg.inhWeightScale_L6i = 8.314036721463555
+cfg.excWeight_L4i = 0.005795136022376754
+cfg.excWeight_L6i = 0.008413039179560097
+cfg.excWeight_L6e = 0.0010428303998508484
+cfg.excWeight_L4e = 0.0022740308915923236
+cfg.excWeight_L5e = 0.008096503629880899
+cfg.excWeightScale = 1.1507453833381216
 
 
 # default values
