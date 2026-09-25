@@ -454,7 +454,11 @@ def runIntervalFunc(t):
     if getattr(cfg, "earlyAbort", False):
         stop = 0
         verdict = None
-        rate = spikeRateInWindow(t - cfg.abortWindow, t) if rateGateActive(t) else None
+        rate = None
+        if t >= cfg.abortWarmup and (
+            cfg.abortMinRate is not None or cfg.abortMaxRate is not None
+        ):
+            rate = spikeRateInWindow(t - cfg.abortWindow, t)
         if pcid == 0:
             stop, verdict = checkEarlyAbort(t, maxK, rate)
         stop = int(pc.allreduce(stop, 2))  # max across ranks; all ranks agree

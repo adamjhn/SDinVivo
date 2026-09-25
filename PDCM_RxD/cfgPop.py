@@ -46,7 +46,7 @@ cfg.Kceil = 15.0
 cfg.nRec = 25
 
 # Early abort options useful during param optimization
-cfg.earlyAbort = True  # enable early-abort
+cfg.earlyAbort = False  # enable early-abort
 cfg.abortWarmup = 300.0  # ms wait until after 200 ms Poisson ramp
 cfg.abortKmax = 15.0  # mM max ECS [K+]
 cfg.abortKslope = 0.002  # mM/ms
