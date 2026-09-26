@@ -7,7 +7,6 @@ from neuron import h
 import random
 from stats import networkStatsFromSim
 import json
-from time import time
 
 
 def rand_uniform(gid, lb=0, ub=1):
@@ -372,11 +371,13 @@ if pcid == 0:
 
 cellSDOpen, cellSDClosed = {}, {}
 maxK = None
+aborted = False
+abort_reason = None
 
 
 def runIntervalFunc(t):
     """Write the wave_progress every 1ms"""
-    global lastss, cellSDOpen, cellSDClosed, maxK
+    global lastss, cellSDOpen, cellSDClosed, maxK, aborted, abort_reason
     saveint = 100  # save concentrations interval
     ssint = 1000  # save state interval
     lastss = 0
@@ -491,7 +492,6 @@ if pcid == 0 and not aborted:
         indent=2,
     )
 sim.gatherData()
-
 
 if pcid == 0:
     networkStatsFromSim(
