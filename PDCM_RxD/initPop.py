@@ -486,7 +486,6 @@ except EarlyAbort:
         sim.timing("stop", "runTime")
     except Exception:
         pass
-sim.runSimWithIntervalFunc(1, runIntervalFunc)
 
 if pcid == 0 and not aborted:
     json.dump(

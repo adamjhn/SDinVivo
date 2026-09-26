@@ -46,11 +46,14 @@ cfg.Kceil = 15.0
 cfg.nRec = 25
 
 # Early abort options useful during param optimization
-cfg.earlyAbort = False  # enable early-abort
+cfg.earlyAbort = True  # enable early-abort
 cfg.abortWarmup = 300.0  # ms wait until after 200 ms Poisson ramp
 cfg.abortKmax = 15.0  # mM max ECS [K+]
 cfg.abortKslope = 0.002  # mM/ms
 cfg.abortWindow = 100.0  # ms additional time to estimate slope
+cfg.abortMinRate = None  # abort on low rate or ignore if None
+cfg.abortMaxRate = None  # abort on high rate or ignore if None
+
 cfg.cellPops = [
     "L2e",
     "L2i",
