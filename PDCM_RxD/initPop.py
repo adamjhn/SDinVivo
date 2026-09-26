@@ -371,15 +371,12 @@ if pcid == 0:
         yoff = sum(netParams.popParams["L6e"]["yRange"]) / 2
 
 cellSDOpen, cellSDClosed = {}, {}
-
-
-durs = []
+maxK = None
 
 
 def runIntervalFunc(t):
-    durs.append(time())
     """Write the wave_progress every 1ms"""
-    global lastss, cellSDOpen, cellSDClosed
+    global lastss, cellSDOpen, cellSDClosed, maxK
     saveint = 100  # save concentrations interval
     ssint = 1000  # save state interval
     lastss = 0
