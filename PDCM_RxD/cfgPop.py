@@ -113,11 +113,13 @@ cfg.seeds = {
 cfg.fig_file = "../test_mask.npy"
 # img = cv2.imread(cfg.fig_file, cv2.IMREAD_GRAYSCALE)  # image used for capillaries
 # img = np.rot90(img, k=3)
-img = np.load(cfg.fig_file)
+img = np.load(cfg.fig_file)  # transpose and inverse of original tif
 cfg.px = 0.2627  # side of image pixel (microns)
 cfg.dx = 50  # side of ECS voxel (microns)
 cfg.sizeX = 700  # img.shape[1] * cfg.px#250.0 #1000
-cfg.sizeY = (img.shape[0] - 1000) * cfg.px  # 250.0 #1000
+cfg.imgRow0 = 0  # pia
+cfg.imgRow1 = 8113  # keeps sizeY == (9113-1000)*px
+cfg.sizeY = (cfg.imgRow1 - cfg.imgRow0) * cfg.px
 cfg.sizeZ = cfg.sizeX  # 200.0
 cfg.Nz = int(cfg.sizeZ / cfg.dx) - 1
 cfg.Vtissue = cfg.sizeX * cfg.sizeY * cfg.sizeZ

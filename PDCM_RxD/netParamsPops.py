@@ -104,7 +104,7 @@ def generateO2sources(fig_file, Nz, px, dx, x=None, y=None, z=None):
     img = np.load(fig_file)
     # img = cv2.imread(fig_file, cv2.IMREAD_GRAYSCALE)
     # img = np.rot90(img, k=-1)
-    img = img[1000:, : round(cfg.sizeX / px)]
+    img = img[cfg.imgRow0 : cfg.imgRow1, : round(cfg.sizeX / px)]
     centers = findCapillaries(img)
     capillaries = extrudeCapillaries(
         centers, int(img.shape[0] * px / dx) - 1, img.shape[0], img.shape[1]
