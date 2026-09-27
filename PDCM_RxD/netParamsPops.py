@@ -15,10 +15,10 @@ def vtrap(x, y):
     return x / (math.exp(x / y) - 1)
 
 
-def rand_uniform(gid=0):
+def rand_uniform(gid=0, mn=-75, mx=-60):
     r = h.Random()
     r.Random123(gid, 1, 1)
-    return r.uniform(-75, -60)
+    return r.uniform(mn, mx)
 
 
 try:
@@ -51,25 +51,26 @@ def findCapillaries(img):
 
 
 def takeStep(pos, xmax, ymax, dz=5, px=0.2627):
-    samp = rand_uniform()
+    samp = rand_uniform(0, 0, 1)
+    step = max(1, int(round(dz / px)))
     if samp < 0.44:
         newpos = [pos[0], pos[1]]
     elif samp < 0.51:
-        newpos = [pos[0], pos[1] + int(dz * px)]
+        newpos = [pos[0], pos[1] + step]
     elif samp < 0.58:
-        newpos = [pos[0], pos[1] - int(dz * px)]
+        newpos = [pos[0], pos[1] - step]
     elif samp < 0.65:
-        newpos = [pos[0] + int(dz * px), pos[1]]
+        newpos = [pos[0] + step, pos[1]]
     elif samp < 0.72:
-        newpos = [pos[0] - int(dz * px), pos[1]]
+        newpos = [pos[0] - step, pos[1]]
     elif samp < 0.79:
-        newpos = [pos[0] + int(dz * px), pos[1] + int(dz * px)]
+        newpos = [pos[0] + step, pos[1] + step]
     elif samp < 0.86:
-        newpos = [pos[0] - int(dz * px), pos[1] - int(dz * px)]
+        newpos = [pos[0] - step, pos[1] - step]
     elif samp < 0.93:
-        newpos = [pos[0] + int(dz * px), pos[1] - int(dz * px)]
+        newpos = [pos[0] + step, pos[1] - step]
     else:
-        newpos = [pos[0] - int(dz * px), pos[1] + int(dz * px)]
+        newpos = [pos[0] - step, pos[1] + step]
     if (0 < newpos[0] < xmax) and (0 < newpos[1] < ymax):
         return newpos
     else:
@@ -81,22 +82,20 @@ def extrudeCapillaries(positions, Nz, xmax, ymax, dz=5, px=0.2627):
     for cap in positions:
         zpos = [cap]
         for i in range(Nz):
-            zpos.append(takeStep(zpos[-1], xmax, ymax))
+            zpos.append(takeStep(zpos[-1], xmax, ymax, dz=dz, px=px))
         caps.append(zpos)
     return caps
 
 
 def mask3D(capillaries, xsz, ysz, px, dx):
-    mask = np.zeros(
-        (round(ysz * px / dx), round(xsz * px / dx), len(capillaries[0])),
-        dtype=np.int16,
-    )
+    nx = round(xsz * px / dx)
+    ny = round(ysz * px / dx)
+    mask = np.zeros((nx, ny, len(capillaries[0])), dtype=np.int16)
     for cap in capillaries:
         for z in range(len(cap)):
-            mask[round(cap[z][0] * px / dx) - 1, round(cap[z][1] * px / dx) - 1, z] = (
-                mask[round(cap[z][0] * px / dx) - 1, round(cap[z][1] * px / dx) - 1, z]
-                + 1
-            )
+            i = min(max(int(cap[z][0] * px / dx), 0), nx - 1)
+            j = min(max(int(cap[z][1] * px / dx), 0), ny - 1)
+            mask[i, j, z] += 1
     return mask
 
 
@@ -106,10 +105,8 @@ def generateO2sources(fig_file, Nz, px, dx, x=None, y=None, z=None):
     # img = np.rot90(img, k=-1)
     img = img[cfg.imgRow0 : cfg.imgRow1, : round(cfg.sizeX / px)]
     centers = findCapillaries(img)
-    capillaries = extrudeCapillaries(
-        centers, int(img.shape[0] * px / dx) - 1, img.shape[0], img.shape[1]
-    )
-    o2sources = mask3D(capillaries, img.shape[0], img.shape[1], px, dx)
+    capillaries = extrudeCapillaries(centers, Nz, img.shape[1], img.shape[0], px=px)
+    o2sources = mask3D(capillaries, img.shape[1], img.shape[0], px, dx)
     return o2sources
 
 
