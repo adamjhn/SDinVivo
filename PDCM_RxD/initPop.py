@@ -371,13 +371,14 @@ if pcid == 0:
 
 cellSDOpen, cellSDClosed = {}, {}
 maxK = None
+kmax_traj = []
 aborted = False
 abort_reason = None
 
 
 def runIntervalFunc(t):
     """Write the wave_progress every 1ms"""
-    global lastss, cellSDOpen, cellSDClosed, maxK, aborted, abort_reason
+    global lastss, cellSDOpen, cellSDClosed, maxK, kmax_traj, aborted, abort_reason
     saveint = 100  # save concentrations interval
     ssint = 1000  # save state interval
     lastss = 0
@@ -453,6 +454,7 @@ def runIntervalFunc(t):
         stop = 0
         verdict = None
         rate = None
+        kmax_traj.append((t, maxK))
         if t >= cfg.abortWarmup and (
             cfg.abortMinRate is not None or cfg.abortMaxRate is not None
         ):
