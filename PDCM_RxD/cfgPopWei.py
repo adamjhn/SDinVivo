@@ -218,9 +218,9 @@ else:
 cfg.cyt_fraction = cfg.rs**3 / cfg.somaR**3
 
 # sd init params
-cfg.k0 = 3.5
-cfg.r0 = 100
-cfg.k0Layer = None  # layer of elevated extracellular K+
+cfg.k0 = 50 
+cfg.r0 = 1000
+cfg.k0Layer = 4  # layer of elevated extracellular K+
 
 ###########################################################
 # Network Options
@@ -247,7 +247,7 @@ cfg.poisson_ramp_split = 10  # split the cells into groups
 
 cfg.ouabain = False
 
-simLabel = f"SDL13_37_v_balance{cfg.v_balance}_ramp{cfg.poisson_ramp_ms}_{cfg.seed}_layer{cfg.k0Layer}_K0{cfg.k0}_{cfg.prep}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}"
+simLabel = f"SDL14_37_v_balance{cfg.v_balance}_ramp{cfg.poisson_ramp_ms}_{cfg.seed}_layer{cfg.k0Layer}_K0{cfg.k0}_{cfg.prep}_o2d{cfg.o2drive}_o2b_{cfg.o2_init}"
 cfg.simLabel = f"{simLabel}_{cfg.duration/1000:0.2f}s"
 cfg.saveFolder = f"./data/{simLabel}_{cfg.oldDuration/1000:0.2f}s"
 # cfg.simLabel = f"test_{cfg.ox}"

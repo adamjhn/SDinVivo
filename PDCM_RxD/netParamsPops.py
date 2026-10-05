@@ -16,9 +16,21 @@ def vtrap(x, y):
 
 
 def rand_uniform(gid=0):
+    """NB: returns a MEMBRANE POTENTIAL in [-75,-60] mV, not a [0,1) variate -- the name is
+    misleading. Kept as-is because callers depend on the mV range."""
     r = h.Random()
     r.Random123(gid, 1, 1)
     return r.uniform(-75, -60)
+
+
+# Dedicated RNG for the capillary random walk (26Sep2026).
+# It was previously drawing from rand_uniform(), which returns -75..-60 mV -- ALWAYS < 0.44,
+# so takeStep always took the "no move" branch and NO capillary ever moved, in any layer: the
+# whole vasculature was straight vertical lines. rand_uniform(gid=0) is also deterministic
+# (fixed gid), so even a correct range would have given every vessel the same step every time.
+# Must be seeded deterministically: netParams is built independently on every MPI rank and
+# o2sources has to come out identical on all of them.
+_capillary_rng = np.random.default_rng(20260926)
 
 
 try:
@@ -51,25 +63,31 @@ def findCapillaries(img):
 
 
 def takeStep(pos, xmax, ymax, dz=5, px=0.2627):
-    samp = rand_uniform()
+    """One lateral step of a capillary's random walk. pos is [x_col, y_row] in PIXELS, and
+    xmax/ymax are the pixel bounds of those same two coordinates (x_col < xmax, y_row < ymax).
+    26Sep2026 FIX: the step used to be step = int(5 * 0.2627) = 1 pixel, which is
+    dimensionally wrong (a length times um/px) and made the vasculature 19x straighter than
+    intended. dz is a step in MICRONS, so in pixels it is dz / px."""
+    step = max(1, int(round(dz / px)))     # 5 um -> 19 px (was 1 px)
+    samp = _capillary_rng.random()         # was rand_uniform() -> -75..-60 mV, always <0.44
     if samp < 0.44:
         newpos = [pos[0], pos[1]]
     elif samp < 0.51:
-        newpos = [pos[0], pos[1] + int(dz * px)]
+        newpos = [pos[0], pos[1] + step]
     elif samp < 0.58:
-        newpos = [pos[0], pos[1] - int(dz * px)]
+        newpos = [pos[0], pos[1] - step]
     elif samp < 0.65:
-        newpos = [pos[0] + int(dz * px), pos[1]]
+        newpos = [pos[0] + step, pos[1]]
     elif samp < 0.72:
-        newpos = [pos[0] - int(dz * px), pos[1]]
+        newpos = [pos[0] - step, pos[1]]
     elif samp < 0.79:
-        newpos = [pos[0] + int(dz * px), pos[1] + int(dz * px)]
+        newpos = [pos[0] + step, pos[1] + step]
     elif samp < 0.86:
-        newpos = [pos[0] - int(dz * px), pos[1] - int(dz * px)]
+        newpos = [pos[0] - step, pos[1] - step]
     elif samp < 0.93:
-        newpos = [pos[0] + int(dz * px), pos[1] - int(dz * px)]
+        newpos = [pos[0] + step, pos[1] - step]
     else:
-        newpos = [pos[0] - int(dz * px), pos[1] + int(dz * px)]
+        newpos = [pos[0] - step, pos[1] + step]
     if (0 < newpos[0] < xmax) and (0 < newpos[1] < ymax):
         return newpos
     else:
@@ -77,26 +95,43 @@ def takeStep(pos, xmax, ymax, dz=5, px=0.2627):
 
 
 def extrudeCapillaries(positions, Nz, xmax, ymax, dz=5, px=0.2627):
+    """Extrude each capillary centre through Nz+1 z-slices as a random walk.
+    xmax/ymax are the pixel bounds of [x_col, y_row], in that order."""
     caps = []
     for cap in positions:
         zpos = [cap]
         for i in range(Nz):
-            zpos.append(takeStep(zpos[-1], xmax, ymax))
+            zpos.append(takeStep(zpos[-1], xmax, ymax, dz=dz, px=px))
         caps.append(zpos)
     return caps
 
 
-def mask3D(capillaries, xsz, ysz, px, dx):
-    mask = np.zeros(
-        (round(ysz * px / dx), round(xsz * px / dx), len(capillaries[0])),
-        dtype=np.int16,
-    )
+def mask3D(capillaries, nx_px, ny_px, px, dx):
+    """Bin the extruded capillaries onto the ECS voxel grid.
+
+    capillaries[i][z] is [x_col, y_row] in pixels; nx_px/ny_px are the pixel extents of those
+    same axes -- so the caller passes img.shape[1] (cols = X) then img.shape[0] (rows = Y).
+    That ordering looks transposed but is not: the OLD signature named these (xsz, ysz) and
+    was called (shape[0], shape[1]), then used ysz for axis 0 -- two swaps that cancelled.
+    Layout is unchanged: (nx, ny, nz), axis 0 = X, axis 1 = Y increasing with cortical DEPTH
+    (row 0 of the crop is the pia), axis 2 = Z. Verified by binning probe points at known
+    [x_col, y_row] and confirming old and new land on identical indices.
+
+    26Sep2026 FIX to the BINNING (two effects, the second is the bigger one):
+      (a) `round(v) - 1` returns -1 whenever v < 0.5, WRAPPING capillaries in the first 25 um
+          onto the opposite edge of the slab (7 of 301 centres).
+      (b) more importantly `round(v) - 1` is a systematic HALF-VOXEL (25 um) shift toward
+          index 0 relative to the correct bin: it agrees with floor(v) only when frac(v)>=0.5
+          and is one voxel low otherwise, displacing ~54% of centres (mean +0.53 voxels).
+    floor(v) is the correct bin for a coordinate in voxels of width dx; clip guards the ends."""
+    nx = round(nx_px * px / dx)
+    ny = round(ny_px * px / dx)
+    mask = np.zeros((nx, ny, len(capillaries[0])), dtype=np.int16)
     for cap in capillaries:
         for z in range(len(cap)):
-            mask[round(cap[z][0] * px / dx) - 1, round(cap[z][1] * px / dx) - 1, z] = (
-                mask[round(cap[z][0] * px / dx) - 1, round(cap[z][1] * px / dx) - 1, z]
-                + 1
-            )
+            i = min(max(int(cap[z][0] * px / dx), 0), nx - 1)
+            j = min(max(int(cap[z][1] * px / dx), 0), ny - 1)
+            mask[i, j, z] += 1
     return mask
 
 
@@ -104,12 +139,20 @@ def generateO2sources(fig_file, Nz, px, dx, x=None, y=None, z=None):
     img = np.load(fig_file)
     # img = cv2.imread(fig_file, cv2.IMREAD_GRAYSCALE)
     # img = np.rot90(img, k=-1)
-    img = img[1000:, : round(cfg.sizeX / px)]
+    # depth window comes from cfg so this file and cfgPop.py cannot drift apart -- the old
+    # code hardcoded `1000` in BOTH places, which is how the crop and sizeY got out of step.
+    img = img[cfg.imgRow0 : cfg.imgRow1, : round(cfg.sizeX / px)]
     centers = findCapillaries(img)
-    capillaries = extrudeCapillaries(
-        centers, int(img.shape[0] * px / dx) - 1, img.shape[0], img.shape[1]
-    )
-    o2sources = mask3D(capillaries, img.shape[0], img.shape[1], px, dx)
+    # img is (rows=depth=Y, cols=X); findCapillaries returns [x_col, y_row].
+    # 26Sep2026 FIX 1: the bounds used to be passed as (img.shape[0], img.shape[1]) = (rows,
+    #   cols) into parameters (xmax, ymax) that guard (x_col, y_row) -- i.e. swapped. The
+    #   y_row bound became 2665 px, so EVERY step of any capillary deeper than 700 um was
+    #   rejected and all of L5/L6 was perfectly straight while superficial vessels wandered.
+    # 26Sep2026 FIX 2: Nz was ignored -- it recomputed int(img.shape[0]*px/dx)-1 = 41, giving
+    #   42 z-slices for a 14-voxel ECS z axis (zscale 3.0, so 2 of every 3 slices unused).
+    #   Use the caller's Nz so the mask's z depth matches the ECS grid and zscale == 1.
+    capillaries = extrudeCapillaries(centers, Nz, img.shape[1], img.shape[0], px=px)
+    o2sources = mask3D(capillaries, img.shape[1], img.shape[0], px, dx)
     return o2sources
 
 
@@ -400,11 +443,15 @@ if cfg.TH == True:
     InTH = [0, 0, 93, 84, 0, 0, 47, 34]
     for r in [2, 3, 6, 7]:
         nTH = int(np.sqrt(cfg.ScaleFactor) * InTH[r] * fth * Tth / 1000)
+        # TH volley fires at the end of the Poisson ramp so the whole onset
+        # gentles together when poisson_ramp_ms is swept (default 200 -> start 200,
+        # backward-compatible). Decouples to a fixed 200 only if ramp is 0.
+        th_start = float(getattr(cfg, "poisson_ramp_ms", 200) or 200)
         netParams.popParams["bkg_TH" + str(L[r])] = {
             "numCells": N_[r],
             "cellModel": "NetStim",
             "rate": 2 * (1000 * nTH) / Tth,
-            "start": 200.0,
+            "start": th_start,
             "noise": 1.0,
             "number": nTH,
             "delay": 0,
@@ -431,7 +478,7 @@ if cfg.connected:
         for c in range(0, 8):
             if L[c][-1] == "e":
                 syn = "exc"
-                weightScale = excW
+                weightScale = excW * getattr(cfg, "excWeightScale", 1.0)  # recurrent E gain
             else:
                 syn = "inh"
                 weightScale = inhS * excW
@@ -512,14 +559,14 @@ constants = {
     "beta0": 7.0,
     "avo": 6.0221409 * (10**23),
     "nao_initial": 144.0,
-    "nai_initial": 18.0,
+    "nai_initial": 13.0,
     "gnai": cfg.glia["nai"],
     "gki": cfg.glia["ki"],
     "gATP": cfg.glia["ATP"],
     "gADP": cfg.glia["ADP"],
     "gPos": cfg.glia["Pos"],
     "ko_initial": 3.5,
-    "ki_initial": 140.0,
+    "ki_initial": 125.0,
     "clo_initial": 130.0,
     "cli_initial": 6.0,
     "ATP_initial": cfg.ATPss,
@@ -534,13 +581,33 @@ constants = {
     "o2sources": o2sources,
 }
 
+# Per-pop single-cell param overrides for the approach-A stability oracle.
+# Batch sets scalar cfg attrs named sc_<pop>_<gkbar|pmax|gnabar> (e.g.
+# cfg.sc_L2i_gkbar = 0.006); apply any present. Done at netParams build time so
+# Batch-set values take effect before the constants are built. Unset pops keep
+# their phase3 values.
+for _pop in L:
+    for _knob in ("gkbar", "pmax", "gnabar"):
+        _val = getattr(cfg, f"sc_{_pop}_{_knob}", None)
+        if _val is not None:
+            getattr(cfg, _knob)[_pop] = _val
+
+# Coupled gnabar scale for the block-prone inhibitory pops (last untried SD lever:
+# lower gnabar -> less per-spike Na influx AND less persistent-Na current that
+# sustains depolarization block). Applied to all 4 I-pops together to avoid the
+# block migrating (as it did when only L6i was fixed). 1.0 = no change.
+_igna = getattr(cfg, "iGnaScale", None)
+if _igna is not None and _igna != 1.0:
+    for _pop in ("L2i", "L4i", "L5i", "L6i"):
+        cfg.gnabar[_pop] *= _igna
+
 # population specific parameters
 for pop in L:
-    constants[f"gnabar_{pop}"] = cfg.gnabar[pop] * scale  # molecules/um2 ms mV
-    constants[f"gkbar_{pop}"] = cfg.gkbar[pop] * scale
+    constants[f"gnabar_{pop}"] = cfg.gnabar[pop] * getattr(cfg, "gnabar_scale", 1.0) * scale  # molecules/um2 ms mV
+    constants[f"gkbar_{pop}"] = cfg.gkbar[pop] * cfg.gkbar_scale * scale
     constants[f"ukcc2_{pop}"] = cfg.ukcc2[pop] * mM / sec
     constants[f"unkcc1_{pop}"] = cfg.unkcc1[pop] * mM / sec
-    constants[f"p_max_{pop}"] = cfg.pmax[pop] / um**2
+    constants[f"p_max_{pop}"] = cfg.pmax[pop] * cfg.pmax_scale / um**2
     constants[f"v_initial_{pop}"] = cfg.v_initial[pop]
 
 
@@ -728,16 +795,21 @@ osm = {
     pop: f"(1.1029 - 0.1029*rxd.rxdmath.exp( ( (na[ecs] + kk[ecs] + cl[ecs] + 18.0)/vol_ratio[ecs] - (na[cyt_{pop}] + kk[cyt_{pop}] + cl[cyt_{pop}] + 132.0)/vol_ratio[cyt_{pop}])/20.0))"
     for pop in L
 }
-scalei = str(avo * 1e-18)
-scaleo = str(avo * 1e-18)
+
+mpm = avo * 1e-18                                    # molecules_per_mM_um3
+V_cyt = 2 * np.pi * cfg.somaR**3 * cfg.cyt_fraction  # cyt node volume (um^3), == 2*pi*rs^3
+# Reaction for volume change in cyt and ecs compartments, based on osmotic difference
+#   d(Vol_cyt)/dt + d(Vol_ecs)/dt = (scalei - scaleo)/mpm * vtau*(osm - vr_cyt),
+# to ensure volume is conserved scalei = scaleo = str(V_cyt * mpm)
+scalei = scaleo = str(V_cyt * mpm)
 # switches used to avoid concentration becoming negative
 o2switch, ATPswitch, ADPswitch, AMPswitch, PosSwitch = {}, {}, {}, {}, {}
 for pop in L:
     o2switch[pop] = f"((1.0 + rxd.rxdmath.tanh(1e4 * ({o2cyt[pop]} - 5e-4))) / 2.0)"
-    ATPswitch[pop] = f"((1.0 + rxd.rxdmath.tanh(1e5 * (ATP[cyt_{pop}] - 5e-4))) / 2.0)"
-    ADPswitch[pop] = f"((1.0 + rxd.rxdmath.tanh(1e5 * (ADP[cyt_{pop}] - 5e-4))) / 2.0)"
-    AMPswitch[pop] = f"((1.0 + rxd.rxdmath.tanh(1e5 * (AMP[cyt_{pop}] - 5e-4))) / 2.0)"
-    PosSwitch[pop] = f"((1.0 + rxd.rxdmath.tanh(1e5 * (Pos[cyt_{pop}] - 5e-4))) / 2.0)"
+    ATPswitch[pop] = f"((1.0 + rxd.rxdmath.tanh(1e4 * (ATP[cyt_{pop}] - 5e-4))) / 2.0)"
+    ADPswitch[pop] = f"((1.0 + rxd.rxdmath.tanh(1e4 * (ADP[cyt_{pop}] - 5e-4))) / 2.0)"
+    AMPswitch[pop] = f"((1.0 + rxd.rxdmath.tanh(1e4 * (AMP[cyt_{pop}] - 5e-4))) / 2.0)"
+    PosSwitch[pop] = f"((1.0 + rxd.rxdmath.tanh(1e4 * (Pos[cyt_{pop}] - 5e-4))) / 2.0)"
 
 o2ecs_switch = f"((1.0 + rxd.rxdmath.tanh(1e4 * ({o2ecs} - 5e-4))) / 2.0)"
 o2ecs_pos = f"({o2ecs} * {o2ecs_switch})"
@@ -750,19 +822,19 @@ o2cyt_pos = {pop: f"({o2cyt[pop]} * {o2switch[pop]})" for pop in L}
 
 Vatp = {}
 for pop in L:
-    Vatp[pop] = f"((1.0 + rxd.rxdmath.tanh(1e5 * ({o2cyt[pop]}- 5e-4))) / 2.0)*"
-    Vatp[pop] += f"((1.0 + rxd.rxdmath.tanh(1e5 * (ADP[cyt_{pop}] - 5e-4))) / 2.0)*"
-    Vatp[pop] += f"((1.0 + rxd.rxdmath.tanh(1e5 * (Pos[cyt_{pop}] - 5e-4))) / 2.0)*"
+    Vatp[pop] = f"((1.0 + rxd.rxdmath.tanh(1e4 * ({o2cyt[pop]}- 5e-4))) / 2.0)*"
+    Vatp[pop] += f"((1.0 + rxd.rxdmath.tanh(1e4 * (ADP[cyt_{pop}] - 5e-4))) / 2.0)*"
+    Vatp[pop] += f"((1.0 + rxd.rxdmath.tanh(1e4 * (Pos[cyt_{pop}] - 5e-4))) / 2.0)*"
     Vatp[
         pop
-    ] += f"((ADP[cyt_{pop}]/vol_ratio[cyt_{pop}])/(ADP[cyt_{pop}]/vol_ratio[cyt_{pop}] + {cfg.KmADP_synthase})) * "
+    ] += f"((ADP[cyt_{pop}]/vol_ratio[cyt_{pop}])**{cfg.KmADP_synthase_hc}/((ADP[cyt_{pop}]/vol_ratio[cyt_{pop}])**{cfg.KmADP_synthase_hc} + {cfg.KmADP_synthase})) * "
     Vatp[
         pop
     ] += f"((Pos[cyt_{pop}]/vol_ratio[cyt_{pop}])/(Pos[cyt_{pop}]/vol_ratio[cyt_{pop}] + {cfg.KmPi_synthase})) * "
-    Vatp[pop] += f"({o2cyt_pos[pop]}/({cfg.Ko2} + {o2cyt_pos[pop]})) * "
-    Vatp[
-        pop
-    ] += f"({cfg.KiATP_synthase}/({cfg.KiATP_synthase} + ATP[cyt_{pop}]/vol_ratio[cyt_{pop}]))"
+    Vatp[pop] += f"({o2cyt_pos[pop]}/({cfg.Ko2} + {o2cyt_pos[pop]})) "
+    #Vatp[
+    #    pop
+    #] += f"({cfg.KiATP_synthase}/({cfg.KiATP_synthase} + ATP[cyt_{pop}]/vol_ratio[cyt_{pop}]))"
 
 
 # update constants to ensure net zero flux at RMP
@@ -837,8 +909,13 @@ for pop in L:
     print(f"{pop}: Basal ATP consumption = {pr/2:.6e} mM/ms")
     print(f"{pop}: Total ATP consumption = {1.5*pr:.6e} mM/ms")
 
-    VBasalATP[pop] = pr / 2
-    Vmax_ATPsyth = (1.5 * pr) / (5 * initEval(Vatp[pop],pop=pop))
+    VBasalATP[pop] = getattr(cfg, "basalATPScale", 1.0) * pr / 2
+    # atpRestoreScale (diagnostic): 1.0 = normal balance; 0.0 disables ATP production
+    Vmax_ATPsyth = (
+        getattr(cfg, "atpRestoreScale", 1.0)
+        * (1.5 * pr)
+        / (5 * initEval(Vatp[pop], pop=pop))
+    )
     print(f"Vmax_ATPsynthase = {Vmax_ATPsyth:.6e} mM/ms")
     Vatp_rate = 5 * Vmax_ATPsyth * initEval(Vatp[pop], pop=pop)
     print(f"ATP production rate = {Vatp_rate:.6e} mM/ms")
@@ -862,8 +939,9 @@ for pop in L:
 
     ADK_backward_rate = initEval(f"{bnum}/{bden}")
 
-    ADKf[pop] = f"{AMPswitch[pop]} * {ATPswitch[pop]} * {fnum}/{fden}"
-    ADKb[pop] = f"{ADPswitch[pop]} * {bnum}/{bden}"
+    _adk = getattr(cfg, "adkScale", 1.0)
+    ADKf[pop] = f"{_adk} * {AMPswitch[pop]} * {ATPswitch[pop]} * {fnum}/{fden}"
+    ADKb[pop] = f"{_adk} * {ADPswitch[pop]} * {bnum}/{bden}"
 
     print(f"{pop}:\nAdenylate kinase at steady state:")
     print(f"  Forward rate (2*ADP → ATP+AMP) = {ADK_forward_rate:.6e} mM/ms")
@@ -903,7 +981,7 @@ gps = 4 * np.pi * cfg.somaR**2 / (avo * 1e-18 * cfg.dx**3 * cfg.alpha_ecs)
 
 gPmaxScale = {
     pop: (
-        (gps / cfg.GliaPumpScale)
+        (gps * cfg.GliaPumpScale)
         * initEval(pumpRate[pop],pop=pop)
         / initEval(gliaPumpRate,pop=pop)
         / constants[f"p_max_{pop}"]
@@ -916,9 +994,42 @@ mean_pmax = np.mean([constants[f"p_max_{pop}"] for pop in L])
 
 gliapump = f"{mean_scale*mean_pmax} * ({gliaPumpRate})"  # mM/ms
 
+# {o2ecs} is multiplied by 32 to convert from mM to mg/mL
+g_glia = f"g_gliamax / (1.0 + rxd.rxdmath.exp(-(({o2ecs}*32) - {cfg.gliaO2Half})/{cfg.gliaO2Slope}))"
+glia12 = f"({g_glia}) / (1.0 + rxd.rxdmath.exp(({cfg.gliaKHalf} - kk[ecs] / vol_ratio[ecs])/{cfg.gliaKSlope}))"
 
-g_glia = f"g_gliamax / (1.0 + rxd.rxdmath.exp(-(({o2ecs}) - 2.5)/0.2))"
-glia12 = f"({g_glia}) / (1.0 + rxd.rxdmath.exp((18.0 - kk[ecs] / vol_ratio[ecs])/2.5))"
+# Glial RESTING BALANCE via explicit passive leaks (fixes the ECS-K+ rundown). The glial pump
+# (2K in / 3Na out) and the Kir's baseline activity remove ECS K+ (and load Na+) with nothing to
+# balance them at rest, so the glia drains baseline ECS K+ (~0.36 mM/s) -> E_K hyperpolarizes over
+# seconds -> firing runs down. Add explicit passive glial leaks (a diffusive K+/Na+ exchange with
+# the glial reservoir, driving force = the glia<->ECS concentration gradient) whose conductances
+# are calibrated so at REST the K+ leak release exactly offsets the glial K+ uptake and the Na+
+# leak uptake offsets the pump's Na+ extrusion. Off-rest the leaks scale with the gradient, so the
+# glia still buffers activity/SD. gliaKSlope (Cressman 2009) is UNCHANGED.
+gliaKleak_df = "(gki - kk[ecs]/vol_ratio[ecs])"        # K+ efflux driving force (glia->ECS), >0
+gliaNaleak_df = "(na[ecs]/vol_ratio[ecs] - gnai)"      # Na+ influx driving force (ECS->glia), >0
+gKleakbar = (initEval(glia12) + 2.0 * initEval(gliapump)) / initEval(gliaKleak_df)
+gNaleakbar = (3.0 * initEval(gliapump)) / initEval(gliaNaleak_df)
+gliaKleak = f"({gKleakbar} * {gliaKleak_df})"          # K+ released to ECS  (+ in the kk[ecs] rate)
+gliaNaleak = f"({gNaleakbar} * {gliaNaleak_df})"       # Na+ taken from ECS  (- in the na[ecs] rate)
+print(f"[glia resting balance] gKleakbar={gKleakbar:.4e} gNaleakbar={gNaleakbar:.4e}; "
+      f"leak offsets baseline drain {(initEval(glia12)+2*initEval(gliapump))*1000:.3f} mM/s K+ at rest")
+
+# Build-time diagnostics (no psolve): validate the glial clearance baseline.
+# gliapump_coeff is the quantity the GliaPumpScale divide/multiply flip changes.
+# g_glia ON% is how much the Kir gate is open at the perfused init O2 -- if ~0 the
+# Kir term (and gliaKHalf) is inert; lower cfg.gliaO2Half to turn it on.
+print(
+    f"[glia pump baseline] GliaPumpScale={cfg.GliaPumpScale:.4g}  "
+    f"mean_scale={mean_scale:.4g}  gliapump_coeff(mean_scale*mean_pmax)={mean_scale*mean_pmax:.6e}"
+)
+_gfrac = 1.0 / (
+    1.0 + math.exp(-((cfg.o2_init * 32) - cfg.gliaO2Half) / cfg.gliaO2Slope)
+)
+print(
+    f"[glia Kir O2 gate] gliaO2Half={cfg.gliaO2Half:.3g} mg/mL  "
+    f"o2_init*32={cfg.o2_init*32:.3g} mg/mL  g_glia ON = {100*_gfrac:.2f}% of max"
+)
 
 
 netParams.rxdParams["constants"] = constants
@@ -1035,7 +1146,6 @@ species["oxygen"] = {
 }
 
 netParams.rxdParams["species"] = species
-
 ### parameters
 params = {}
 params["dump"] = {"regions": ["ecs"] + [f"cyt_{pop}" for pop in L], "name": "dump"}
@@ -1055,10 +1165,16 @@ if cfg.ouabain:
     }
 
 if cfg.o2drive:
+    # 26Sep2026 FIX: o2sources axis 1 increases with cortical DEPTH (crop row 0 = pia), but
+    # the ECS y index runs the OTHER way -- NEURON gives y3d = ylo + (j+0.5)*dy with
+    # ylo = -sizeY, so j=0 is the DEEPEST voxel and j=nY-1 sits at the pia. Indexing straight
+    # through applied the capillary depth profile UPSIDE DOWN (the sparse L1 plexus went into
+    # deep L6 and the dense deep-layer vessels to the surface). Mirror y to match.
+    _ymax_idx = o2sources.shape[1] - 1
     params["numcap"] = {
         "regions": ["ecs"],
         "name": "numcap",
-        "value": f"o2sources[int(node._i*{xscale}), int(node._j*{yscale}), int(node._k*{zscale})]",
+        "value": f"o2sources[int(node._i*{xscale}), {_ymax_idx} - int(node._j*{yscale}), int(node._k*{zscale})]",
     }
 
 netParams.rxdParams["parameters"] = params
@@ -1103,9 +1219,9 @@ for pop in L:
     }
 
     mcReactions[f"vol_dyn_ecs_{pop}"] = {
-        "reactant": f"dump[cyt_{pop}]",
-        "product": "vol_ratio[ecs]",
-        "rate_f": f"-1 * (%s) * vtau * ((%s) - vol_ratio[cyt_{pop}])"
+        "reactant": "vol_ratio[ecs]",
+        "product": f"dump[cyt_{pop}]",
+        "rate_f": f"(%s) * vtau * ((%s) - vol_ratio[cyt_{pop}])"
         % (scaleo, osm[pop]),
         "membrane": f"mem_{pop}",
         "custom_dynamics": True,
@@ -1223,26 +1339,18 @@ for pop in L:
     }
     mcReactions[f"pump_current_ADP_{pop}"] = {
         "reactant": f"ATP[cyt_{pop}]",
-        "product": f"ADP[cyt_{pop}]",
-        "rate_f": pumpRate[pop],
+        "product": f"ADP[cyt_{pop}] + Pos[cyt_{pop}]",
+        "rate_f": f'{getattr(cfg, "pumpADPScale", 1.0)}*({pumpRate[pop]})',
         "membrane": f"mem_{pop}",
         "custom_dynamics": True,
         "membrane_flux": False,
     }
 
-    mcReactions[f"pump_current_Pos_{pop}"] = {
-        "reactant": f"ATP[cyt_{pop}]",
-        "product": f"Pos[cyt_{pop}]",
-        "rate_f": pumpRate[pop],
-        "membrane": f"mem_{pop}",
-        "custom_dynamics": True,
-        "membrane_flux": False,
-    }
 
 
     # 6 o2 -> 30 ATP
     # assumed o2 in cyt (mM) == o2 in ecs (mM) due to rapid flux across the membrane (~42cm/s == 420um/ms)
-    stab_reduction = 500e3 # reduced 80-fold to maintain equilibrium without instability
+    stab_reduction = 1e5 # detuned O2Flux: keep o2cyt~o2ecs but avoid stiff non-conservation drift
     mcReactions[f"O2Flux_{pop}"] = {
         "reactant": f"oxygen[ecs]",
         "product": f"oxygen[cyt_{pop}]",
@@ -1368,15 +1476,14 @@ if cfg.prep == "invitro":
 rates["glia_k_current"] = {
     "species": "kk[ecs]",
     "regions": ["ecs"],
-    "rate": "(-(%s) - (2.0 * (%s)))" % (glia12, gliapump),
+    "rate": "(-(%s) - (2.0 * (%s)) + (%s))" % (glia12, gliapump, gliaKleak),
 }
 
 rates["glia_na_current"] = {
     "species": "na[ecs]",
     "regions": ["ecs"],
-    "rate": "(3.0 * (%s))" % (gliapump),
+    "rate": "(3.0 * (%s) - (%s))" % (gliapump, gliaNaleak),
 }
-
 netParams.rxdParams["rates"] = rates
 
 # # plot statistics for 10% of cells
