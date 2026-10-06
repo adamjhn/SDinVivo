@@ -5,18 +5,18 @@ from netpyne.batch import Batch
 
 def batch():
         params = specs.ODict()
-        params['k0Layer'] = [2, 4, 5, 6]  # each layer
-        params['k0'] = [100, 500, 1000]      # bolus of K+
-        b = Batch(params=params, cfgFile='cfgMidOx.py', netParamsFile='netParamsMidOx.py')
-        b.batchLabel = 'SDthreshK0'
-        b.saveFolder = f"/ddn/adamjhn/data/{b.batchLabel}"
+        params['k0layer'] = [2, 4, 5, 6]  # each layer
+        params['k0'] = [10, 20, 30, 40, 50]
+        b = Batch(params=params, cfgFile='cfgPop.py', netParamsFile='netParamsPops.py')
+        b.batchLabel = 'k0layer'
+        b.saveFolder = f"/tera/adam/data/{b.batchLabel}"
         b.method = 'grid'
-        b.runCfg = {'type': 'hpc_sge', 
-                    'script': 'initMidOx.py', 
-                    'skip': True,
-                    'cores': 8,
+        b.runCfg = {'type': 'mpi_direct', 
+                    'script': 'initPop.py', 
+                    'skip': False,
+                    'cores': 4,
                     'vmem': '24G',
-                    'walltime': '48:00:00'}
+                    'walltime': '96:00:00'}
 
         b.run()
 

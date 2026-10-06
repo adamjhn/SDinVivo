@@ -7,7 +7,6 @@ from neuron import h
 import random
 from stats import networkStatsFromSim
 import json
-from time import time
 
 
 def rand_uniform(gid, lb=0, ub=1):
@@ -104,23 +103,116 @@ def fi(cells):
         restoreSS()
 
 
+class EarlyAbort(Exception):
+    """Raised (symmetrically on all ranks) to break out of the interval-func
+    run loop when a run is committed to SD or off-target firing.
+    Used during optimization."""
+
+    pass
+
+
 def fi0(cells):
-    # single-cell stability test: cfg.scStartV pins every cell's start voltage
-    # deterministically (bypasses the randomized v_init) so any drift is intrinsic.
-    scv = getattr(cfg, "scStartV", None)
     for cell in cells:
-        if scv is not None:
-            v = scv
-        else:
-            v = rand_truncnorm(
-                cell.gid,
-                cfg.cellPopsInit["mean"],
-                cfg.cellPopsInit["std"] ** 2,
-                ub=cfg.cellPopsInit["thresh"],
-            )
+        v = rand_truncnorm(
+            cell.gid,
+            cfg.cellPopsInit["mean"],
+            cfg.cellPopsInit["std"] ** 2,
+            ub=cfg.cellPopsInit["thresh"],
+        )
         for sec in cell.secs.values():
             if "hObj" in sec:
                 sec["hObj"].v = v
+
+
+def getV():
+    """average membrane potential for each populations
+    Used to set v_init distributions by population.
+    """
+    vinit = {}
+    for label, pop in sim.net.pops.items():
+        cells = sim.getCellsList(pop.cellGids)
+        if len(cells) > 0 and hasattr(cells[0].secs, "soma"):
+            for cell in cells:
+                v = cell.secs["soma"]["hObj"].v
+                if v > 30:
+                    continue
+                if label in vinit:
+                    vinit[label].append(v)
+                else:
+                    vinit[label] = [v]
+    vinit_mean = {}
+    for pop, v in vinit.items():
+        gsum = pc.allreduce(sum(v), 1)
+        glen = pc.allreduce(len(v), 1)
+        vinit_mean[pop] = gsum / glen if glen > 0 else 0
+    return vinit_mean
+
+
+def spikeRateInWindow(t0, t1):
+    """Mean firing rate (Hz) across all cells over [t0, t1] ms.
+
+    MUST be called on every rank: the cross-rank sum is a collective. spkt is
+    appended in time order, so scan back from the end and stop once past t0.
+    """
+    n = 0
+    try:
+        spkt = sim.simData["spkt"]
+        for i in range(len(spkt) - 1, -1, -1):
+            st = spkt[i]
+            if st < t0:
+                break
+            if st <= t1:
+                n += 1
+    except Exception:
+        n = 0
+    n = pc.allreduce(n, 1)  # sum across ranks -- collective, all ranks
+    ncell = max(1, cfg.Ncell)
+    dur_s = max(1e-9, (t1 - t0) / 1000.0)
+    return n / (ncell * dur_s)
+
+
+def checkEarlyAbort(t, maxK, rate=None):
+    """Check for SD or off-target rates and abort.
+    Returns (stop:int, verdict:dict|None).
+    """
+    if not np.isfinite(maxK):
+        return 1, {
+            "verdict": "nan",
+            "t": t,
+            "maxK": maxK,
+            "reason": f"non-finite maxK={maxK} (numerical blowup)",
+        }
+    if t < cfg.abortWarmup:
+        return 0, None
+    # K+ divergence: max ECS [K+] high AND still climbing over the window
+    window = [k for (tt, k) in kmax_traj if tt >= t - cfg.abortWindow]
+    slope = (window[-1] - window[0]) / cfg.abortWindow if len(window) > 1 else 0.0
+    if maxK >= cfg.abortKmax and slope > cfg.abortKslope:
+        return 1, {
+            "verdict": "SD",
+            "t": t,
+            "maxK": maxK,
+            "slope": slope,
+            "reason": f"maxK={maxK:.2f}mM >= {cfg.abortKmax} and slope={slope:.4f} > {cfg.abortKslope} mM/ms",
+        }
+    # optional firing-rate gates (rate precomputed collectively by the caller)
+    if cfg.abortMinRate is not None or cfg.abortMaxRate is not None:
+        if rate is not None:
+            if cfg.abortMinRate is not None and rate < cfg.abortMinRate:
+                return 1, {
+                    "verdict": "rate_low",
+                    "t": t,
+                    "rate": rate,
+                    "reason": f"rate={rate:.2f}Hz < {cfg.abortMinRate}",
+                }
+            if cfg.abortMaxRate is not None and rate > cfg.abortMaxRate:
+                return 1, {
+                    "verdict": "rate_high",
+                    "t": t,
+                    "rate": rate,
+                    "reason": f"rate={rate:.2f}Hz > {cfg.abortMaxRate}",
+                }
+    return 0, None
 
 
 sim.initialize(
@@ -262,19 +354,10 @@ def progress_bar(tstop, size=40):
 
 
 fout = None
-kout = None
-adout = None
 lastss = 0
-maxK = None
 if pcid == 0:
     # record the wave progress
     fout = open(os.path.join(outdir, "wave_progress.txt"), "a")
-    # record max/mean ECS [K+] every ms for early-warning of SD nucleation
-    kout = open(os.path.join(outdir, "kmax_traj.txt"), "a")
-    kout.write("# t\tmaxK\tmeanK\n")
-    # record the total adenine pool (ATP+ADP+AMP, whole model) every 10ms
-    adout = open(os.path.join(outdir, "adenine_pool.txt"), "a")
-    adout.write("# t\tATP\tADP\tAMP\ttotal_adenine  (mM*um3, summed over all ICS nodes)\n")
     if cfg.k0Layer is None:
         yoff = cfg.sizeY / 2.0
     elif cfg.k0Layer == 2 or cfg.k0Layer == 3:
@@ -287,155 +370,26 @@ if pcid == 0:
         yoff = sum(netParams.popParams["L6e"]["yRange"]) / 2
 
 cellSDOpen, cellSDClosed = {}, {}
-vreinit = {}
-
-
-def getV():
-    """ "average membrane potential for each populations"""
-    vinit = {}
-    for label, pop in sim.net.pops.items():
-        cells = sim.getCellsList(pop.cellGids)
-        if len(cells) > 0 and hasattr(cells[0].secs, "soma"):
-            for cell in cells:
-                v = cell.secs["soma"]["hObj"].v
-                if v > 30:
-                    continue
-                if label in vinit:
-                    vinit[label].append(v)
-                else:
-                    vinit[label] = [v]
-    vinit_mean = {}
-    for pop, v in vinit.items():
-        gsum = pc.allreduce(sum(v), 1)
-        glen = pc.allreduce(len(v), 1)
-        vinit_mean[pop] = gsum / glen if glen > 0 else 0
-    return vinit_mean
-
-
-def adeninePool():
-    """Total adenine amount (mM*um3) = sum over all intracellular nodes of
-    concentration*volume for ATP/ADP/AMP, reduced across MPI ranks.
-    node.volume is the fixed baseline V_cyt; the osmotic vol_ratio is a separate
-    state that cancels (amount = (state/vol_ratio)*(V_cyt*vol_ratio) = state*V_cyt),
-    so this is the physically conserved pool. MUST be called on every rank
-    (pc.allreduce is collective)."""
-    out = {}
-    for sp in ("ATP", "ADP", "AMP"):
-        s = sum(nd.concentration * nd.volume
-                for nd in sim.net.rxd["states"][sp]["hObj"].nodes)
-        out[sp] = pc.allreduce(s, 1)  # sum across ranks
-    return out["ATP"], out["ADP"], out["AMP"]
-
-
-durs = []
-
-# early-warning state: trailing (t, maxK) samples on pcid 0, and abort record
+maxK = None
 kmax_traj = []
 aborted = False
-abort_reason = None   # "SD" | "rate_low" | "nan" once an abort fires (set on pcid 0)
-
-
-class EarlyAbort(Exception):
-    """Raised (symmetrically on all ranks) to break out of the interval-func
-    run loop when a run is committed to SD or off-target firing."""
-
-    pass
-
-
-def rateGateActive(t):
-    """True when the firing-rate abort gate should be evaluated at time t.
-    Depends only on cfg and t, so every rank agrees -- this guards a collective."""
-    return (
-        getattr(cfg, "earlyAbort", False)
-        and t >= cfg.abortWarmup
-        and (cfg.abortMinRate is not None or cfg.abortMaxRate is not None)
-    )
-
-
-def spikeRateInWindow(t0, t1):
-    """Mean firing rate (Hz) across all cells over [t0, t1] ms.
-
-    MUST be called on every rank: the cross-rank sum is a collective. spkt is
-    appended in time order, so scan back from the end and stop once past t0.
-    """
-    n = 0
-    try:
-        spkt = sim.simData["spkt"]
-        for i in range(len(spkt) - 1, -1, -1):
-            st = spkt[i]
-            if st < t0:
-                break
-            if st <= t1:
-                n += 1
-    except Exception:
-        n = 0
-    n = pc.allreduce(n, 1)  # sum across ranks -- collective, all ranks
-    ncell = max(1, cfg.Ncell)
-    dur_s = max(1e-9, (t1 - t0) / 1000.0)
-    return n / (ncell * dur_s)
-
-
-def checkEarlyAbort(t, maxK, rate=None):
-    """Decide (on pcid 0) whether the run is committed to SD or off-target
-    firing and should be aborted. Returns (stop:int, verdict:dict|None)."""
-    # numerical blowup: non-finite ECS [K+] (NaN/Inf) -> abort regardless of warmup, so a
-    # diverging combo is scored (not left to hang or crash the batch).
-    if not np.isfinite(maxK):
-        return 1, {
-            "verdict": "nan",
-            "t": t,
-            "maxK": maxK,
-            "reason": f"non-finite maxK={maxK} (numerical blowup)",
-        }
-    if t < cfg.abortWarmup:
-        return 0, None
-    # K+ divergence: max ECS [K+] high AND still climbing over the window
-    window = [k for (tt, k) in kmax_traj if tt >= t - cfg.abortWindow]
-    slope = (
-        (window[-1] - window[0]) / cfg.abortWindow if len(window) > 1 else 0.0
-    )
-    if maxK >= cfg.abortKmax and slope > cfg.abortKslope:
-        return 1, {
-            "verdict": "SD",
-            "t": t,
-            "maxK": maxK,
-            "slope": slope,
-            "reason": f"maxK={maxK:.2f}mM >= {cfg.abortKmax} and slope={slope:.4f} > {cfg.abortKslope} mM/ms",
-        }
-    # optional firing-rate gates (rate precomputed collectively by the caller)
-    if cfg.abortMinRate is not None or cfg.abortMaxRate is not None:
-        if rate is not None:
-            if cfg.abortMinRate is not None and rate < cfg.abortMinRate:
-                return 1, {
-                    "verdict": "rate_low",
-                    "t": t,
-                    "rate": rate,
-                    "reason": f"rate={rate:.2f}Hz < {cfg.abortMinRate}",
-                }
-            if cfg.abortMaxRate is not None and rate > cfg.abortMaxRate:
-                return 1, {
-                    "verdict": "rate_high",
-                    "t": t,
-                    "rate": rate,
-                    "reason": f"rate={rate:.2f}Hz > {cfg.abortMaxRate}",
-                }
-    return 0, None
+abort_reason = None
 
 
 def runIntervalFunc(t):
-    durs.append(time())
     """Write the wave_progress every 1ms"""
-    global lastss, cellSDOpen, cellSDClosed, vreinit, maxK
+    global lastss, cellSDOpen, cellSDClosed, maxK, kmax_traj, aborted, abort_reason
     saveint = 100  # save concentrations interval
     ssint = 1000  # save state interval
     lastss = 0
-    if t > 900:
-        vinit = getV()
-        for pop, v in vinit.items():
-            if pop in vreinit:
-                vreinit[pop].append(v)
-            else:
-                vreinit[pop] = [v]
+    if getattr(cfg, "v_reinit", False):
+        if t > 900:
+            vinit = getV()
+            for pop, v in vinit.items():
+                if pop in vreinit:
+                    vreinit[pop].append(v)
+                else:
+                    vreinit[pop] = [v]
     if pcid == 0:
         if int(t) % saveint == 0:
             # plot extracellular concentrations averaged over depth every 100ms
@@ -472,57 +426,52 @@ def runIntervalFunc(t):
                 cellSD[cell] = [(a, None)]
         json.dump(cellSD, open(os.path.join(outdir, f"cellsSD_{pcid}.json"), "w"))
 
-    global kmax_traj, aborted, abort_reason
     if pcid == 0:
         progress_bar(cfg.duration)
         dist = 0
         dist1 = 1e9
         kk = sim.net.rxd.species["kk"]["hObj"]
-        ecs = sim.net.rxd['regions']['ecs']['hObj']
+        ecs = sim.net.rxd["regions"]["ecs"]["hObj"]
         for nd in kk[ecs].nodes:
             c = nd.concentration
-                r = (
-                    (nd.x3d - cfg.sizeX / 2.0) ** 2
-                    + (nd.y3d + yoff) ** 2
-                    + (nd.z3d - cfg.sizeZ / 2.0) ** 2
-                ) ** 0.5
-                if c > cfg.Kceil and r > dist:
-                    dist = r
-                if c <= cfg.Kceil and r < dist1:
-                    dist1 = r
+            r = (
+                (nd.x3d - cfg.sizeX / 2.0) ** 2
+                + (nd.y3d + yoff) ** 2
+                + (nd.z3d - cfg.sizeZ / 2.0) ** 2
+            ) ** 0.5
+            if c > cfg.Kceil and r > dist:
+                dist = r
+            if c <= cfg.Kceil and r < dist1:
+                dist1 = r
         vals = kk[ecs].nodes.value
         meanK = np.mean(vals)
         maxK = max(vals)
         fout.write("%g\t%g\t%g\t%g\t%g\n" % (h.t, dist, dist1, maxK, meanK))
         fout.flush()
-    # ---- total adenine pool every 10ms (conservation check; all ranks) ----
-    if int(t) % 5 == 0:
-        atp, adp, amp = adeninePool()
-        if pcid == 0:
-            adout.write(
-                "%g\t%g\t%g\t%g\t%g\n" % (h.t, atp, adp, amp, atp + adp + amp)
-            )
-            adout.flush()
 
-    # ---- early-warning / early-abort (MPI-safe: all ranks decide together) ----
+    # ---- early-warning / early-abort -- use during optimization
     if getattr(cfg, "earlyAbort", False):
         stop = 0
         verdict = None
-        # the rate gate reduces spike counts across ranks: every rank must take
-        # part, so compute it outside the pcid==0 branch (the gate condition is
-        # a pure function of cfg and t, hence identical on all ranks).
-        rate = spikeRateInWindow(t - cfg.abortWindow, t) if rateGateActive(t) else None
+        rate = None
+        kmax_traj.append((t, maxK))
+        if t >= cfg.abortWarmup and (
+            cfg.abortMinRate is not None or cfg.abortMaxRate is not None
+        ):
+            rate = spikeRateInWindow(t - cfg.abortWindow, t)
         if pcid == 0:
             stop, verdict = checkEarlyAbort(t, maxK, rate)
         stop = int(pc.allreduce(stop, 2))  # max across ranks; all ranks agree
         if stop:
             if pcid == 0 and verdict is not None:
                 verdict["aborted"] = True
-                abort_reason = verdict["verdict"]   # "SD" | "rate_low" | "nan"
+                abort_reason = verdict["verdict"]  # "SD" | "rate_low" | "nan"
                 json.dump(
                     verdict, open(os.path.join(outdir, "verdict.json"), "w"), indent=2
                 )
-                print("\n[earlyAbort] %s -> stopping at t=%gms" % (verdict["reason"], t))
+                print(
+                    "\n[earlyAbort] %s -> stopping at t=%gms" % (verdict["reason"], t)
+                )
             aborted = True
             # break out of runSimWithIntervalFunc's while loop symmetrically on
             # every rank (its condition keys off h.t, so h.stoprun would spin).
@@ -532,8 +481,6 @@ def runIntervalFunc(t):
 try:
     sim.runSimWithIntervalFunc(1, runIntervalFunc)
 except EarlyAbort:
-    # All ranks raise together (stop decided via collective allreduce), so this
-    # is symmetric across MPI. Reproduce postRun()'s cleanup minus the re-solve.
     sim.pc.barrier()
     try:
         sim.timing("stop", "runTime")
@@ -541,30 +488,21 @@ except EarlyAbort:
         pass
 
 if pcid == 0 and not aborted:
-    # ran to completion without an early-abort: record the final K+ state so the
-    # search harness can distinguish "safe" from "aborted-SD" without reparsing.
-    finalMaxK = kmax_traj[-1][1] if kmax_traj else 0.0
     json.dump(
-        {"verdict": "completed", "aborted": False, "t": h.t, "maxK": finalMaxK},
+        {"verdict": "completed", "aborted": False, "t": h.t, "maxK": maxK},
         open(os.path.join(outdir, "verdict.json"), "w"),
         indent=2,
     )
-
 sim.gatherData()
-
-# stamp the abort verdict into the saved simData so the search fitness can tell a
-# dead-network abort ("rate_low") from an SD abort ("SD"/"nan") -- opposite failures
-# that must NOT collapse onto the same hard penalty (see batchJointFitKir.fitnessFunc).
-if pcid == 0:
-    sim.simData["abortReason"] = abort_reason if aborted else "completed"
-
-vinit_mean = {p: np.mean(v) for p, v in vreinit.items()}
-json.dump(vinit_mean, open("v_initial_pop.json", "w"), indent=4)
 
 if pcid == 0:
     networkStatsFromSim(
         sim, filename=os.path.join(outdir, f"netstats_{cfg.duration/1000:0.2f}s.json")
     )
+    if getattr(cfg, "v_reinit", False):
+        vinit_mean = {p: np.mean(v) for p, v in vreinit.items()}
+        json.dump(vinit_mean, open("v_initial_pop.json", "w"), indent=4)
+
 
 sim.saveData()
 sim.analysis.plotData()
@@ -583,8 +521,6 @@ for lab in rec_cells:
 if pcid == 0:
     progress_bar(cfg.duration)
     fout.close()
-    if adout is not None:
-        adout.close()
     for lab in rec_all:
         if cfg.restore:
             rec_old = pickle.load(open(os.path.join(outdir, f"recs_{lab}.pkl"), "rb"))
